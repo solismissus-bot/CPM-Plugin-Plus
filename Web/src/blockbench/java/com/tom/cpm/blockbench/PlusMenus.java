@@ -180,6 +180,52 @@ public final class PlusMenus {
 	 * prefix when missing; nameKey is a lang key (its '.desc' key, when present, becomes the description); when =
 	 * extra enabled check (e.g. 'an animation is selected'). Removed on unload.
 	 */
+	/**
+	 * Default shortcuts of the most used CPM+ tools: Ctrl+Alt+letter. Blockbench 5 itself only uses Ctrl+Alt+S / T;
+	 * Alt+Shift switches the Windows keyboard layout and Ctrl+Alt+Q / W / E / C are AltGr characters on ABNT2
+	 * keyboards, so neither is used. Every one can be changed in Settings > Keybindings (category Tools).
+	 * Values: action id -> key code.
+	 */
+	private static final java.util.Map<String, Integer> DEFAULT_KEYS = new java.util.HashMap<>();
+	static {
+		DEFAULT_KEYS.put("cpmplus_w3settings_hub", 65);// A: Ajustes do modelo
+		DEFAULT_KEYS.put("cpmplus_extra_f6", 68);// D: Atrasar / adiantar movimento
+		DEFAULT_KEYS.put("cpmplus_copy_transform", 70);// F: Copiar movimento de (Copy Transform)
+		DEFAULT_KEYS.put("cpmplus_w5stick_stick", 71);// G: Grudar na parte do corpo
+		DEFAULT_KEYS.put("cpmplus_w5vis_showhide", 72);// H: Mostrar/esconder nesta animação
+		DEFAULT_KEYS.put("cpmplus_animimport", 73);// I: Importar animações de outro .cpmproject
+		DEFAULT_KEYS.put("cpmplus_w3modelexport_take", 74);// J: Levar pro jogo
+		DEFAULT_KEYS.put("cpmplus_w6help_skeleton", 75);// K: Ver esqueleto
+		DEFAULT_KEYS.put("cpmplus_extra_f5", 76);// L: Fechar o loop
+		DEFAULT_KEYS.put("cpmplus_w4anim2_mirror", 77);// M: Espelhar pro outro lado
+		DEFAULT_KEYS.put("cpmplus_w4anim2_wave", 78);// N: Fazer onda
+		DEFAULT_KEYS.put("cpmplus_optim", 79);// O: Otimizar animação
+		DEFAULT_KEYS.put("cpmplus_w3animtools_f23", 80);// P: Marcar pose aqui
+		DEFAULT_KEYS.put("cpmplus_extra_g63", 86);// V: Suavizar movimento
+		DEFAULT_KEYS.put("cpmplus_w3animtools_f17", 88);// X: Exagerar ou suavizar movimento
+	}
+
+	private static native Object ctrlAltKey(int keyCode) /*-{
+		try {
+			return $wnd.Keybind ? new $wnd.Keybind({key: keyCode, ctrl: true, alt: true}) : undefined;
+		} catch (e) {
+			return undefined;
+		}
+	}-*/;
+
+	/** the default Keybind of an action id (Ctrl+Alt+letter), or undefined */
+	static Object defaultKeybind(String prefixedId) {
+		Integer k = DEFAULT_KEYS.get(prefixedId);
+		return k == null ? null : ctrlAltKey(k);
+	}
+
+	/** id -> 'Ctrl + Alt + X' for the guide / tests */
+	public static java.util.Map<String, String> defaultShortcuts() {
+		java.util.Map<String, String> m = new java.util.TreeMap<>();
+		for (java.util.Map.Entry<String, Integer> e : DEFAULT_KEYS.entrySet())m.put(e.getKey(), "Ctrl + Alt + " + (char) e.getValue().intValue());
+		return m;
+	}
+
 	public static Action action(String id, String nameKey, String icon, Cond cond, BooleanSupplier when, Runnable click) {
 		Cond cnd = cond != null ? cond : Cond.CPM_ONLY;
 		String name = I18n.get(nameKey);
@@ -189,6 +235,8 @@ public final class PlusMenus {
 		a.description = desc.equals(nameKey + ".desc") ? "" : desc;
 		a.icon = icon;
 		a.category = "tools";
+		Object kb = defaultKeybind(prefixed(id));
+		if (kb != null)a.keybind = kb;
 		a.condition = cnd.toCondition(when);
 		a.click = e -> {
 			if (!cnd.met())return;
@@ -213,6 +261,8 @@ public final class PlusMenus {
 		a.description = desc.equals(nameKey + ".desc") ? "" : desc;
 		a.icon = icon;
 		a.category = "tools";
+		Object kb = defaultKeybind(prefixed(id));
+		if (kb != null)a.keybind = kb;
 		a.def = def;
 		a.condition = cnd.toCondition(null);
 		a.onChange = v -> {

@@ -8,6 +8,29 @@ Regras gerais:
 - Os avisos do export **nunca bloqueiam**: você pode exportar mesmo assim.
 - Teste sempre em uma **cópia** do seu modelo.
 
+## Atalhos de teclado (beta21)
+
+As ferramentas mais usadas já vêm com atalho **Ctrl + Alt + letra**. Pra trocar ou criar atalho pra qualquer outra: **Arquivo > Configurações > Atalhos (Keybindings)**, categoria **Ferramentas**, procure pelo nome.
+
+| Atalho | Ferramenta |
+|---|---|
+| Ctrl + Alt + A | Ajustes do modelo |
+| Ctrl + Alt + D | Atrasar / adiantar movimento |
+| Ctrl + Alt + F | Copiar movimento de (Copy Transform) |
+| Ctrl + Alt + G | Grudar na parte do corpo |
+| Ctrl + Alt + H | Mostrar/esconder nesta animação |
+| Ctrl + Alt + I | Importar animações de outro .cpmproject |
+| Ctrl + Alt + J | Levar pro jogo |
+| Ctrl + Alt + K | Ver esqueleto (liga/desliga) |
+| Ctrl + Alt + L | Fechar o loop |
+| Ctrl + Alt + M | Espelhar pro outro lado |
+| Ctrl + Alt + N | Fazer onda |
+| Ctrl + Alt + O | Otimizar animação |
+| Ctrl + Alt + P | Marcar pose aqui |
+| Ctrl + Alt + V | Suavizar movimento |
+| Ctrl + Alt + X | Exagerar ou suavizar movimento |
+
+Ctrl+Alt+S e Ctrl+Alt+T continuam sendo do Blockbench. Não usei Alt+Shift (no Windows troca o idioma do teclado) nem Ctrl+Alt+Q/W/E/C (no teclado ABNT2 viram /, ?, ° e ₢).
 ---
 
 ## 1. Levar pro jogo (direto no menu CPM+)
