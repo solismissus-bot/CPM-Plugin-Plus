@@ -1,0 +1,147 @@
+package com.tom.cpm.shared.config;
+
+import java.util.EnumMap;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
+
+import com.tom.cpm.shared.MinecraftClientAccess;
+import com.tom.cpm.shared.MinecraftCommonAccess;
+import com.tom.cpm.shared.animation.AnimationEngine.AnimationMode;
+import com.tom.cpm.shared.animation.AnimationHandler;
+import com.tom.cpm.shared.animation.AnimationState;
+import com.tom.cpm.shared.animation.PersistentAnimationState;
+import com.tom.cpm.shared.definition.ModelDefinition;
+import com.tom.cpm.shared.definition.ModelDefinition.ModelLoadingState;
+import com.tom.cpm.shared.model.SkinType;
+import com.tom.cpm.shared.network.NetHandler;
+import com.tom.cpm.shared.skin.PlayerTextureLoader;
+
+public abstract class Player<P> {
+	private static boolean enableRendering = true;
+
+	private CompletableFuture<ModelDefinition> definition;
+	private EnumMap<AnimationMode, AnimationHandler> animHandler = new EnumMap<>(AnimationMode.class);
+	private PlayerTextureLoader textures;
+	public PersistentAnimationState persistentState = new PersistentAnimationState();
+
+	public boolean forcedSkin;
+	public boolean sentEventSubs;
+	public String unique;
+	public boolean isModel;
+
+	public PlayerTextureLoader getTextures() {
+		if(textures == null) {
+			textures = initTextures();
+			textures.load();
+		}
+		return textures;
+	}
+
+	public abstract SkinType getSkinType();
+	protected abstract PlayerTextureLoader initTextures();
+	public abstract String getName();
+	public abstract UUID getUUID();
+	public abstract void updateFromPlayer(AnimationState animState, P player);
+	public abstract Object getGameProfile();
+	public abstract void updateFromModel(AnimationState animState, Object model);
+
+	@SuppressWarnings("unchecked")
+	public void updatePlayer(P player, AnimationState state) {
+		NetHandler<?, P, ?> net = (NetHandler<?, P, ?>) MinecraftClientAccess.get().getNetHandler();
+		net.updatePlayer(player, persistentState.localState);
+		persistentState.apply(state);
+		updateFromPlayer(state, player);
+		state.speakLevel = (float) MinecraftCommonAccess.get().getApi().clientApi().getVoiceProviders().stream().
+				mapToDouble(f -> f.apply(player)).max().orElse(0);
+		state.voiceMuted = MinecraftCommonAccess.get().getApi().clientApi().getVoiceMutedProviders().stream().anyMatch(p -> p.test(player));
+	}
+
+	public void setModelDefinition(CompletableFuture<ModelDefinition> definition, boolean isModel) {
+		this.definition = definition.exceptionally(e -> new ModelDefinition(e, this));
+		this.isModel = isModel;
+	}
+
+	public ModelDefinition getModelDefinition0() {
+		try {
+			return enableRendering && definition != null ? definition.getNow(null) : null;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public ModelDefinition getModelDefinition() {
+		ModelDefinition def = getModelDefinition0();
+		if(def != null) {
+			if(def.getResolveState() == ModelLoadingState.NEW)def.startResolve();
+			else if(def.getResolveState() == ModelLoadingState.LOADED) {
+				if(def.doRender()) {
+					return def;
+				}
+			}
+		}
+		return null;
+	}
+
+	public CompletableFuture<ModelDefinition> getDefinitionFuture() {
+		return definition;
+	}
+
+	public AnimationHandler getAnimationHandler(AnimationMode mode) {
+		return animHandler.computeIfAbsent(mode, k -> new AnimationHandler(this::getModelDefinition, k));
+	}
+
+	public static boolean isEnableRendering() {
+		return enableRendering;
+	}
+
+	public static void setEnableRendering(boolean enableRendering) {
+		Player.enableRendering = enableRendering;
+	}
+
+	public static boolean isEnableNames() {
+		return ModConfig.getCommonConfig().getBoolean(ConfigKeys.RENDER_NAMES, true);
+	}
+
+	public static void setEnableNames(boolean enableNames) {
+		ModConfig.getCommonConfig().setBoolean(ConfigKeys.RENDER_NAMES, enableNames);
+		ModConfig.getCommonConfig().save();
+	}
+
+	public static boolean isEnableLoadingInfo() {
+		return ModConfig.getCommonConfig().getBoolean(ConfigKeys.SHOW_LOADING_INFO, true);
+	}
+
+	public void cleanup() {
+		ModelDefinition def = getModelDefinition0();
+		if(def != null)MinecraftClientAccess.get().executeOnGameThread(def::cleanup);
+	}
+
+	public boolean isClientPlayer() {
+		return getUUID().equals(MinecraftClientAccess.get().getCurrentClientPlayer().getUUID());
+	}
+
+	public void sendEventSubs() {
+		ModelDefinition def = getModelDefinition();
+		if(!sentEventSubs && def != null) {
+			sentEventSubs = true;
+			MinecraftClientAccess.get().getNetHandler().sendEventSubs(def);
+		}
+	}
+
+	public static <P> void cloneProperties(Multimap<String, P> from, Multimap<String, P> to) {
+		try {
+			if(from.containsKey("textures"))
+				to.putAll("textures", from.get("textures"));
+		} catch (Exception e) {
+		}
+	}
+
+	public static <P> Multimap<String, P> cloneProperties(Multimap<String, P> from) {
+		Multimap<String, P> map = LinkedHashMultimap.create();
+		cloneProperties(from, map);
+		return map;
+	}
+}

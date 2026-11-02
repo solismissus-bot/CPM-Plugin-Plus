@@ -1,0 +1,9 @@
+{
+  "cpmplus.w1io.progress.zip": "CPM: reading the project file...",
+  "cpmplus.w1io.progress.png": "CPM: reading the textures...",
+  "cpmplus.w1io.progress.load": "CPM: loading the model and the animations...",
+  "cpmplus.w1io.progress.textures": "CPM: preparing the textures for Blockbench...",
+  "cpmplus.w1io.progress.build": "CPM: building the model in Blockbench...",
+  "cpmplus.w1io.error.pngUnsupported": "The texture %s uses a PNG format that can't be read (palette/grayscale/16-bit). Open it in an image editor and save it again as PNG RGBA 8-bit.",
+  "cpmplus.w1io.error.pngDamaged": "The texture %s is damaged or is not a real PNG. Open it in an image editor and save it again as PNG RGBA 8-bit."
+}

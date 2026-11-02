@@ -1,0 +1,20 @@
+{
+	"cpmplus.w6help.skel.menu": "Ver esqueleto",
+	"cpmplus.w6help.skel.options": "Opções do esqueleto...",
+	"cpmplus.w6help.skel.opt.labels": "Rótulos",
+	"cpmplus.w6help.skel.opt.selectedOnly": "Só o grupo selecionado + filhos",
+	"cpmplus.w6help.skel.opt.axes": "Eixos no pivô",
+	"cpmplus.w6help.skel.legend": "Cor de destaque: partes do corpo (com rótulo). Tracejado: cópia de parte do corpo (_dup). Cinza: raízes de equipamento (capa, elytra, armadura). Verde com mão: slot de item. Vermelho: não vai pro jogo / raiz desconhecida. Linha fina neutra: seus grupos. Clique num rótulo pra selecionar o grupo.",
+	"cpmplus.w6help.skel.notCpm": "O esqueleto só funciona em projetos CPM",
+	"cpmplus.w6help.skel.animHint": "Esqueleto no modo Animar: o balanço do próprio Minecraft não aparece aqui; o CPM soma no jogo.",
+	"cpmplus.w6help.skel.noExport": "não vai pro jogo",
+	"cpmplus.w6help.skel.unknownRoot": "raiz desconhecida",
+	"cpmplus.w6help.skel.equipOnly": "só com equipamento",
+	"cpmplus.w6help.skel.copyOf": "cópia de %s",
+	"cpmplus.w6help.part.head": "Cabeça",
+	"cpmplus.w6help.part.body": "Corpo",
+	"cpmplus.w6help.part.left_arm": "Braço esq.",
+	"cpmplus.w6help.part.right_arm": "Braço dir.",
+	"cpmplus.w6help.part.left_leg": "Perna esq.",
+	"cpmplus.w6help.part.right_leg": "Perna dir."
+}

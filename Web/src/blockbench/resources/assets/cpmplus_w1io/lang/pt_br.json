@@ -1,0 +1,9 @@
+{
+  "cpmplus.w1io.progress.zip": "CPM: lendo o arquivo do projeto...",
+  "cpmplus.w1io.progress.png": "CPM: lendo as texturas...",
+  "cpmplus.w1io.progress.load": "CPM: carregando o modelo e as animações...",
+  "cpmplus.w1io.progress.textures": "CPM: preparando as texturas para o Blockbench...",
+  "cpmplus.w1io.progress.build": "CPM: montando o modelo no Blockbench...",
+  "cpmplus.w1io.error.pngUnsupported": "A textura %s usa um formato de PNG que não dá para ler (paleta/tons de cinza/16 bits). Abra num editor de imagem e salve de novo como PNG RGBA 8 bits.",
+  "cpmplus.w1io.error.pngDamaged": "A textura %s está corrompida ou não é um PNG de verdade. Abra num editor de imagem e salve de novo como PNG RGBA 8 bits."
+}

@@ -1,0 +1,12 @@
+**/.gradle/
+**/build/
+**/dump/
+**/gwt-unitCache/
+**/gwt_temp/
+**/war/
+*.log
+**/bin/
+**/out/
+
+# CPM Plugin+: the GWT build sources are part of the repository
+!Web/src/build/

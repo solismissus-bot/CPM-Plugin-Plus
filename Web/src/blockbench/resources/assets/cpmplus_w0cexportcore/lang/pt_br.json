@@ -1,0 +1,19 @@
+{
+  "cpmplus.w0cexportcore.sev.breaks": "Não funciona no jogo:",
+  "cpmplus.w0cexportcore.btn.fix": "Corrigir...",
+  "cpmplus.w0cexportcore.btn.cancel": "Cancelar",
+  "cpmplus.w0cexportcore.dlg.fixChooser.title": "Como você quer corrigir?",
+  "cpmplus.w0cexportcore.dlg.fixChooser.text": "Escolha uma das correções abaixo.",
+  "cpmplus.w0cexportcore.warn.layerCapacity.noLayers": "%s animação(ões) estão com 'Camada de Skin Acionada', mas só %s camada(s) da skin estão livres para animações (precisa de pelo menos 2). Libere mais camadas da skin para animações ou desligue 'Camada de Skin Acionada' nessas animações (Propriedades da animação do CPM).",
+  "cpmplus.w0cexportcore.warn.layerCapacity.tooMany": "%s animações estão com 'Camada de Skin Acionada', mas %s camadas livres da skin só comportam %s. Libere mais camadas da skin para animações ou desligue 'Camada de Skin Acionada' em algumas animações (Propriedades da animação do CPM).",
+  "cpmplus.w0cexportcore.warn.layerCapacity.consequence": "No jogo: o CPM recusa exportar este modelo (erro nas animações).",
+  "cpmplus.w0cexportcore.warn.storeId": "Estas peças tinham o mesmo ID interno: %s. O CPM+ deu IDs novos a elas no arquivo exportado, então o modelo funciona normalmente no jogo.",
+  "cpmplus.w0cexportcore.warn.storeId.stored": "Os IDs repetidos vieram do arquivo importado ou de peças copiadas. 'Renumerar IDs' grava IDs novos no projeto e este aviso some.",
+  "cpmplus.w0cexportcore.warn.storeId.plugin": "Isso não deveria acontecer. Se aparecer sempre, avise: é um erro do plugin.",
+  "cpmplus.w0cexportcore.fix.renumber": "Renumerar IDs",
+  "cpmplus.w0cexportcore.fix.renumber.preview": "dá IDs internos novos a essas peças no projeto (as animações continuam iguais)",
+  "cpmplus.w0cexportcore.fix.failed": "A correção '%s' não foi aplicada.",
+  "cpmplus.w0cexportcore.qa.fixA": "Teste: correção A",
+  "cpmplus.w0cexportcore.qa.fixB": "Teste: correção B",
+  "cpmplus.w0cexportcore.qa.fixA.preview": "prévia de teste da correção A"
+}

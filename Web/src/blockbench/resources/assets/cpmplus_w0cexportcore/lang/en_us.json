@@ -1,0 +1,19 @@
+{
+  "cpmplus.w0cexportcore.sev.breaks": "Won't work in game:",
+  "cpmplus.w0cexportcore.btn.fix": "Fix...",
+  "cpmplus.w0cexportcore.btn.cancel": "Cancel",
+  "cpmplus.w0cexportcore.dlg.fixChooser.title": "How do you want to fix it?",
+  "cpmplus.w0cexportcore.dlg.fixChooser.text": "Pick one of the fixes below.",
+  "cpmplus.w0cexportcore.warn.layerCapacity.noLayers": "%s animation(s) use 'Skin Layer Triggered', but only %s skin layer(s) are free for animations (at least 2 are needed). Free more skin layers for animations, or turn off 'Skin Layer Triggered' in these animations (CPM Animation Properties).",
+  "cpmplus.w0cexportcore.warn.layerCapacity.tooMany": "%s animations use 'Skin Layer Triggered', but %s free skin layers fit at most %s. Free more skin layers for animations, or turn off 'Skin Layer Triggered' in some animations (CPM Animation Properties).",
+  "cpmplus.w0cexportcore.warn.layerCapacity.consequence": "In game: CPM refuses to export this model (animation error).",
+  "cpmplus.w0cexportcore.warn.storeId": "These parts had the same internal ID: %s. CPM+ gave them new IDs in the exported file, so the model works normally in game.",
+  "cpmplus.w0cexportcore.warn.storeId.stored": "The repeated IDs came from the imported file or from copied parts. 'Renumber IDs' saves new IDs in the project and this notice goes away.",
+  "cpmplus.w0cexportcore.warn.storeId.plugin": "This should not happen. If you see it every time, please report it: it is a plugin bug.",
+  "cpmplus.w0cexportcore.fix.renumber": "Renumber IDs",
+  "cpmplus.w0cexportcore.fix.renumber.preview": "gives these parts new internal IDs in the project (animations stay as they are)",
+  "cpmplus.w0cexportcore.fix.failed": "The fix '%s' was not applied.",
+  "cpmplus.w0cexportcore.qa.fixA": "Test: fix A",
+  "cpmplus.w0cexportcore.qa.fixB": "Test: fix B",
+  "cpmplus.w0cexportcore.qa.fixA.preview": "test preview of fix A"
+}

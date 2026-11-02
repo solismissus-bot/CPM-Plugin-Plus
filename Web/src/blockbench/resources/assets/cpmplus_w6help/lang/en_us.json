@@ -1,0 +1,20 @@
+{
+	"cpmplus.w6help.skel.menu": "Show skeleton",
+	"cpmplus.w6help.skel.options": "Skeleton options...",
+	"cpmplus.w6help.skel.opt.labels": "Labels",
+	"cpmplus.w6help.skel.opt.selectedOnly": "Only the selected group + children",
+	"cpmplus.w6help.skel.opt.axes": "Axes at the pivot",
+	"cpmplus.w6help.skel.legend": "Accent colour: body parts (labelled). Dashed: copy of a body part (_dup). Grey: equipment roots (cape, elytra, armor). Green with a hand: item slot. Red: not exported / unknown root. Thin neutral line: your own groups. Click a label to select the group.",
+	"cpmplus.w6help.skel.notCpm": "The skeleton only works in CPM projects",
+	"cpmplus.w6help.skel.animHint": "Skeleton in Animate mode: Minecraft's own swing is not shown here; CPM adds it in game.",
+	"cpmplus.w6help.skel.noExport": "not exported",
+	"cpmplus.w6help.skel.unknownRoot": "unknown root",
+	"cpmplus.w6help.skel.equipOnly": "only with equipment",
+	"cpmplus.w6help.skel.copyOf": "copy of %s",
+	"cpmplus.w6help.part.head": "Head",
+	"cpmplus.w6help.part.body": "Body",
+	"cpmplus.w6help.part.left_arm": "Left arm",
+	"cpmplus.w6help.part.right_arm": "Right arm",
+	"cpmplus.w6help.part.left_leg": "Left leg",
+	"cpmplus.w6help.part.right_leg": "Right leg"
+}

@@ -1,0 +1,20 @@
+{
+  "cpmplus.optim.menu": "Optimize animation (fewer frames)…",
+  "cpmplus.optim.menu.desc": "Makes the file smaller: removes frames and keyframes that do not change the motion.",
+  "cpmplus.optim.title": "Optimize animation",
+  "cpmplus.optim.intro": "CPM writes one frame at every point of a grid that holds all keyframes. An animation with a key on every frame gets heavy. This finds the smallest grid that keeps the motion within the tolerance and rewrites the keyframes on it. Visibility and colour keys do not move. One Ctrl+Z undoes it.",
+  "cpmplus.optim.scope": "Animations",
+  "cpmplus.optim.scope.sel": "Only the selected one",
+  "cpmplus.optim.scope.all": "All",
+  "cpmplus.optim.rot": "Rotation tolerance (degrees)",
+  "cpmplus.optim.pos": "Position tolerance (pixels)",
+  "cpmplus.optim.scl": "Scale tolerance",
+  "cpmplus.optim.row": "%s: %s → %s frames, %s → %s keyframes",
+  "cpmplus.optim.note.smooth": "has smooth, curve or formula motion: the frames stay the same",
+  "cpmplus.optim.note.partial": "parts with smooth, curve or formula motion were left as they were",
+  "cpmplus.optim.note.tight": "frames cannot be removed without exceeding the tolerance",
+  "cpmplus.optim.nothing": "Nothing to optimize with this tolerance.",
+  "cpmplus.optim.apply": "Optimize",
+  "cpmplus.optim.done": "%s animation(s) optimized. Ctrl+Z undoes it.",
+  "cpmplus.optim.undo": "Optimize animation"
+}

@@ -1,0 +1,108 @@
+package com.tom.cpm.shared.animation;
+
+import java.util.List;
+import java.util.Set;
+
+import com.tom.cpl.math.MathHelper;
+import com.tom.cpm.shared.MinecraftClientAccess;
+import com.tom.cpm.shared.animation.AnimationEngine.AnimationMode;
+import com.tom.cpm.shared.network.ServerCaps;
+
+public class AnimationTrigger {
+	public final AnimationRegistry reg;
+	public final Set<IPose> onPoses;
+	public final List<IAnimation> animations;
+	public final boolean looping, mustFinish;
+	public final VanillaPose valuePose;
+
+	public AnimationTrigger(AnimationRegistry reg, Set<IPose> onPoses, VanillaPose valuePose, List<IAnimation> animations, boolean looping, boolean mustFinish) {
+		this.reg = reg;
+		this.onPoses = onPoses;
+		this.valuePose = valuePose;
+		this.animations = animations;
+		this.looping = looping;
+		this.mustFinish = mustFinish;
+	}
+
+	public long getTime(AnimationState state, long time) {
+		return valuePose != null ? valuePose.getTime(state, time) : time;
+	}
+
+	public boolean canPlay(AnimationState state, AnimationMode mode) {
+		return true;
+	}
+
+	public static class LayerTrigger extends AnimationTrigger {
+		private final int id, mask;
+		private final boolean bitmask;
+
+		public LayerTrigger(AnimationRegistry reg, Set<IPose> onPoses, List<IAnimation> animations, int id, int mask, boolean bitmask, boolean mustFinish) {
+			super(reg, onPoses, null, animations, true, mustFinish);
+			this.id = id;
+			this.mask = mask;
+			this.bitmask = bitmask;
+		}
+
+		@Override
+		public boolean canPlay(AnimationState state, AnimationMode mode) {
+			byte v;
+			if (state.gestureData != null && state.gestureData.length > id) {
+				v = state.gestureData[id];
+			} else {
+				v = reg.getParams().getDefaultParam(id);
+			}
+			if (bitmask)return (v & mask) == mask;
+			else return v == mask;
+		}
+	}
+
+	public static class GestureTrigger extends AnimationTrigger {
+		private final int value, gid;
+
+		public GestureTrigger(AnimationRegistry reg, Set<IPose> onPoses, List<IAnimation> animations, int value, int gid, boolean looping, boolean mustFinish) {
+			super(reg, onPoses, null, animations, looping, mustFinish);
+			this.value = value;
+			this.gid = gid;
+		}
+
+		@Override
+		public boolean canPlay(AnimationState state, AnimationMode mode) {
+			if (MinecraftClientAccess.get().getNetHandler().hasServerCap(ServerCaps.GESTURES)) {
+				if (state.gestureData != null && state.gestureData.length > 1) {
+					byte v = state.gestureData[1];
+					return v == value;
+				}
+			} else if(gid != -1) {
+				return state.encodedState == gid;
+			}
+			return false;
+		}
+	}
+
+	public static class ValueTrigger extends AnimationTrigger {
+		private final int id;
+		private boolean interpolate;
+
+		public ValueTrigger(AnimationRegistry reg, Set<IPose> onPoses, List<IAnimation> animations, int id, boolean interpolate) {
+			super(reg, onPoses, null, animations, true, false);
+			this.id = id;
+			this.interpolate = interpolate;
+		}
+
+		@Override
+		public long getTime(AnimationState state, long animTime) {
+			if (state != null && state.gestureData != null && state.gestureData.length > id) {
+				float val = Byte.toUnsignedInt(state.gestureData[id]) / 256f;
+				long time = MinecraftClientAccess.get().getPlayerRenderManager().getAnimationEngine().getTime();
+				if (interpolate && state.prevGestureData != null && state.prevGestureData.length == state.gestureData.length && state.lastGestureReceiveTime + 50 >= time) {
+					float prev = Byte.toUnsignedInt(state.prevGestureData[id]) / 256f;
+					val = MathHelper.lerp((time - state.lastGestureReceiveTime) / 50f, prev, val);
+				}
+				return (long) (val * VanillaPose.DYNAMIC_DURATION_MUL);
+			} else {
+				float val = Byte.toUnsignedInt(reg.getParams().getDefaultParam(id)) / 256f;
+				return (long) (val * VanillaPose.DYNAMIC_DURATION_MUL);
+			}
+		}
+	}
+}

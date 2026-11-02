@@ -1,0 +1,12 @@
+{
+  "cpmplus.animimport.menu": "Import animations from another .cpmproject…",
+  "cpmplus.animimport.menu.desc": "Brings animations of another file into the open model, on the parts both have.",
+  "cpmplus.animimport.title": "Import animations",
+  "cpmplus.animimport.intro": "%s: %s of %s animated parts of that file exist in your model (by CPM id or the same folder path). The keys of the others are left out. One Ctrl+Z undoes it.",
+  "cpmplus.animimport.anims": "Animations",
+  "cpmplus.animimport.none": "%s has no animations.",
+  "cpmplus.animimport.readError": "Could not read that .cpmproject.",
+  "cpmplus.animimport.done": "%s animation(s) imported. Ctrl+Z undoes it.",
+  "cpmplus.animimport.unmatched": "Parts of that file that your model does not have (their keys were left out): %s",
+  "cpmplus.animimport.undo": "Import animations"
+}

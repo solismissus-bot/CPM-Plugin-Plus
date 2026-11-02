@@ -1,0 +1,9 @@
+{
+  "cpmplus.w1preview.gimbal": "Girar um eixo por vez (o gizmo muda só um número)",
+  "cpmplus.w1preview.gimbal.desc": "Arrastar o anel X, Y ou Z da ferramenta Girar muda só aquele número, igual digitar no painel Transform. Desligado = jeito normal do Blockbench (em Global/Parent, girar o X pode mexer no Y e no Z também; a peça fica igual no jogo). Dicas: no Editar, o espaço 'Local' + anel X já muda só um número; no Animar, o espaço 'Parent' já muda só um número; digitar no painel Transform sempre muda só um número; depois de Ctrl+Z o Blockbench seleciona também o grupo pai, então clique na peça de novo antes de girar. Só em projetos CPM; o arquivo exportado não muda.",
+  "cpmplus.w1preview.gimbal.onLocal": "Girar um eixo por vez: LIGADO. O gizmo foi para o modo 'Local', onde os anéis acompanham a peça. O anel branco (livre) continua normal. Dica: depois de Ctrl+Z, clique na peça de novo antes de girar.",
+  "cpmplus.w1preview.gimbal.on": "Girar um eixo por vez: LIGADO. Deixe o gizmo em 'Local' para os anéis acompanharem a peça. O anel branco (livre) continua normal. Dica: depois de Ctrl+Z, clique na peça de novo antes de girar.",
+  "cpmplus.w1preview.gimbal.off": "Girar um eixo por vez: DESLIGADO. O gizmo voltou ao jeito normal do Blockbench.",
+  "cpmplus.w1preview.gimbal.notStored": "Não deu para salvar essa escolha (o armazenamento do navegador está bloqueado): ela vale até fechar o Blockbench.",
+  "cpmplus.w1preview.gimbal.animTip": "Animar com 'Girar um eixo por vez' ligado: os anéis X, Y e Z mudam só aquele número do keyframe, em qualquer espaço (Global, Parent ou Local). O anel branco (livre) continua normal."
+}

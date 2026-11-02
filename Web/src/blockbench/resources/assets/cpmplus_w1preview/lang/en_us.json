@@ -1,0 +1,9 @@
+{
+  "cpmplus.w1preview.gimbal": "Rotate one axis at a time (the gizmo changes only one number)",
+  "cpmplus.w1preview.gimbal.desc": "Dragging the X, Y or Z ring of the Rotate tool changes only that number, like typing it in the Transform panel. Off = the normal Blockbench way (in Global/Parent, turning X can change Y and Z too; the part looks the same in game). Tips: in Edit, 'Local' space + the X ring already changes one number; in Animate, 'Parent' space already changes one number; typing in the Transform panel always changes one number; after Ctrl+Z Blockbench also selects the parent group, so click the part again before rotating. CPM projects only; the exported file does not change.",
+  "cpmplus.w1preview.gimbal.onLocal": "Rotate one axis at a time: ON. The gizmo switched to 'Local' space, where the rings follow the part. The white (free) ring works as usual. Tip: after Ctrl+Z, click the part again before rotating.",
+  "cpmplus.w1preview.gimbal.on": "Rotate one axis at a time: ON. Keep the gizmo on 'Local' so the rings follow the part. The white (free) ring works as usual. Tip: after Ctrl+Z, click the part again before rotating.",
+  "cpmplus.w1preview.gimbal.off": "Rotate one axis at a time: OFF. The gizmo works the normal Blockbench way again.",
+  "cpmplus.w1preview.gimbal.notStored": "This choice could not be saved (browser storage is blocked): it lasts until Blockbench is closed.",
+  "cpmplus.w1preview.gimbal.animTip": "Animate with 'Rotate one axis at a time' ON: the X, Y and Z rings change only that number of the keyframe, in any space (Global, Parent or Local). The white (free) ring works as usual."
+}

@@ -1,0 +1,20 @@
+{
+  "cpmplus.optim.menu": "Otimizar animação (menos quadros)…",
+  "cpmplus.optim.menu.desc": "Deixa o arquivo menor: tira quadros e keyframes que não mudam o movimento.",
+  "cpmplus.optim.title": "Otimizar animação",
+  "cpmplus.optim.intro": "O CPM grava um quadro em cada ponto de uma grade que passa por todos os keyframes. Animação com key em todo quadro fica pesada. Aqui ele acha a menor grade que mantém o movimento dentro da tolerância e reescreve os keyframes nela. Visibilidade e cor não mudam de lugar. Um Ctrl+Z desfaz.",
+  "cpmplus.optim.scope": "Animações",
+  "cpmplus.optim.scope.sel": "Só a selecionada",
+  "cpmplus.optim.scope.all": "Todas",
+  "cpmplus.optim.rot": "Tolerância de rotação (graus)",
+  "cpmplus.optim.pos": "Tolerância de posição (pixels)",
+  "cpmplus.optim.scl": "Tolerância de escala",
+  "cpmplus.optim.row": "%s: %s → %s quadros, %s → %s keyframes",
+  "cpmplus.optim.note.smooth": "tem movimento suave, curva ou fórmula: os quadros ficam iguais",
+  "cpmplus.optim.note.partial": "partes com movimento suave, curva ou fórmula ficaram como estavam",
+  "cpmplus.optim.note.tight": "não dá pra tirar quadros sem passar da tolerância",
+  "cpmplus.optim.nothing": "Nada pra otimizar com essa tolerância.",
+  "cpmplus.optim.apply": "Otimizar",
+  "cpmplus.optim.done": "%s animação(ões) otimizada(s). Ctrl+Z desfaz.",
+  "cpmplus.optim.undo": "Otimizar animação"
+}
