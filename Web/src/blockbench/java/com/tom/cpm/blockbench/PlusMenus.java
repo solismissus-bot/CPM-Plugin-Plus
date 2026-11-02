@@ -207,6 +207,10 @@ public final class PlusMenus {
 		DEFAULT_KEYS.put("cpmplus_w3animtools_f17", 88);// X: Exagerar ou suavizar movimento
 		DEFAULT_KEYS.put("cpmplus_w2animcore_f2", 82);// R: Criar cópia espelhada (animação)
 		DEFAULT_KEYS.put("cpmplus_w4anim2_mirror_anims", SHIFT + 77);// Shift+M: Espelhar pro outro lado + animações
+		DEFAULT_KEYS.put("cpmplus_w3animtools_posecopy", SHIFT + 67);// Shift+C: Copiar pose das partes
+		DEFAULT_KEYS.put("cpmplus_w3animtools_posepaste", SHIFT + 86);// Shift+V: Colar pose
+		DEFAULT_KEYS.put("cpmplus_w3animtools_posepastemirror", SHIFT + 66);// Shift+B: Colar pose no outro lado (espelhada)
+		DEFAULT_KEYS.put("cpmplus_w3animtools_posemirror", SHIFT + 82);// Shift+R: Espelhar pose
 	}
 
 	private static native Object ctrlAltKey(int keyCode, boolean shift) /*-{

@@ -25,8 +25,18 @@ public final class PartPairing {
 	private PartPairing() {
 	}
 
+	/**
+	 * ORDER: no part answers to the opposite name, but an ancestor IS paired and the part sits at the same place in
+	 * the partner's tree (same child index at every level, same child counts): a wing duplicated to the other side
+	 * whose cubes Blockbench renumbered (cube114 / cube58). Used like PAIRED.
+	 */
 	public enum Kind {
-		PAIRED, SELF, SUGGESTION, NONE
+		PAIRED, SELF, SUGGESTION, NONE, ORDER
+	}
+
+	/** PAIRED or ORDER: a partner the tools may use without asking */
+	public static boolean sure(Kind k) {
+		return k == Kind.PAIRED || k == Kind.ORDER;
 	}
 
 	public static final class Pair<T> {
@@ -77,7 +87,11 @@ public final class PartPairing {
 			if (all.size() >= 2)return new Pair<>(Kind.SUGGESTION, node, all.get(0), src, PartPaths.pathOf(tree, all.get(0)));
 			if (all.size() == 1)target = all.get(0);
 		}
-		if (target == null || (candidate != null && !candidate.test(target)))return new Pair<>(Kind.NONE, node, null, src, opp);
+		if (target == null || (candidate != null && !candidate.test(target))) {
+			T twin = orderTwin(tree, node, candidate);
+			if (twin != null)return new Pair<>(Kind.ORDER, node, twin, src, PartPaths.pathOf(tree, twin));
+			return new Pair<>(Kind.NONE, node, null, src, opp);
+		}
 		if (target == node)return new Pair<>(Kind.SELF, node, node, src, src);
 		String back = PartPaths.oppositePath(PartPaths.pathOf(tree, target));
 		if (!back.equals(src))return new Pair<>(Kind.SUGGESTION, node, target, src, opp);
@@ -99,6 +113,47 @@ public final class PartPairing {
 			Pair<T> p = out.get(i);
 			if (p.target != null && p.kind == Kind.PAIRED && wanted.getOrDefault(p.target, 0) > 1)out.set(i, p.as(Kind.SUGGESTION));
 		}
+		return out;
+	}
+
+	/**
+	 * The part at the same place under the partner of the nearest ancestor that has one by name: child index (among
+	 * candidate children) at every level, and the same number of children at every level. null when none.
+	 */
+	private static <T> T orderTwin(Tree<T> tree, T node, Predicate<T> candidate) {
+		List<Integer> idx = new ArrayList<>(), sizes = new ArrayList<>();
+		T cur = node;
+		for (int guard = 0; guard < 1000; guard++) {
+			T p = tree.parent(cur);
+			if (p == null)return null;
+			List<T> sib = only(tree.children(p), candidate);
+			int i = sib.indexOf(cur);
+			if (i < 0)return null;
+			idx.add(0, i);
+			sizes.add(0, sib.size());
+			String pp = PartPaths.pathOf(tree, p);
+			String po = PartPaths.oppositePath(pp);
+			if (!po.equals(pp)) {
+				T twin = PartPaths.findByPath(tree, po);
+				if (twin != null && twin != p && PartPaths.oppositePath(PartPaths.pathOf(tree, twin)).equals(pp)) {
+					T x = twin;
+					for (int k = 0; k < idx.size(); k++) {
+						List<T> ch = only(tree.children(x), candidate);
+						if (ch.size() != sizes.get(k))return null;
+						x = ch.get(idx.get(k));
+					}
+					return x == node ? null : x;
+				}
+			}
+			cur = p;
+		}
+		return null;
+	}
+
+	private static <T> List<T> only(List<T> l, Predicate<T> candidate) {
+		if (candidate == null)return l;
+		List<T> out = new ArrayList<>();
+		for (T t : l)if (candidate.test(t))out.add(t);
 		return out;
 	}
 

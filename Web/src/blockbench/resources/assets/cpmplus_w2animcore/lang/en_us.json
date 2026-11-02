@@ -65,6 +65,7 @@
   "cpmplus.w2animcore.f2.goesTo": "Goes to",
   "cpmplus.w2animcore.f2.self": "itself (mirrored in place)",
   "cpmplus.w2animcore.f2.suggest": "(suggestion: %s?)",
+  "cpmplus.w2animcore.f2.byOrder": "Partner found by its place in the other side's tree (the names differ, e.g. cube114 / cube58).",
   "cpmplus.w2animcore.f2.counter": "%s parts, %s pairs, %s without pair",
   "cpmplus.w2animcore.f2.ok": "Create",
   "cpmplus.w2animcore.f2.suffix": "(mirrored)",

@@ -8,6 +8,7 @@ import com.tom.cpm.blockbench.proxy.Animation;
 import com.tom.cpm.blockbench.proxy.Menu;
 import com.tom.cpm.blockbench.tools.anim.AnimToolSupport;
 import com.tom.cpm.blockbench.tools.anim.Exaggerate;
+import com.tom.cpm.blockbench.tools.anim.PoseClipboard;
 import com.tom.cpm.blockbench.tools.anim.PoseColumn;
 import com.tom.cpm.blockbench.tools.anim.QuickAnim;
 
@@ -31,6 +32,18 @@ public final class W3AnimtoolsInstall {
 		PlusMenus.add(PlusMenus.SUB_ANIM, f23);
 		PlusMenus.addToContext(protoMenu("BoneAnimator"), f23, "");
 
+		// copy / paste / mirror the pose of many parts at once (CPM's Copy / Paste / Mirror Part Pose, one part each)
+		java.util.function.BooleanSupplier inAnim = () -> AnimToolSupport.animateMode() && Animation.selected != null;
+		Action pc = PlusMenus.action("cpmplus_w3animtools_posecopy", "cpmplus.w3animtools.pose.copy", "content_copy", Cond.CPM_ONLY, inAnim, PoseClipboard::copyAction);
+		Action pp = PlusMenus.action("cpmplus_w3animtools_posepaste", "cpmplus.w3animtools.pose.paste", "content_paste", Cond.CPM_ONLY, inAnim, () -> PoseClipboard.pasteAction(false));
+		Action pm = PlusMenus.action("cpmplus_w3animtools_posepastemirror", "cpmplus.w3animtools.pose.pasteMirror", "flip", Cond.CPM_ONLY, inAnim, () -> PoseClipboard.pasteAction(true));
+		Action px = PlusMenus.action("cpmplus_w3animtools_posemirror", "cpmplus.w3animtools.pose.mirror", "compare_arrows", Cond.CPM_ONLY, inAnim, PoseClipboard::mirrorAction);
+		for (Action a : new Action[] {pc, pp, pm, px}) {
+			PlusMenus.add(PlusMenus.SUB_ANIM, a);
+			PlusMenus.addToContext(protoMenu("BoneAnimator"), a, "");
+			PlusMenus.addToContext(protoMenu("Group"), a, "");
+		}
+
 		if (PlusTestHooks.active()) {
 			PlusTestHooks.register("w3animtools.f14reverse", QuickAnim::hookReverse);
 			PlusTestHooks.register("w3animtools.f14interp", QuickAnim::hookInterp);
@@ -38,6 +51,7 @@ public final class W3AnimtoolsInstall {
 			PlusTestHooks.register("w3animtools.f14native", QuickAnim::hookNative);
 			PlusTestHooks.register("w3animtools.f17", Exaggerate::hook);
 			PlusTestHooks.register("w3animtools.f23", PoseColumn::hook);
+			PlusTestHooks.register("w3animtools.pose", PoseClipboard::hook);
 			PlusTestHooks.register("w3animtools.open", o -> {
 				Object which = o.get("tool");
 				if ("f17".equals(which))Exaggerate.openDialog();

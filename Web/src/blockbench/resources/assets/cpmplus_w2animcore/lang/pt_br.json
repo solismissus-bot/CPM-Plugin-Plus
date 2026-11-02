@@ -65,6 +65,7 @@
   "cpmplus.w2animcore.f2.goesTo": "Vai para",
   "cpmplus.w2animcore.f2.self": "ela mesma (espelha no lugar)",
   "cpmplus.w2animcore.f2.suggest": "(sugestão: %s?)",
+  "cpmplus.w2animcore.f2.byOrder": "Par achado pela posição na asa/braço do outro lado (os nomes são diferentes, ex.: cube114 / cube58).",
   "cpmplus.w2animcore.f2.counter": "%s peças, %s pares, %s sem par",
   "cpmplus.w2animcore.f2.ok": "Criar",
   "cpmplus.w2animcore.f2.suffix": "(espelhada)",

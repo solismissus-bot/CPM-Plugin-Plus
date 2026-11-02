@@ -83,7 +83,7 @@ public final class MirrorAnimation {
 			Group g = AnimEdit.groupOf(ba);
 			if (g == null)continue;
 			PartPairing.Pair<Object> p = AnimEdit.pairOf(g);
-			Group dest = p.kind == PartPairing.Kind.PAIRED ? (Group) p.target : g;
+			Group dest = PartPairing.sure(p.kind) ? (Group) p.target : g;
 			Group sug = p.kind == PartPairing.Kind.SUGGESTION && p.target instanceof Group ? (Group) p.target : null;
 			rows.add(new Row(g, dest, p.kind, sug));
 		}
@@ -329,6 +329,7 @@ public final class MirrorAnimation {
 			String full = AnimEdit.pathOf(row.part);
 			String desc = t("cpmplus.w2animcore.f2.include") + "\n\n" + full;
 			if (row.kind == PartPairing.Kind.SUGGESTION && row.suggestion != null)desc += "\n" + t("cpmplus.w2animcore.f2.suggest", row.suggestion.name);
+			if (row.kind == PartPairing.Kind.ORDER)desc += "\n" + t("cpmplus.w2animcore.f2.byOrder");
 			form.add(FormRow.checkbox("inc" + i, shortPath(full), true).description(desc));
 			form.add(FormRow.select("dst" + i, "cpmplus.w2animcore.f2.goesTo", groupOpts, row.dest == row.part ? "self" : row.dest.uuid).when(fr -> fr.getBool("swap")));
 			i++;

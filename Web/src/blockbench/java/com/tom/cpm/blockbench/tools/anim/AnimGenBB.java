@@ -230,7 +230,7 @@ public final class AnimGenBB {
 		try {
 			PartPairing.Pair<Group> p = PartPairing.pair(GROUP_TREE, g, null);
 			if (p == null || p.target == null || p.target == g)return null;
-			if (p.kind == PartPairing.Kind.PAIRED || p.kind == PartPairing.Kind.SUGGESTION)return p.target;
+			if (PartPairing.sure(p.kind) || p.kind == PartPairing.Kind.SUGGESTION)return p.target;
 		} catch (Throwable e) {
 		}
 		return null;

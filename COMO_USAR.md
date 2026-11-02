@@ -21,6 +21,10 @@
 | **Ctrl + Alt + R** | Criar cópia espelhada da animação |
 | **Ctrl + Alt + V** | Suavizar movimento |
 | **Ctrl + Alt + X** | Exagerar ou suavizar movimento |
+| **Ctrl + Alt + Shift + C** | Copiar pose das partes selecionadas |
+| **Ctrl + Alt + Shift + V** | Colar pose |
+| **Ctrl + Alt + Shift + B** | Colar pose no outro lado (espelhada) |
+| **Ctrl + Alt + Shift + R** | Espelhar pose |
 
 Pra trocar ou criar atalho pra qualquer outra ferramenta: **Arquivo > Configurações > Atalhos**, categoria **Ferramentas**, procure pelo nome.
 
@@ -73,6 +77,10 @@ Regras gerais:
 | **Animação rápida** (submenu) | Inverter, mudar velocidade, deixar tudo suave ou tudo reto. |
 | **Exagerar ou suavizar movimento...** | 0% a 300% de quanto as peças se mexem. |
 | **Marcar pose aqui...** | Cria um keyframe em todas as peças animadas no tempo atual, guardando a pose. |
+| **Copiar pose das partes** (Ctrl+Alt+Shift+C, também no clique direito da pasta ou da linha da timeline) | Igual o “Copiar pose da parte” do CPM, mas **várias de uma vez**: guarda a pose de agora das partes selecionadas e de tudo dentro delas (nada selecionado = o modelo todo). |
+| **Colar pose** (Ctrl+Alt+Shift+V) | Cola no tempo atual, em qualquer animação. Copiou UMA pasta (ex.: asa esquerda) e selecionou OUTRA (asa direita)? Cola nela e nas partes de dentro. |
+| **Colar pose no outro lado (espelhada)** (Ctrl+Alt+Shift+B) | Cola nas partes do outro lado, já espelhada. Ex.: copie a asa esquerda e cole espelhado: a direita fica igual, do jeito certo. Acha o par mesmo se os cubos tiverem nomes diferentes (cube114 / cube58), pela posição na asa. |
+| **Espelhar pose** (Ctrl+Alt+Shift+R) | Espelha a pose de agora: selecione as duas asas e elas trocam de lado; uma parte sozinha espelha no lugar (igual o “Espelhar pose da parte” do CPM). |
 | **Fechar o loop (sem pulo no fim)** | Cada peça termina exatamente onde começa. |
 | **Atrasar / adiantar movimento...** | Selecione peças (asa, rabo) e desloque o movimento no tempo; o loop continua fechado. |
 | **Suavizar movimento (começa/termina devagar)...** | Selecione 2 ou mais keyframes do mesmo canal e escolha a curva. Se estiverem colados, aumente o fps. |
