@@ -8,8 +8,10 @@ Fork do plugin de Blockbench do **[Customizable Player Models](https://github.co
 
 1. No Blockbench: **Arquivo > Plugins**. Desinstale o plugin oficial do CPM (os dois juntos conflitam).
 2. **Carregar plugin por URL** e cole:
-   `https://gist.githubusercontent.com/solismissus-bot/26923a343013328804c2bc12f7c9de6c/raw/cpm_plugin_plus.js`
+   `https://raw.githubusercontent.com/solismissus-bot/CPM-Plugin-Plus/main/plugin/cpm_plugin_plus.js`
 3. Reinicie o Blockbench. As ferramentas ficam no menu **CPM+**.
+
+O arquivo do plugin fica na pasta [plugin/](plugin/). Quem instalou pelo link antigo do gist não precisa fazer nada: aquele link continua funcionando e puxa a versão nova daqui.
 
 **Como usar cada ferramenta:** [COMO_USAR.md](COMO_USAR.md).
 
@@ -57,4 +59,4 @@ Licença **MIT** (veja [LICENSE](LICENSE)). Customizable Player Models e o plugi
 
 **CPM Plugin+** is a fork of the [Customizable Player Models](https://github.com/tom5454/CustomPlayerModels) Blockbench plugin by tom5454. It fixes animations that came out different in game, makes heavy models much faster, gives every tool a working undo, adds export warnings for things the game silently breaks (format limits, oversized animations, ghost body parts, loose cubes) and adds many modeling, animation and texture tools. The interface is in Brazilian Portuguese and English.
 
-Install: Blockbench > File > Plugins > Load plugin from URL, then paste the link above (uninstall the official CPM plugin first). Build: JDK 17, `gradlew compileBlockbenchRelease` in `Web`. MIT License; CPM is by tom5454.
+Install: Blockbench > File > Plugins > Load plugin from URL, then paste `https://raw.githubusercontent.com/solismissus-bot/CPM-Plugin-Plus/main/plugin/cpm_plugin_plus.js` (uninstall the official CPM plugin first). Build: JDK 17, `gradlew compileBlockbenchRelease` in `Web`. MIT License; CPM is by tom5454.
