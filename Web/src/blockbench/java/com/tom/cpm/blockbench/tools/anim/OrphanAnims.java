@@ -489,7 +489,7 @@ public final class OrphanAnims {
 
 	private static void refreshTimeline() {
 		try {
-			if (Modes.animate != null && Modes.animate.selected && Animation.selected != null)Animator.preview();
+			if (com.tom.cpm.blockbench.tools.anim.AnimToolSupport.animateMode() && Animation.selected != null)Animator.preview();
 		} catch (Throwable e) {
 		}
 		forceTimelineUpdate();

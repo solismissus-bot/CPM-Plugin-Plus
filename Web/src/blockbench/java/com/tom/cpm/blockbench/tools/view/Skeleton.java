@@ -102,7 +102,7 @@ public final class Skeleton {
 
 	private static void animHint() {
 		try {
-			if (!animHintShown && Modes.animate != null && Modes.animate.selected) {
+			if (!animHintShown && com.tom.cpm.blockbench.tools.anim.AnimToolSupport.animateMode()) {
 				animHintShown = true;
 				PlusDialogs.toast(PlusDialogs.tr("cpmplus.w6help.skel.animHint"), "info", 8000, null);
 			}

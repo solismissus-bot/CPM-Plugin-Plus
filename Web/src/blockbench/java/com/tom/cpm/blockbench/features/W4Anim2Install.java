@@ -43,7 +43,12 @@ public final class W4Anim2Install {
 		PlusMenus.addAction(PlusMenus.SUB_ANIM, "w4anim2_wave", KW, "waves", Cond.CPM_ONLY, WaveChain::open);
 		// F12 "Espelhar pro outro lado" stays off in the beta: its reuse still fails (clone without storeIDs, geometry
 		// changes after moving twice). The tool and its test hooks are kept for the fix.
-		if (F12_ENABLED)PlusMenus.addAction(PlusMenus.SUB_MODEL, "w4anim2_mirror", KM, "flip", Cond.CPM_ONLY, MirrorToOtherSide::open);
+		if (F12_ENABLED) {
+			PlusMenus.addAction(PlusMenus.SUB_MODEL, "w4anim2_mirror", KM, "flip", Cond.CPM_ONLY, MirrorToOtherSide::open);
+			// same mirror without the dialog, animations included (Ctrl+Alt+Shift+M)
+			PlusMenus.add(PlusMenus.SUB_MODEL, PlusMenus.action("w4anim2_mirror_anims", "cpmplus.w4anim2.mirror.menuAnims", "flip", Cond.CPM_ONLY,
+					() -> !Animator.open, MirrorToOtherSide::quickWithAnims));
+		}
 		// right click on a group (Animate mode: wave; Edit mode: mirror) and on a cube (mirror)
 		Menu groupMenu = protoMenu("Group");
 		Menu cubeMenu = protoMenu("Cube");

@@ -402,6 +402,37 @@ public final class MirrorToOtherSide {
 		}, fo);
 	}
 
+	/**
+	 * 'Espelhar pro outro lado + animações' (shortcut Ctrl+Alt+Shift+M): no dialog, the dialog's defaults (copy, side
+	 * names swapped, links fixed, the mirrored parent or the other side's root) AND the animations mirrored onto the
+	 * copy. One undo entry, same checks / refusals as the dialog.
+	 */
+	public static void quickWithAnims() {
+		if (Animator.open) {
+			PlusDialogs.block(K + "block.animate");
+			return;
+		}
+		String[] why = new String[1];
+		Object node = selectedNode(why);
+		if (node == null) {
+			PlusDialogs.block(why[0]);
+			return;
+		}
+		Plan p = plan(node);
+		if (p.blocked != null) {
+			PlusDialogs.block(p.blocked);
+			return;
+		}
+		Opts o = new Opts();
+		o.mirrorAnims = true;
+		Result res = apply(p, o);
+		if (res.blocked != null) {
+			PlusDialogs.block(res.blocked);
+			return;
+		}
+		done(res);
+	}
+
 	private static Opts readOpts(FormResult r) {
 		Opts o = new Opts();
 		o.name = r.getString("name");

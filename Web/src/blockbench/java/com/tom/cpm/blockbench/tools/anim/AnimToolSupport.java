@@ -182,13 +182,22 @@ public final class AnimToolSupport {
 	// ====================================================================== context
 
 	/** true while the Animate mode is open */
-	public static boolean animateMode() {
+	/**
+	 * true while Blockbench is in Animate mode. Blockbench sets Modes.animate to a plain true / false (Mode.select:
+	 * Modes[id] = true), so the old 'Modes.animate.selected' was always false and every tool gated on it was hidden /
+	 * disabled in the menus (and its shortcut did nothing). Same check as W5VisNatives.isAnimateMode.
+	 */
+	public static native boolean animateMode() /*-{
 		try {
-			return Modes.animate != null && Modes.animate.selected;
-		} catch (Throwable e) {
+			var M = $wnd.Modes;
+			if (!M) return false;
+			if (M.animate === true) return true;
+			if (M.animate && typeof M.animate === 'object' && M.animate.selected) return true;
+			return !!(M.selected && M.selected.id === 'animate');
+		} catch (e) {
 			return false;
 		}
-	}
+	}-*/;
 
 	/** the group the user clicked (outliner / timeline / viewport): first selected group, else the timeline's animator */
 	public static Group clickedGroup() {

@@ -186,6 +186,8 @@ public final class PlusMenus {
 	 * keyboards, so neither is used. Every one can be changed in Settings > Keybindings (category Tools).
 	 * Values: action id -> key code.
 	 */
+	/** added to a key code in DEFAULT_KEYS: the shortcut also needs Shift (Ctrl+Alt+Shift+letter) */
+	private static final int SHIFT = 1000;
 	private static final java.util.Map<String, Integer> DEFAULT_KEYS = new java.util.HashMap<>();
 	static {
 		DEFAULT_KEYS.put("cpmplus_w3settings_hub", 65);// A: Ajustes do modelo
@@ -203,26 +205,31 @@ public final class PlusMenus {
 		DEFAULT_KEYS.put("cpmplus_w3animtools_f23", 80);// P: Marcar pose aqui
 		DEFAULT_KEYS.put("cpmplus_extra_g63", 86);// V: Suavizar movimento
 		DEFAULT_KEYS.put("cpmplus_w3animtools_f17", 88);// X: Exagerar ou suavizar movimento
+		DEFAULT_KEYS.put("cpmplus_w2animcore_f2", 82);// R: Criar cópia espelhada (animação)
+		DEFAULT_KEYS.put("cpmplus_w4anim2_mirror_anims", SHIFT + 77);// Shift+M: Espelhar pro outro lado + animações
 	}
 
-	private static native Object ctrlAltKey(int keyCode) /*-{
+	private static native Object ctrlAltKey(int keyCode, boolean shift) /*-{
 		try {
-			return $wnd.Keybind ? new $wnd.Keybind({key: keyCode, ctrl: true, alt: true}) : undefined;
+			return $wnd.Keybind ? new $wnd.Keybind({key: keyCode, ctrl: true, alt: true, shift: shift}) : undefined;
 		} catch (e) {
 			return undefined;
 		}
 	}-*/;
 
-	/** the default Keybind of an action id (Ctrl+Alt+letter), or undefined */
+	/** the default Keybind of an action id (Ctrl+Alt+[Shift+]letter), or undefined */
 	static Object defaultKeybind(String prefixedId) {
 		Integer k = DEFAULT_KEYS.get(prefixedId);
-		return k == null ? null : ctrlAltKey(k);
+		return k == null ? null : ctrlAltKey(k % SHIFT, k >= SHIFT);
 	}
 
 	/** id -> 'Ctrl + Alt + X' for the guide / tests */
 	public static java.util.Map<String, String> defaultShortcuts() {
 		java.util.Map<String, String> m = new java.util.TreeMap<>();
-		for (java.util.Map.Entry<String, Integer> e : DEFAULT_KEYS.entrySet())m.put(e.getKey(), "Ctrl + Alt + " + (char) e.getValue().intValue());
+		for (java.util.Map.Entry<String, Integer> e : DEFAULT_KEYS.entrySet()) {
+			int k = e.getValue();
+			m.put(e.getKey(), "Ctrl + Alt + " + (k >= SHIFT ? "Shift + " : "") + (char) (k % SHIFT));
+		}
 		return m;
 	}
 

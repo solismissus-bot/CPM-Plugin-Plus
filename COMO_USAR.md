@@ -8,7 +8,7 @@ Regras gerais:
 - Os avisos do export **nunca bloqueiam**: você pode exportar mesmo assim.
 - Teste sempre em uma **cópia** do seu modelo.
 
-## Atalhos de teclado (beta21)
+## Atalhos de teclado (beta22)
 
 As ferramentas mais usadas já vêm com atalho **Ctrl + Alt + letra**. Pra trocar ou criar atalho pra qualquer outra: **Arquivo > Configurações > Atalhos (Keybindings)**, categoria **Ferramentas**, procure pelo nome.
 
@@ -23,10 +23,12 @@ As ferramentas mais usadas já vêm com atalho **Ctrl + Alt + letra**. Pra troca
 | Ctrl + Alt + J | Levar pro jogo |
 | Ctrl + Alt + K | Ver esqueleto (liga/desliga) |
 | Ctrl + Alt + L | Fechar o loop |
-| Ctrl + Alt + M | Espelhar pro outro lado |
+| Ctrl + Alt + M | Espelhar pro outro lado (abre a janela) |
+| **Ctrl + Alt + Shift + M** | **Espelhar pro outro lado + animações, direto** (sem janela: copia a peça selecionada pro outro lado e espelha as animações dela junto) |
 | Ctrl + Alt + N | Fazer onda |
 | Ctrl + Alt + O | Otimizar animação |
 | Ctrl + Alt + P | Marcar pose aqui |
+| Ctrl + Alt + R | Criar cópia espelhada da animação (modo Animar, animação selecionada) |
 | Ctrl + Alt + V | Suavizar movimento |
 | Ctrl + Alt + X | Exagerar ou suavizar movimento |
 

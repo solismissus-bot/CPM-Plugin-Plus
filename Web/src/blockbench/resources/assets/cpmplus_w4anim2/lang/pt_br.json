@@ -1,4 +1,6 @@
 {
+  "cpmplus.w4anim2.mirror.menuAnims": "Espelhar pro outro lado + animações (direto)",
+  "cpmplus.w4anim2.mirror.menuAnims.desc": "Sem janela: copia a peça selecionada pro outro lado do corpo, espelhada, e espelha as animações dela junto. Um Ctrl+Z desfaz.",
   "cpmplus.w4anim2.wave.menu": "Fazer onda…",
   "cpmplus.w4anim2.wave.menu.desc": "Movimento de chicote numa corrente de peças (cauda, cabelo, asa): cada osso repete o anterior um pouquinho depois",
   "cpmplus.w4anim2.wave.title": "Fazer onda",

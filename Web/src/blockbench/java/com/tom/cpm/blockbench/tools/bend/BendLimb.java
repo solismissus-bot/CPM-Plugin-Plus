@@ -189,7 +189,7 @@ public final class BendLimb {
 	/** Blockbench Animate mode active */
 	public static boolean animateMode() {
 		try {
-			return Modes.animate != null && Modes.animate.selected;
+			return com.tom.cpm.blockbench.tools.anim.AnimToolSupport.animateMode();
 		} catch (Throwable e) {
 			return false;
 		}

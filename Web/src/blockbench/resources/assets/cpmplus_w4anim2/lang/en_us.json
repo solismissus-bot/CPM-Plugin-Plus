@@ -1,4 +1,6 @@
 {
+  "cpmplus.w4anim2.mirror.menuAnims": "Mirror to the other side + animations (direct)",
+  "cpmplus.w4anim2.mirror.menuAnims.desc": "No dialog: copies the selected part to the other side of the body, mirrored, and mirrors its animations too. One Ctrl+Z undoes it.",
   "cpmplus.w4anim2.wave.menu": "Make a wave…",
   "cpmplus.w4anim2.wave.menu.desc": "Whip motion along a chain of parts (tail, hair, wing): each bone repeats the previous one a little later",
   "cpmplus.w4anim2.wave.title": "Make a wave",
