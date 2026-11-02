@@ -1,6 +1,7 @@
 MIT License
 
 Copyright (c) 2021 tom5454
+Copyright (c) 2026 solismissus-bot (CPM Plugin+ modifications)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,7 +20,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-CPM Plugin+ is a modified version of the Customizable Player Models Blockbench plugin by tom5454 (https://github.com/tom5454/CustomPlayerModels), distributed under the MIT License above.
-Modifications Copyright (c) 2026 solismissus-bot.
