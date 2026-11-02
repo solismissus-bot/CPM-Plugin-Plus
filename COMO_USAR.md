@@ -1,5 +1,29 @@
 # CPM Plugin+: como usar tudo
 
+## ⌨️ Atalhos de teclado
+
+| Atalho | Ferramenta |
+|---|---|
+| **Ctrl + Alt + A** | Ajustes do modelo |
+| **Ctrl + Alt + D** | Atrasar / adiantar movimento |
+| **Ctrl + Alt + F** | Copiar movimento de (Copy Transform) |
+| **Ctrl + Alt + G** | Grudar na parte do corpo |
+| **Ctrl + Alt + H** | Mostrar/esconder nesta animação |
+| **Ctrl + Alt + I** | Importar animações de outro .cpmproject |
+| **Ctrl + Alt + J** | Levar pro jogo |
+| **Ctrl + Alt + K** | Ver esqueleto (liga/desliga) |
+| **Ctrl + Alt + L** | Fechar o loop |
+| **Ctrl + Alt + M** | Espelhar pro outro lado (abre a janela) |
+| **Ctrl + Alt + Shift + M** | Espelhar pro outro lado + animações, direto (sem janela) |
+| **Ctrl + Alt + N** | Fazer onda |
+| **Ctrl + Alt + O** | Otimizar animação |
+| **Ctrl + Alt + P** | Marcar pose aqui |
+| **Ctrl + Alt + R** | Criar cópia espelhada da animação |
+| **Ctrl + Alt + V** | Suavizar movimento |
+| **Ctrl + Alt + X** | Exagerar ou suavizar movimento |
+
+Pra trocar ou criar atalho pra qualquer outra ferramenta: **Arquivo > Configurações > Atalhos**, categoria **Ferramentas**, procure pelo nome.
+
 Quase tudo fica no menu **CPM+** (barra de cima do Blockbench), dividido em: **Ajustes do modelo, Animação, Modelagem, Textura, Otimizar, Prévia, Ajuda**. Muita coisa também aparece no **clique direito** numa pasta, num cubo ou numa animação.
 
 Regras gerais:
@@ -8,31 +32,6 @@ Regras gerais:
 - Os avisos do export **nunca bloqueiam**: você pode exportar mesmo assim.
 - Teste sempre em uma **cópia** do seu modelo.
 
-## Atalhos de teclado (beta22)
-
-As ferramentas mais usadas já vêm com atalho **Ctrl + Alt + letra**. Pra trocar ou criar atalho pra qualquer outra: **Arquivo > Configurações > Atalhos (Keybindings)**, categoria **Ferramentas**, procure pelo nome.
-
-| Atalho | Ferramenta |
-|---|---|
-| Ctrl + Alt + A | Ajustes do modelo |
-| Ctrl + Alt + D | Atrasar / adiantar movimento |
-| Ctrl + Alt + F | Copiar movimento de (Copy Transform) |
-| Ctrl + Alt + G | Grudar na parte do corpo |
-| Ctrl + Alt + H | Mostrar/esconder nesta animação |
-| Ctrl + Alt + I | Importar animações de outro .cpmproject |
-| Ctrl + Alt + J | Levar pro jogo |
-| Ctrl + Alt + K | Ver esqueleto (liga/desliga) |
-| Ctrl + Alt + L | Fechar o loop |
-| Ctrl + Alt + M | Espelhar pro outro lado (abre a janela) |
-| **Ctrl + Alt + Shift + M** | **Espelhar pro outro lado + animações, direto** (sem janela: copia a peça selecionada pro outro lado e espelha as animações dela junto) |
-| Ctrl + Alt + N | Fazer onda |
-| Ctrl + Alt + O | Otimizar animação |
-| Ctrl + Alt + P | Marcar pose aqui |
-| Ctrl + Alt + R | Criar cópia espelhada da animação (modo Animar, animação selecionada) |
-| Ctrl + Alt + V | Suavizar movimento |
-| Ctrl + Alt + X | Exagerar ou suavizar movimento |
-
-Ctrl+Alt+S e Ctrl+Alt+T continuam sendo do Blockbench. Não usei Alt+Shift (no Windows troca o idioma do teclado) nem Ctrl+Alt+Q/W/E/C (no teclado ABNT2 viram /, ?, ° e ₢).
 ---
 
 ## 1. Levar pro jogo (direto no menu CPM+)
