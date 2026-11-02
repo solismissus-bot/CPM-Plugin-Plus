@@ -11,6 +11,8 @@ Fork do plugin de Blockbench do **[Customizable Player Models](https://github.co
    `https://gist.githubusercontent.com/solismissus-bot/26923a343013328804c2bc12f7c9de6c/raw/cpm_plugin_plus.js`
 3. Reinicie o Blockbench. As ferramentas ficam no menu **CPM+**.
 
+**Como usar cada ferramenta:** [COMO_USAR.md](COMO_USAR.md).
+
 Guia do que testar em cada versão: [COMO_TESTAR.md](https://gist.github.com/solismissus-bot/26923a343013328804c2bc12f7c9de6c).
 
 ## O que muda em relação ao plugin oficial
