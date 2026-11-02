@@ -316,7 +316,7 @@ public final class MirrorAnimation {
 		boolean staged = AnimEdit.isStaged(anim);
 		Map<String, String> groupOpts = new LinkedHashMap<>();
 		groupOpts.put("self", t("cpmplus.w2animcore.f2.self"));
-		for (Group g : Group.all)groupOpts.put(g.uuid, AnimEdit.pathOf(g));
+		for (Group g : Group.all)groupOpts.put(g.uuid, shortPath(AnimEdit.pathOf(g)));
 		List<FormRow> form = new ArrayList<>();
 		form.add(FormRow.info("intro", null, t("cpmplus.w2animcore.f2.intro")));
 		if (staged)form.add(FormRow.info("staged", null, t("cpmplus.w2animcore.f2.err.staged", anim.name)));
@@ -326,15 +326,17 @@ public final class MirrorAnimation {
 		form.add(FormRow.separator());
 		int i = 0;
 		for (Row row : rows) {
-			String label = AnimEdit.pathOf(row.part);
-			if (row.kind == PartPairing.Kind.SUGGESTION && row.suggestion != null)label += "  " + t("cpmplus.w2animcore.f2.suggest", row.suggestion.name);
-			form.add(FormRow.checkbox("inc" + i, label, true).description("cpmplus.w2animcore.f2.include"));
+			String full = AnimEdit.pathOf(row.part);
+			String desc = t("cpmplus.w2animcore.f2.include") + "\n\n" + full;
+			if (row.kind == PartPairing.Kind.SUGGESTION && row.suggestion != null)desc += "\n" + t("cpmplus.w2animcore.f2.suggest", row.suggestion.name);
+			form.add(FormRow.checkbox("inc" + i, shortPath(full), true).description(desc));
 			form.add(FormRow.select("dst" + i, "cpmplus.w2animcore.f2.goesTo", groupOpts, row.dest == row.part ? "self" : row.dest.uuid).when(fr -> fr.getBool("swap")));
 			i++;
 		}
 		form.add(FormRow.htmlInfo("counter", null, "<span id='" + COUNTER_ID + "'></span>"));
 		FormOpts fo = new FormOpts();
-		fo.width = 620;
+		fo.width = 760;
+		fo.labelWidth = 330;
 		fo.confirmKey = "cpmplus.w2animcore.f2.ok";
 		fo.onChange = fr -> updateCounter(optsFrom(anim, rows, fr));
 		PlusDialogs.form("cpmplus_w2animcore_f2", "cpmplus.w2animcore.f2.title", form, fr -> {
@@ -361,6 +363,33 @@ public final class MirrorAnimation {
 		}, fo);
 		DomGlobal.setTimeout(e -> updateCounter(optsFrom(anim, rows, null)), 50);
 	}
+
+	/**
+	 * 'Right_Wing/…/cube121': the nearest folder that names a side (else the parent) and the part itself,
+	 * max ~44 chars; the full path is in the row's '?' help
+	 */
+	static String shortPath(String path) {
+		if (path == null)return "";
+		String[] s = path.split("/");
+		int n = s.length;
+		String r = path;
+		if (n > 2) {
+			int a = n - 2;
+			for (int i = n - 2; i >= 0; i--) {
+				if (namesSide(s[i])) {
+					a = i;
+					break;
+				}
+			}
+			r = s[a] + (a == n - 2 ? "/" : "/…/") + s[n - 1];
+		}
+		if (r.length() > 44)r = r.substring(0, 20) + "…" + r.substring(r.length() - 23);
+		return r;
+	}
+
+	private static native boolean namesSide(String n) /*-{
+		return /(left|right|esquerd|direit)|(^|[_\-\s.])(l|r|esq|dir)($|[_\-\s.\d])/i.test(n || '');
+	}-*/;
 
 	private static Opts optsFrom(Animation anim, List<Row> rows, PlusDialogs.FormResult fr) {
 		Opts o = new Opts();

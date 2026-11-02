@@ -409,7 +409,29 @@ public final class PlusDialogs {
 		public Consumer<FormResult> onChange;
 		/** trusted html lines shown above the form (escape user strings) */
 		public String[] htmlLines;
+		/** fixed label column (px): longer labels end in '…' (full text on hover), no sideways scrolling */
+		public Integer labelWidth;
 	}
+
+	private static native void compactLabels(String id, int w) /*-{
+		try {
+			var doc = $wnd.document, sid = id + '_cpmplus_layout';
+			if (!doc.getElementById(sid)) {
+				var s = doc.createElement('style');
+				s.id = sid;
+				var p = 'dialog#' + id;
+				s.textContent = p + ', ' + p + ' .form { --max_label_width: ' + w + 'px !important; }\n'
+					+ p + ' .dialog_content { overflow-x: hidden; }\n'
+					+ p + ' label.name_space_left { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n'
+					+ p + ' .dialog_content p { white-space: normal; overflow-wrap: anywhere; }\n';
+				doc.head.appendChild(s);
+			}
+			var dl = doc.getElementById(id);
+			if (!dl) return;
+			var ls = dl.querySelectorAll('label.name_space_left');
+			for (var i = 0; i < ls.length; i++) if (!ls[i].title) ls[i].title = ls[i].textContent;
+		} catch (e) {}
+	}-*/;
 
 	public static Dialog form(String id, String titleKey, List<FormRow> rows, Consumer<FormResult> onConfirm) {
 		return form(id, titleKey, rows, onConfirm, null);
@@ -487,6 +509,7 @@ public final class PlusDialogs {
 				}
 			}
 		}
+		if (opts != null && opts.labelWidth != null)compactLabels(d.id, opts.labelWidth);
 		return dlg;
 	}
 
