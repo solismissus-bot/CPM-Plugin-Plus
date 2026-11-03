@@ -3,8 +3,12 @@ package com.tom.cpm.blockbench.features;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.tom.cpm.blockbench.PluginStart;
 import com.tom.cpm.blockbench.PlusMenus;
 import com.tom.cpm.blockbench.PlusMenus.Cond;
+import com.tom.cpm.blockbench.proxy.Action.Toggle;
+import com.tom.cpm.blockbench.tools.model.BlockAnim;
+import elemental2.dom.DomGlobal;
 import com.tom.cpm.blockbench.PlusTestHooks;
 import com.tom.cpm.blockbench.convert.ExportHooks;
 import com.tom.cpm.blockbench.convert.ProjectConvert;
@@ -48,11 +52,22 @@ public final class W4RigInstall {
 		}
 		ExportHooks.register(JointCheck::exportCheck);
 		JointCheck.registerFixes();
+		// block by block + groups-only outliner (Animate mode)
+		BlockAnim.load();
+		Toggle blocks = PlusMenus.toggle("w4rig_blockanim", "cpmplus.w4rig.blockanim.menu", "view_in_ar", Cond.CPM_ONLY, BlockAnim.isBlocks(), BlockAnim::setBlocks);
+		Toggle groups = PlusMenus.toggle("w4rig_groupsonly", "cpmplus.w4rig.groupsonly.menu", "account_tree", Cond.CPM_ONLY, BlockAnim.isGroupsOnly(), BlockAnim::setGroupsOnly);
+		PlusMenus.add(PlusMenus.SUB_ANIM, blocks);
+		PlusMenus.add(PlusMenus.SUB_ANIM, groups);
+		PlusMenus.add(PlusMenus.SUB_VIEW, groups);
+		PluginStart.addEventListener("canvas_select", BlockAnim::onCanvasSelect);
+		PluginStart.addEventListener("select_mode", __ -> DomGlobal.setTimeout(x -> BlockAnim.refreshOutliner(), 0));
+		PluginStart.addEventListener("select_project", __ -> DomGlobal.setTimeout(x -> BlockAnim.refreshOutliner(), 0));
 		if (PlusTestHooks.active())registerTestTools();
 	}
 
 	public static void uninstall() {
 		JointCheck.clearMarkers();
+		BlockAnim.uninstall();
 	}
 
 	// ====================================================================== test tools (test mode only)
@@ -199,6 +214,23 @@ public final class W4RigInstall {
 				}
 			}
 			if (Js.isTruthy(o.get("ui")))BuildChain.open(Js.isTruthy(o.get("single")));
+			return r;
+		});
+		// block by block: op 'state' | 'bone' (cube name) | 'blocks'/'groups' (on: bool)
+		PlusTestHooks.register("w4rig.blockanim", o -> {
+			String op = str(o, "op", "state");
+			JsPropertyMap<Object> r = ok();
+			if ("bone".equals(op)) {
+				Object nd = node(str(o, "cube", ""));
+				Group g = nd instanceof Cube ? BlockAnim.makeBone((Cube) nd) : null;
+				r.set("bone", g != null ? g.name : null);
+				r.set("changed", g != null);
+			} else if ("blocks".equals(op)) {
+				BlockAnim.setBlocks(Js.isTruthy(o.get("on")));
+			} else if ("groups".equals(op)) {
+				BlockAnim.setGroupsOnly(Js.isTruthy(o.get("on")));
+			}
+			r.set("state", BlockAnim.state());
 			return r;
 		});
 		// export-dialog rows of the joint check (headless conversion, no dialog, no fix)
