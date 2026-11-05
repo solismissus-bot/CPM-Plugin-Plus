@@ -46,8 +46,85 @@ public final class BlockAnim {
 		blocks = PlusPrefs.getBool(PREF_BLOCKS, false);
 		groupsOnly = PlusPrefs.getBool(PREF_GROUPS_ONLY, false);
 		ensureStyle();
+		try {
+			installSelectPatch();
+		} catch (Throwable e) {
+			DomGlobal.console.warn("CPM+: block by block (outliner click) not available", e);
+		}
 		refreshOutliner();
 	}
+
+	// ------------------------------------------------------------------ outliner click on a block (Animate mode)
+
+	/**
+	 * Blockbench refuses Cube.select in Animate mode ('group required to animate'), which is what a click on a block in
+	 * the outliner calls. With the option ON (CPM project, Animate mode) the click is handled here instead: the block gets
+	 * its bone (or its existing bone is selected). Everything else goes to Blockbench unchanged.
+	 */
+	private static native void installSelectPatch() /*-{
+		var C = $wnd.Cube;
+		if (!C || !C.prototype || C.prototype.__cpmplusBlockAnimOrig) return;
+		var orig = C.prototype.select;
+		C.prototype.__cpmplusBlockAnimOrig = orig;
+		C.prototype.select = function() {
+			try {
+				if (@com.tom.cpm.blockbench.tools.model.BlockAnim::outlinerSelect(Ljava/lang/Object;)(this)) return this;
+			} catch (e) {
+				$wnd.console.warn('CPM+: block by block', e);
+			}
+			return orig.apply(this, arguments);
+		};
+	}-*/;
+
+	private static native void uninstallSelectPatch() /*-{
+		var C = $wnd.Cube;
+		if (!C || !C.prototype || !C.prototype.__cpmplusBlockAnimOrig) return;
+		C.prototype.select = C.prototype.__cpmplusBlockAnimOrig;
+		delete C.prototype.__cpmplusBlockAnimOrig;
+	}-*/;
+
+	/** true when the select was handled (option ON, CPM, Animate mode, a block inside a group) */
+	static boolean outlinerSelect(Object el) {
+		if (!blocks || busy || !(el instanceof Cube))return false;
+		if (!CPMCodec.isCPM() || !CPMVisuals.isAnimateMode())return false;
+		Cube c = (Cube) el;
+		if (!(c.parent instanceof Group))return false;
+		if (needsBone(c)) {
+			if (makeBone(c) == null)RigParts.select(c.parent);
+		} else {
+			RigParts.select(c.parent);
+		}
+		return true;
+	}
+
+	/**
+	 * Blockbench 5 hides block rows in Animate mode (Mode.hidden_node_types). With 'Animar bloco por bloco' ON (and the
+	 * groups-only list OFF) the block rows are listed in CPM projects so they can be clicked; the original list is
+	 * restored otherwise.
+	 */
+	private static native void setBlockRows(boolean show) /*-{
+		var M = $wnd.Modes;
+		var m = M && M.options && M.options.animate;
+		if (!m) return;
+		if (!m.__cpmplusHiddenOrig) m.__cpmplusHiddenOrig = (m.hidden_node_types || []).slice();
+		var base = m.__cpmplusHiddenOrig;
+		var want = show ? base.filter(function(t) { return t !== 'cube'; }) : base.slice();
+		var cur = m.hidden_node_types || [];
+		if (cur.length === want.length && cur.every(function(t, i) { return t === want[i]; })) return;
+		m.hidden_node_types = want;
+		var O = $wnd.Outliner;
+		if (O && typeof O.updateNodeDisplayRules === 'function') O.updateNodeDisplayRules();
+	}-*/;
+
+	private static native void restoreBlockRows() /*-{
+		var M = $wnd.Modes;
+		var m = M && M.options && M.options.animate;
+		if (!m || !m.__cpmplusHiddenOrig) return;
+		m.hidden_node_types = m.__cpmplusHiddenOrig.slice();
+		delete m.__cpmplusHiddenOrig;
+		var O = $wnd.Outliner;
+		if (O && typeof O.updateNodeDisplayRules === 'function') O.updateNodeDisplayRules();
+	}-*/;
 
 	public static boolean isBlocks() {
 		return blocks;
@@ -60,6 +137,7 @@ public final class BlockAnim {
 	public static void setBlocks(boolean on) {
 		blocks = on;
 		PlusPrefs.set(PREF_BLOCKS, on);
+		refreshOutliner();
 		PlusDialogs.quick(PlusDialogs.tr(on ? "cpmplus.w4rig.blockanim.on" : "cpmplus.w4rig.blockanim.off"), on ? 9000 : 4000);
 	}
 
@@ -85,15 +163,23 @@ public final class BlockAnim {
 		try {
 			Element body = DomGlobal.document.body;
 			if (body == null)return;
-			boolean on = groupsOnly && CPMCodec.isCPM() && CPMVisuals.isAnimateMode();
+			boolean cpm = CPMCodec.isCPM();
+			boolean on = groupsOnly && cpm && CPMVisuals.isAnimateMode();
 			if (on)body.classList.add(BODY_CLASS);
 			else body.classList.remove(BODY_CLASS);
+			setBlockRows(blocks && !groupsOnly && cpm);
 		} catch (Throwable e) {
 			DomGlobal.console.warn("CPM+: groups-only outliner", e);
 		}
 	}
 
 	public static void uninstall() {
+		try {
+			uninstallSelectPatch();
+			restoreBlockRows();
+		} catch (Throwable e) {
+			DomGlobal.console.warn("CPM+: block by block cleanup", e);
+		}
 		try {
 			if (DomGlobal.document.body != null)DomGlobal.document.body.classList.remove(BODY_CLASS);
 			Element st = DomGlobal.document.getElementById(STYLE_ID);
