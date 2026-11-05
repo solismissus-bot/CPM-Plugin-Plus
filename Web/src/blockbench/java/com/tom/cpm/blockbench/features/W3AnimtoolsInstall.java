@@ -11,6 +11,7 @@ import com.tom.cpm.blockbench.tools.anim.Exaggerate;
 import com.tom.cpm.blockbench.tools.anim.PoseClipboard;
 import com.tom.cpm.blockbench.tools.anim.PoseColumn;
 import com.tom.cpm.blockbench.tools.anim.QuickAnim;
+import com.tom.cpm.blockbench.tools.anim.Tween;
 
 /**
  * Feature installer of the quick animation tools (CPM+ v0.8, lite build): F14 submenu 'Animação rápida' (Inverter,
@@ -43,6 +44,11 @@ public final class W3AnimtoolsInstall {
 			PlusMenus.addToContext(protoMenu("BoneAnimator"), a, "");
 			PlusMenus.addToContext(protoMenu("Group"), a, "");
 		}
+		// in-between pose at the playhead (tween / breakdown), many parts at once, loop-aware
+		Action tw = PlusMenus.action("cpmplus_w3animtools_tween", "cpmplus.w3animtools.tween.menu", "linear_scale", Cond.CPM_ONLY, inAnim, Tween::openDialog);
+		PlusMenus.add(PlusMenus.SUB_ANIM, tw);
+		PlusMenus.addToContext(protoMenu("BoneAnimator"), tw, "");
+		PlusMenus.addToContext(protoMenu("Group"), tw, "");
 
 		if (PlusTestHooks.active()) {
 			PlusTestHooks.register("w3animtools.f14reverse", QuickAnim::hookReverse);
@@ -52,10 +58,12 @@ public final class W3AnimtoolsInstall {
 			PlusTestHooks.register("w3animtools.f17", Exaggerate::hook);
 			PlusTestHooks.register("w3animtools.f23", PoseColumn::hook);
 			PlusTestHooks.register("w3animtools.pose", PoseClipboard::hook);
+			PlusTestHooks.register("w3animtools.tween", Tween::hook);
 			PlusTestHooks.register("w3animtools.open", o -> {
 				Object which = o.get("tool");
 				if ("f17".equals(which))Exaggerate.openDialog();
 				else if ("f23".equals(which))PoseColumn.openDialog();
+				else if ("tween".equals(which))Tween.openDialog();
 				return o;
 			});
 		}
