@@ -9,6 +9,7 @@ import com.tom.cpl.gui.elements.MessagePopup;
 import com.tom.cpm.blockbench.PluginStart;
 import com.tom.cpm.blockbench.convert.ProjectConvert;
 import com.tom.cpm.blockbench.util.PopupDialogs.UserException;
+import com.tom.cpm.shared.editor.gui.EditorGui;
 import com.tom.cpm.web.client.WebMC;
 import com.tom.cpm.web.client.render.RenderSystem.WindowEx;
 import com.tom.cpm.web.client.resources.Resources;
@@ -39,6 +40,8 @@ public class WebEmbeddedEditor implements EmbeddedEditor {
 	// listener and a later ready message resolved the wrong promise. Both sides run this same code.
 	private static final String MSG_OPEN_PROJECT = "cpm_open_project";
 	private static final String MSG_OPEN_PROJECT_FIN = "cpm_open_project_fin";
+	// CPM+ : Animation > Test with a pose / gesture selected ('pose\ngesture')
+	private static final String MSG_OPEN_TEST = "cpmplus_open_test";
 	private static final String MSG_CLOSED = "window_closed";
 	private static final int READY_TIMEOUT_MS = 60000;
 
@@ -163,7 +166,24 @@ public class WebEmbeddedEditor implements EmbeddedEditor {
 				});
 			}
 		});
+		listeners.put(MSG_OPEN_TEST, m -> {
+			try {
+				String d = m.data != null ? m.data : "";
+				int nl = d.indexOf('\n');
+				String pose = nl >= 0 ? d.substring(0, nl) : d, gesture = nl >= 0 ? d.substring(nl + 1) : "";
+				EditorGui eg = (EditorGui) WebMC.getInstance().getGui().getFrame();
+				eg.cpmplusOpenAnimTest(pose, gesture);
+			} catch (Throwable e) {
+				DomGlobal.console.warn("CPM+: could not open the Test tab", e);
+			}
+		});
 		send(Message.make(MSG_CPM_READY, ""));
+	}
+
+	@Override
+	public void openTest(String pose, String gesture) {
+		if (isClosed())return;
+		sendRemote(Message.make(MSG_OPEN_TEST, (pose != null ? pose : "") + "\n" + (gesture != null ? gesture : "")));
 	}
 
 	private void send(Message msg) {

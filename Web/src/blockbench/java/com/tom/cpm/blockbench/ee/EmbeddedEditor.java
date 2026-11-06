@@ -18,6 +18,8 @@ public interface EmbeddedEditor {
 	void onReady();
 	Promise<Void> openProject(ArrayBuffer dt);
 	Promise<Void> openInHost(ArrayBuffer a);
+	/** CPM+ : Animation &gt; Test with this pose (vanilla enum name / custom pose name) and / or gesture (button id) */
+	void openTest(String pose, String gesture);
 
 	public static Promise<Object> openProjectFromBuffer(ArrayBuffer ab) {
 		EditorGui eg = (EditorGui) WebMC.getInstance().getGui().getFrame();

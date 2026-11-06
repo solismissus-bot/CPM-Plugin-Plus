@@ -207,6 +207,12 @@ public final class PlusMenus {
 		DEFAULT_KEYS.put("cpmplus_w3animtools_f17", 88);// X: Exagerar ou suavizar movimento
 		DEFAULT_KEYS.put("cpmplus_w2animcore_f2", 82);// R: Criar cópia espelhada (animação)
 		DEFAULT_KEYS.put("cpmplus_w3animtools_tween", 66);// B: Pose intermediária (tween / breakdown)
+		DEFAULT_KEYS.put("cpmplus_w3animtools_physics", 85);// U: Física / seguir o movimento
+		DEFAULT_KEYS.put("cpmplus_w3animtools_reladj", 89);// Y: Ajuste relativo (somar em todas as keys)
+		DEFAULT_KEYS.put("cpmplus_w3animtools_batch", 90);// Z: Editar keys em várias animações
+		DEFAULT_KEYS.put("cpmplus_w3animtools_check", SHIFT + 75);// Shift+K: Conferir movimento
+		DEFAULT_KEYS.put("cpmplus_w3animtools_recipe", SHIFT + 78);// Shift+N: Nova animação pelo que você quer
+		DEFAULT_KEYS.put("cpmplus_w3animtools_corr_edit", SHIFT + 65);// Shift+A: Camada de ajuste: criar / editar / voltar
 		DEFAULT_KEYS.put("cpmplus_w4anim2_mirror_anims", SHIFT + 77);// Shift+M: Espelhar pro outro lado + animações
 		DEFAULT_KEYS.put("cpmplus_w3animtools_posecopy", SHIFT + 67);// Shift+C: Copiar pose das partes
 		DEFAULT_KEYS.put("cpmplus_w3animtools_posepaste", SHIFT + 86);// Shift+V: Colar pose

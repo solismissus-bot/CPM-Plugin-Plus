@@ -32,8 +32,8 @@ import jsinterop.base.JsPropertyMap;
  * </ul>
  */
 public final class BlockAnim {
-	public static final String PREF_BLOCKS = "cpmplus.w4rig.blockAnim";
-	public static final String PREF_GROUPS_ONLY = "cpmplus.w4rig.groupsOnly";
+	public static final String PREF_BLOCKS = "cpmplus.w4rig.blockAnim";// lang_check:not-a-key (PlusPrefs key, kept: users' saved choice)
+	public static final String PREF_GROUPS_ONLY = "cpmplus.w4rig.groupsOnly";// lang_check:not-a-key (PlusPrefs key)
 	private static final String BODY_CLASS = "cpmplus_groups_only";
 	private static final String STYLE_ID = "cpmplus_groups_only_style";
 

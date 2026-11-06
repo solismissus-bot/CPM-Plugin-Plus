@@ -5,6 +5,7 @@
 | Atalho | Ferramenta |
 |---|---|
 | **Ctrl + Alt + A** | Ajustes do modelo |
+| **Ctrl + Alt + B** | Pose intermediária (tween) |
 | **Ctrl + Alt + D** | Atrasar / adiantar movimento |
 | **Ctrl + Alt + F** | Copiar movimento de (Copy Transform) |
 | **Ctrl + Alt + G** | Grudar na parte do corpo |
@@ -19,14 +20,20 @@
 | **Ctrl + Alt + O** | Otimizar animação |
 | **Ctrl + Alt + P** | Marcar pose aqui |
 | **Ctrl + Alt + R** | Criar cópia espelhada da animação |
+| **Ctrl + Alt + U** | 🆕 Física: seguir o movimento |
 | **Ctrl + Alt + V** | Suavizar movimento |
 | **Ctrl + Alt + X** | Exagerar ou suavizar movimento |
-| **Ctrl + Alt + Shift + C** | Copiar pose das partes selecionadas |
-| **Ctrl + Alt + Shift + V** | Colar pose |
+| **Ctrl + Alt + Y** | 🆕 Ajuste relativo (somar em todas as keys) |
+| **Ctrl + Alt + Z** | 🆕 Editar keys em várias animações |
+| **Ctrl + Alt + Shift + A** | 🆕 Camada de ajuste: criar / editar (aperte de novo pra voltar pra original) |
 | **Ctrl + Alt + Shift + B** | Colar pose no outro lado (espelhada) |
+| **Ctrl + Alt + Shift + C** | Copiar pose das partes selecionadas |
+| **Ctrl + Alt + Shift + K** | 🆕 Conferir movimento |
+| **Ctrl + Alt + Shift + N** | 🆕 Nova animação pelo que você quer |
 | **Ctrl + Alt + Shift + R** | Espelhar pose |
+| **Ctrl + Alt + Shift + V** | Colar pose |
 
-Pra trocar ou criar atalho pra qualquer outra ferramenta: **Arquivo > Configurações > Atalhos**, categoria **Ferramentas**, procure pelo nome.
+🆕 = novo na beta28. Pra trocar ou criar atalho pra qualquer outra ferramenta: **Arquivo > Configurações > Atalhos**, categoria **Ferramentas**, procure pelo nome. Se um atalho não funcionar, veja nessa mesma tela se outra ferramenta (de outro plugin, por exemplo) usa a mesma tecla e troque uma delas.
 
 Quase tudo fica no menu **CPM+** (barra de cima do Blockbench), dividido em: **Ajustes do modelo, Animação, Modelagem, Textura, Otimizar, Prévia, Ajuda**. Muita coisa também aparece no **clique direito** numa pasta, num cubo ou numa animação.
 
@@ -60,9 +67,21 @@ Regras gerais:
 
 ## 3. Animação (CPM+ > Animação)
 
+> **Aditiva ou não aditiva?** (Propriedades da animação > Aditiva) **Aditiva** = soma com o Minecraft: braços e pernas continuam balançando e a cabeça segue o mouse. **Não aditiva** = sua animação manda nas partes do corpo que ela mexe: o Minecraft para de balançá-las, e se você animar a cabeça ela para de seguir o mouse. Na dúvida, abra o **Raio-X** (seção "Conferir e arrumar"): ele mostra parte por parte o que acontece no jogo. O plugin também avisa na hora quando uma edição faz a cabeça parar de olhar pro mouse ou deixa um braço/perna balançando sem querer (clique no aviso pra abrir o Raio-X).
+
+**🆕 Começar fácil**
+| Item | Como usar |
+|---|---|
+| **Nova animação pelo que você quer...** (Ctrl+Alt+Shift+N) | Escolha o objetivo: algo mexendo o tempo todo (cauda, orelha, respiração), enfeitar o andar, trocar o andar inteiro, enfeitar o correr, emote/gesto (botão na roda de gestos), liga/desliga (asas abertas, chapéu), pose personalizada (sentar, deitar) ou peças que seguem pra onde a cabeça olha. A animação já nasce com o tipo do CPM, o loop e o "aditiva" certos, e a janela explica quando ela toca no jogo. Depois é só animar. |
+| **Gerar andar / correr (2 ou 4 patas)...** | Cria o ciclo pronto em loop: pernas alternadas e braços opostos (ou trote de 4 patas, com as diagonais juntas), joelho/cotovelo dobrando (se o membro tiver dobra, veja "Membros dobráveis") e o corpo subindo e descendo. Escolha andando ou correndo, a duração do passo e quanto balança. Ele substitui o balanço do Minecraft nas pernas e braços; o passo tem sempre a mesma cadência (é o jeito de ter joelho/cotovelo no tempo certo). |
+| **Kit de rosto (expressões, boca, olhos)...** | Monte o rosto em grupos (um grupo por expressão, um grupo de boca aberta, as pupilas) e escolha na janela. Cada expressão vira um botão liga/desliga que mostra aquele rosto e esconde os outros; a boca abre quando o jogador fala no chat de voz; os olhos deslizam conforme a cabeça gira. |
+| **Testar no editor do CPM (aba Testar)** (também no clique direito da animação) | Abre o projeto no editor do CPM direto em Animação > Testar, com as animações do Minecraft ligadas e a sua animação escolhida: você vê como fica no jogo (balanço, olhar, pose) antes de exportar. |
+| **Ajuda: vi isso num vídeo...** | Quase todo tutorial de CPM é gravado no editor do próprio CPM. A janela tem uma tabela "no vídeo" → "aqui": adicionar animação, tipo, aditiva, prioridade, quadros, interpolação, aba Testar, Copy Transform, esconder peça, nome do gesto (#), exportar, duplicar, loop e animação por valor. |
+
 **Criar e gerar**
 | Item | Como usar |
 |---|---|
+| **🆕 Física: seguir o movimento...** (Ctrl+Alt+U, também no clique direito da pasta ou da linha da timeline) | No modo Animar, na animação que as peças devem acompanhar (ex.: andar), selecione rabo, orelhas, cabelo, capa... Escolha o tipo de peça (rabo, orelha, cabelo, capa, antena, pena ou personalizado) e ajuste mole/duro, quique, peso, ângulo máximo, ponta mais solta e força. A prévia mostra na hora (desligue e ligue pra comparar). No OK ele cria a camada aditiva "nome (física)", que toca junto no jogo e fecha o loop sem emenda. Selecione a camada e abra de novo pra refazer com outros valores. |
 | **Gerar movimento pronto...** | Escolha a peça e o movimento (respirar, flutuar, bater asas, balançar cauda, pêndulo, tremer, girar sem parar), se vai numa animação nova ou na atual, duração e ciclos. |
 | **Gerar piscada...** | Escolha o grupo de olho aberto e o de olho fechado; intervalo regular ou aleatório. |
 | **Criar seletor de cor...** | Selecione as peças: cria um controle deslizante na roda de gestos que troca a cor delas no jogo. |
@@ -70,10 +89,13 @@ Regras gerais:
 | **Partículas com sua imagem...** | Partículas falsas (peças animadas com a sua imagem). Escolha a imagem (pronta ou seu PNG), o estilo (explosão, órbita, chuva, brilhos, fumaça, atrás de você), de onde sai e quando aparece (sempre, andando, num gesto). O contador mostra o peso antes de criar. |
 | **Soltar partículas daqui...** (clique direito numa pasta) | O mesmo, saindo da pasta escolhida (ex.: boca do dragão). |
 | **Editar partículas...** | Selecione o grupo das partículas: muda as opções e refaz tudo. |
+| **Animar bloco por bloco** (liga/desliga, fica lembrado) | No modo Animar, clique num bloquinho que divide o grupo com outros (ex.: um bloco da asa), **no modelo ou na lista de peças**: ele ganha **um osso só dele na hora**, com o pivô onde encosta no resto, e já fica selecionado pra animar. Não precisa separar grupo por grupo antes. Com a opção ligada, os bloquinhos aparecem na lista também no modo Animar. Nada sai do lugar, Ctrl+Z desfaz, e clicar de novo no mesmo bloco só seleciona o osso dele. Desligado, tudo volta ao normal do Blockbench (o clique pega o grupo inteiro). |
+| **Lista só com grupos (no modo Animar)** (liga/desliga) | No modo Animar a lista de peças mostra só os grupos (ossos), sem os bloquinhos. O Blockbench 5 já faz isso sozinho; a opção serve pra quem ainda vê os blocos na lista. No modo Editar aparece tudo. |
 
 **Mexer no movimento**
 | Item | Como usar |
 |---|---|
+| **Pose intermediária (tween)...** (Ctrl+Alt+B, também no clique direito da pasta ou da linha da timeline) | Cria a pose no tempo atual entre a key anterior e a próxima: arraste de -100 (igual à anterior) a +100 (igual à próxima); passando de ±100 ela passa do ponto (até 150). Ou **Puxar pro repouso** (0% = pose de agora, 100% = pose normal). Vale pras peças selecionadas (com as de dentro, se quiser) ou, sem seleção, pra todas que se mexem. Num loop, antes da primeira key vem a última. Mostra no modelo enquanto você arrasta; só rotação, posição e tamanho (cor e visibilidade nunca). |
 | **Animação rápida** (submenu) | Inverter, mudar velocidade, deixar tudo suave ou tudo reto. |
 | **Exagerar ou suavizar movimento...** | 0% a 300% de quanto as peças se mexem. |
 | **Marcar pose aqui...** | Cria um keyframe em todas as peças animadas no tempo atual, guardando a pose. |
@@ -87,6 +109,28 @@ Regras gerais:
 | **Girar/mover o corpo inteiro…** | Gira ou move o corpo todo numa pose; cabeça, braços e pernas acompanham. |
 | **Criar cópia espelhada...** (também no clique direito da animação) | Cria uma animação nova com esquerda e direita trocadas. |
 | **Transformar fórmulas em keyframes...** | Troca fórmulas Molang por keyframes, pra sair igual no jogo. |
+| **🆕 Ajuste relativo (somar em todas as keys)...** (Ctrl+Alt+Y, também no clique direito da pasta ou da linha da timeline) | Selecione as peças (nada selecionado = todas as animadas) e digite a mudança: girar X/Y/Z, mover X/Y/Z, tamanho. A MESMA mudança entra em todas as keys, então a pose inteira desloca e o movimento continua igual (ex.: braço 10° mais aberto na animação toda). **Onde**: animação inteira, do playhead pra frente, do começo até o playhead ou entre dois tempos (com borda suave, sem degrau). **Em quais animações**: só nesta ou em todas que mexem nessas peças. Com "Ver na tela enquanto ajusto" você confere antes de aplicar. |
+| **🆕 Camada de ajuste: criar / editar** (Ctrl+Alt+Shift+A, também no clique direito da animação) | Cria "nome (ajuste)", uma camada aditiva por cima da animação: corrija nela sem mexer nas keys originais (a original continua tocando junto, no Blockbench e no jogo). Apertar de novo volta pra original. **Camada de ajuste: força...** aumenta ou diminui tudo o que ela faz (0% a 150%). **Camada de ajuste: fundir na animação...** soma a camada nas keys da original e apaga a camada. |
+| **🆕 Editar keys em várias animações...** (Ctrl+Alt+Z) | Marque as animações e escolha: mudar a velocidade (duração), mais forte / mais fraco, trocar a peça (as keys de uma peça vão pra outra), copiar a trilha de uma peça desta animação pras outras (pode esticar pra ocupar a animação inteira) ou apagar a trilha de uma peça. Um Ctrl+Z desfaz tudo. |
+| **🆕 Inserir clipe (sequenciador)...** | Põe outra animação dentro desta, a partir do playhead: quantas vezes, velocidade, ao contrário, empurrar o resto pra frente (ou substituir o trecho) e bordas suaves na entrada e na saída. |
+| **🆕 Curvas que não passam do ponto** | Com keys selecionadas (ou peças selecionadas: todas as keys delas): vira curva suave que nunca passa do valor das vizinhas, então pico e vale ficam retos (sem o "quique" do suave comum). |
+| **🆕 Esticar / achatar (mantém o volume)...** (também no clique direito da linha da timeline) | Cria uma key de tamanho no playhead nas peças selecionadas: estica num eixo e afina os outros dois na medida certa, sem a peça ficar maior ou menor. Acima de 100% estica, abaixo achata. |
+| **🆕 Girar em volta de outro ponto (pivô temporário)...** (também no clique direito da pasta) | Gira as peças selecionadas em volta do pivô de OUTRA peça, sem mudar pivô nenhum: cria as keys de rotação e posição certas no playhead. |
+| **🆕 Takes (versões da animação)...** (também no clique direito da animação) | **Salvar take** guarda a animação como está; teste outra ideia à vontade e depois **Restaurar** o take ou **Misturar** com ele (quanto %). Ficam salvos no projeto e não vão pro jogo. |
+
+**🆕 Entrada, saída e trocas de pose**
+| Item | Como usar |
+|---|---|
+| **Entrada e saída suaves...** (também no clique direito da animação) | O CPM troca de pose seco, sem misturar. Numa animação em loop (andar, sentar, pose personalizada...), crie a **entrada** (toca 1x antes do loop: vai da pose de descanso, ou do começo de outra animação, até a primeira pose) e/ou a **saída** (toca 1x depois, de volta). **Terminar a volta antes de sair** liga o "deve terminar" do CPM, pra saída começar da pose certa. Rode **Fechar o loop** antes, se o fim do loop não encontra o começo. |
+| **Relatório de estalos (trocas de pose)...** | Lista as peças que dão um pulo grande quando o jogo troca de pose (parado → andando, andando → correndo, agachar...), com o pior caso e a média. **Criar entrada suave** resolve direto. Também aparece como aviso no export. |
+
+**🆕 Ver melhor** (também em CPM+ > Prévia; só mudam a tela, nunca a animação nem o jogo)
+| Item | Como usar |
+|---|---|
+| **Rastro das pontas** (liga/desliga) | Desenha o caminho que a PONTA de cada peça selecionada faz na animação (o rastro do Blockbench só segue o pivô). Cor = velocidade (azul devagar, vermelho rápido); cada pontinho é um quadro que vai pro jogo; clique num pontinho pra ir pra ele. |
+| **Prévia em degrau (blocking)** (liga/desliga) | A tela segura cada pose até a próxima key, pra conferir só as poses-chave, sem o meio-termo. |
+| **Silhueta** (liga/desliga) | Pinta o modelo inteiro de escuro pra ler a pose pelo contorno. |
+| **Clicar de novo pega a peça de trás** (liga/desliga, vem ligado) | Clicou e pegou a peça da frente? Clique de novo no mesmo lugar: seleciona a que está atrás, e assim por diante. |
 
 **Mostrar, esconder e reagir**
 | Item | Como usar |
@@ -99,6 +143,9 @@ Regras gerais:
 **Conferir e arrumar**
 | Item | Como usar |
 |---|---|
+| **🆕 Conferir movimento...** (Ctrl+Alt+Shift+K, também no clique direito da animação) | Procura o que costuma ficar feio no jogo: pico de 1 quadro, degrau esquecido no meio de keys suaves, pulo ou tranco na emenda do loop, gesto que começa/termina fora do repouso, movimento robótico (só keys Linear), dois lados fazendo exatamente o mesmo e perna/braço que sai do ritmo do passo do Minecraft. Vermelho = vai aparecer no jogo, amarelo = provável, azul = dica de estilo. **Ir pra lá** leva até a peça e o tempo. |
+| **🆕 Raio-X: quem mexe em cada parte?** | Pra animação selecionada, mostra em cada parte do corpo: soma com o Minecraft, trava o balanço (e se trava rotação, posição ou os dois), desliga o olhar (cabeça para de seguir o mouse) ou tem escala que o jogo ignora. Botões por parte: **Travar aqui (parar o balanço)**, **Devolver pro Minecraft** (apaga as keys ou leva pra um sub-grupo) e **Criar sub-grupo de animação…**. Embaixo, o resumo de todas as animações. |
+| **🆕 Criar sub-grupo de animação…** (clique direito numa parte do corpo: cabeça, corpo, braço, perna) | Cria "parte_anim" dentro da parte do corpo, com o mesmo pivô, e leva pra ele as peças e as keys escolhidas. Resolve 3 coisas: a escala passa a funcionar no jogo, o movimento soma com o do Minecraft, e o braço/perna para de "flutuar" quando a animação toca agachado ou nadando (regra do CPM: numa animação não aditiva, girar o membro também trava a posição dele na de pé). |
 | **Movimento que some ao trocar de situação…** | Lista peças que se mexem andando/parado mas param ao pular, cair ou agachar. Opções: **Copiar pras situações que faltam**, **Mover pra Global** ou **É de propósito**. |
 | **Animações soltas...** | Keyframes de pastas que você apagou ficam guardados. Refez a peça? Reconecte (ele sugere a pasta de mesmo nome), junte ou apague. |
 | **Otimizar animação (menos quadros)…** | Deixa o arquivo menor: escolha a tolerância (graus/pixels/escala), veja a tabela antes/depois e aplique. Visibilidade e cor nunca mudam. Também em CPM+ > Otimizar. |
@@ -110,6 +157,7 @@ Regras gerais:
 |---|---|
 | **Importar animações de outro .cpmproject…** | Escolha o arquivo; ele mostra quantas peças animadas existem no seu modelo (casa pelo ID do CPM ou pelo caminho de pastas). Marque as animações e importe. |
 | **Importar animação Bedrock/GeckoLib...** | Escolha o `.animation.json` e diga qual peça do seu modelo cada osso mexe. Também em Animação na barra do Blockbench. |
+| **🆕 Importar emote (Emotecraft / PlayerAnimator)...** | Escolha o `.json` do emote: ele vira um gesto do CPM (botão na roda de gestos) com as suavizações do emote, loop com entrada, o movimento do jogador inteiro distribuído nas partes do corpo e as dobras de cotovelo/joelho (se o modelo tiver "Membros dobráveis"; se não tiver, ele avisa). |
 
 **Propriedades da animação** (clique duplo na animação): ajustes avançados (precisa terminar, esconder da roda, slider) e **Qualidade (fps)** com a contagem exata de quadros.
 
@@ -144,6 +192,7 @@ Regras gerais:
 | **Girar um eixo por vez** | Ligado: girar no X não mexe Y e Z no gizmo. |
 | **Ver esqueleto** | Desenha ossos, juntas e raízes do CPM por cima do modelo. |
 | **Item na mão (prévia do editor do CPM)** / **Item na mão...** | Mostra um item na mão pra conferir poses; escolha o item. Só visual, não vai no arquivo. |
+| **🆕 Rastro das pontas, Prévia em degrau, Silhueta, Clicar de novo pega a peça de trás** | Veja a seção 3, "Ver melhor". |
 
 ## 7. Ajuda (CPM+ > Ajuda)
 
@@ -166,6 +215,8 @@ O plugin confere o modelo antes de exportar e mostra uma lista. Cada linha tem *
 | **Falta o ID do modelo** | Opções "Salvar entre partidas" não serão lembradas. | **Criar ID**. |
 | **Botão renomeado** | Quem usa o modelo perde o atalho/opção salva. | **Voltar ao nome antigo** ou **Está certo**. |
 | **Movimento que some** | Peça que para ao pular/cair/agachar (só informa). | Abre a ferramenta. |
+| **🆕 Troca de pose com pulo** | Peça que dá um pulo grande quando o jogo troca de pose (parado → andando...). Só informa. | Abre o Relatório de estalos. |
+| **🆕 Cabeça para de seguir o mouse** | Animação não aditiva com keys na cabeça desliga o olhar. Só informa (às vezes é de propósito). | Abre o Raio-X (Devolver pro Minecraft). |
 | **Fórmulas e camadas da skin** | Animação com fórmula Molang ou sem espaço nas camadas da skin. | Transformar em keyframes / escolher camadas. |
 
 ## 9. Correções automáticas (não precisa fazer nada)

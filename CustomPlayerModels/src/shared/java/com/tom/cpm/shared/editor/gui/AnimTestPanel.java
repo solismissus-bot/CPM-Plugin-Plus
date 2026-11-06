@@ -111,6 +111,8 @@ public class AnimTestPanel extends Panel {
 		poseSel = createDropDown("label.cpm.pose", poses);
 
 		gestureSel = createDropDown("label.cpm.gesture", gestures);
+		cpmplusPoses = poses;// CPM+
+		cpmplusGestures = gestures;// CPM+
 
 		Map<Slot, List<NamedElement<VanillaPose>>> slots = new TreeMap<>();
 		for (VanillaPose p : VanillaPose.VALUES) {
@@ -292,6 +294,35 @@ public class AnimTestPanel extends Panel {
 	private String poseToString(IPose p) {
 		return p.getName(gui, null);
 	}
+
+	/**
+	 * CPM+ : selects what to test (from Blockbench's 'Testar no editor do CPM'): a vanilla pose by its enum name, or a
+	 * custom pose by its name, and / or a gesture by its button id. Unknown names are left alone.
+	 */
+	@SuppressWarnings("unchecked")
+	public void cpmplusSelect(String pose, String gesture) {
+		if (pose != null && !pose.isEmpty()) {
+			for (NamedElement<IPose> el : (List<NamedElement<IPose>>) (List<?>) cpmplusPoses) {
+				IPose p = el.getElem();
+				if (p instanceof VanillaPose && ((VanillaPose) p).name().equalsIgnoreCase(pose)
+						|| p instanceof com.tom.cpm.shared.animation.CustomPose && ((com.tom.cpm.shared.animation.CustomPose) p).getName().equals(pose)) {
+					poseSel.dropDown.setSelected(el);
+					break;
+				}
+			}
+		}
+		if (gesture != null && !gesture.isEmpty()) {
+			for (NamedElement<String> el : (List<NamedElement<String>>) (List<?>) cpmplusGestures) {
+				if (gesture.equals(el.getElem())) {
+					gestureSel.dropDown.setSelected(el);
+					break;
+				}
+			}
+		}
+	}
+
+	/** CPM+ : the lists behind the pose / gesture boxes (rebuilt in place on every updateGui) */
+	private List<?> cpmplusPoses, cpmplusGestures;
 
 	@Override
 	public void setVisible(boolean visible) {

@@ -16,8 +16,11 @@ import com.tom.cpm.blockbench.convert.WarnEntry.WarnFactory;
 import com.tom.cpm.blockbench.proxy.Animation;
 import com.tom.cpm.blockbench.proxy.Group;
 import com.tom.cpm.blockbench.proxy.Project;
+import com.tom.cpm.blockbench.PluginStart;
+import com.tom.cpm.blockbench.tools.anim.AnimXray;
 import com.tom.cpm.blockbench.tools.anim.AnimxUtil;
 import com.tom.cpm.blockbench.tools.anim.SituationCheck;
+import com.tom.cpm.blockbench.tools.anim.Subgroup;
 import com.tom.cpm.shared.animation.VanillaPose;
 
 import elemental2.core.JsArray;
@@ -50,7 +53,104 @@ public final class W6AnimxInstall {
 			ctx.add(w);
 		});
 		registerTestTools();
+		installXray();
 	}
+
+	// ====================================================================== G41: X-ray, lock / return, subgroup, live warnings
+
+	private static void installXray() {
+		PlusMenus.addAction(PlusMenus.SUB_ANIM, "cpmplus_w6animx_xray", "cpmplus.w6animx.menu.xray", "visibility", Cond.CPM_ONLY, () -> AnimXray.open(Animation.selected));
+		com.tom.cpm.blockbench.proxy.Action sub = PlusMenus.action("cpmplus_w6animx_subgroup", "cpmplus.w6animx.menu.subgroup", "create_new_folder", Cond.CPM_ONLY,
+				() -> selectedRoot() != null, () -> Subgroup.openDialog(selectedRoot(), null, false, null));
+		PlusMenus.add(PlusMenus.SUB_ANIM, sub);
+		PlusMenus.addToContext(protoMenu("Group"), sub, "");
+		// 'na hora': the first time an edit makes the head stop following the mouse / leaves a limb swinging
+		PluginStart.addEventListener("finished_edit", e -> {
+			try {
+				AnimXray.liveCheck();
+			} catch (Throwable ex) {
+				// advice only
+			}
+		});
+		ExportHooks.register(ctx -> {
+			List<String> look = new ArrayList<>();
+			for (Animation an : AnimxUtil.animations()) {
+				for (AnimXray.Row r : AnimXray.analyse(an))if (r.replaces() && r.breaksLook())look.add(an.name);
+			}
+			if (look.isEmpty())return;
+			WarnEntry w = WarnFactory.of(Severity.INFO, "headLook", "cpmplus.w6animx.xray.warn.look", look.size(), String.join(", ", look));
+			w.setFix(() -> {
+				Animation a = AnimxUtil.find(look.get(0));
+				if (a != null)AnimXray.open(a);
+				return Promise.resolve(false);
+			}, FixKind.VIEW_ONLY);
+			ctx.add(w);
+		});
+		if (PlusTestHooks.active()) {
+			PlusTestHooks.register("w6animx.xray", o -> {
+				Animation a = AnimxUtil.find(str(o, "anim", ""));
+				return AnimXray.toJson(a, AnimXray.analyse(a));
+			});
+			PlusTestHooks.register("w6animx.lock", o -> {
+				Animation a = AnimxUtil.find(str(o, "anim", ""));
+				AnimXray.LockResult res = AnimXray.lock(a, group(o, "group"), bool(o, "rot", true), bool(o, "pos", false), bool(o, "head", false), bool(o, "nonAdditive", false));
+				JsPropertyMap<Object> r = AnimxUtil.map();
+				r.set("added", res.added);
+				r.set("needsNonAdditive", res.needsNonAdditive);
+				r.set("needsConfirmHead", res.needsConfirmHead);
+				r.set("nothingToDo", res.nothingToDo);
+				return r;
+			});
+			PlusTestHooks.register("w6animx.return", o -> {
+				Animation a = AnimxUtil.find(str(o, "anim", ""));
+				JsPropertyMap<Object> r = AnimxUtil.map();
+				r.set("removed", AnimXray.returnToMinecraft(a, group(o, "group")));
+				return r;
+			});
+			PlusTestHooks.register("w6animx.subgroup", o -> {
+				Subgroup.Opts so = new Subgroup.Opts();
+				so.root = group(o, "group");
+				so.name = str(o, "name", null);
+				so.scale = bool(o, "scale", true);
+				so.rot = bool(o, "rot", false);
+				so.pos = bool(o, "pos", false);
+				so.nonAdditiveRotPos = bool(o, "nonAdditive", false);
+				so.moveVanillaCube = bool(o, "moveVanilla", false);
+				List<String> an = list(o, "anims");
+				if (!an.isEmpty()) {
+					so.anims = new ArrayList<>();
+					for (String s : an) {
+						Animation a = AnimxUtil.find(s);
+						if (a != null)so.anims.add(a);
+					}
+				}
+				return Subgroup.toJson(Subgroup.make(so));
+			});
+			PlusTestHooks.register("w6animx.liveCheck", o -> {
+				AnimXray.resetLive();
+				JsPropertyMap<Object> r = AnimxUtil.map();
+				r.set("warned", AnimXray.liveCheck());
+				return r;
+			});
+		}
+	}
+
+	/** the selected vanilla root with something inside (sub-group target), or null */
+	private static Group selectedRoot() {
+		List<Group> sel = com.tom.cpm.blockbench.tools.anim.AnimToolSupport.selectedGroups();
+		if (sel.size() != 1)return null;
+		Group g = sel.get(0);
+		return AnimxUtil.isVanillaRoot(g) && g.children != null && g.children.length > 0 ? g : null;
+	}
+
+	private static native com.tom.cpm.blockbench.proxy.Menu protoMenu(String cls) /*-{
+		try {
+			var c = $wnd[cls];
+			return c && c.prototype && c.prototype.menu ? c.prototype.menu : null;
+		} catch (e) {
+			return null;
+		}
+	}-*/;
 
 	public static void uninstall() {
 	}

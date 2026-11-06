@@ -81,6 +81,22 @@ public class EditorGui extends Frame {
 	private static List<File> recent = new ArrayList<>();
 	private static Editor toReopen;
 	private TabbedPanelManager tabs;
+	// CPM+ : 'Testar no editor do CPM' (Blockbench) opens Animation > Test directly
+	private Panel cpmplusAnimMain;
+	private TabbedPanelManager cpmplusAnimTabs;
+	private Panel cpmplusTestScroll;
+	private AnimTestPanel cpmplusTestPanel;
+
+	/**
+	 * CPM+ : shows the Animation tab with its Test panel, Minecraft's own animations on, and selects the pose (vanilla
+	 * enum name or custom pose name) and / or the gesture (button id) to play.
+	 */
+	public void cpmplusOpenAnimTest(String pose, String gesture) {
+		if(cpmplusAnimMain != null)tabs.select(cpmplusAnimMain);
+		if(cpmplusAnimTabs != null && cpmplusTestScroll != null)cpmplusAnimTabs.select(cpmplusTestScroll);
+		if(!editor.playVanillaAnims.get())editor.playVanillaAnims.toggle();
+		if(cpmplusTestPanel != null)cpmplusTestPanel.cpmplusSelect(pose, gesture);
+	}
 	private HorizontalLayout topPanel;
 	private Editor editor;
 	private ViewType viewType;
@@ -368,8 +384,13 @@ public class EditorGui extends Frame {
 
 		ScrollPanel spTest = new ScrollPanel(gui);
 		spTest.setBounds(new Box(0, 0, 170, height - 40));
-		spTest.setDisplay(new AnimTestPanel(gui, this));
+		AnimTestPanel testPanel = new AnimTestPanel(gui, this);
+		spTest.setDisplay(testPanel);
 		spTest.setScrollBarSide(true);
+		cpmplusAnimMain = mainPanel;// CPM+
+		cpmplusAnimTabs = animPanelTabs;
+		cpmplusTestScroll = spTest;
+		cpmplusTestPanel = testPanel;
 
 		buttons.add(animPanelTabs.createTab(gui.i18nFormat("tab.cpm.animation.setup"), spSetup));
 		buttons.add(animPanelTabs.createTab(gui.i18nFormat("tab.cpm.animation.test"), spTest));

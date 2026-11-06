@@ -896,14 +896,20 @@ public final class AnimEdit {
 			if (!save || !save.animations || !$wnd.Animator || !$wnd.Animator.animations) return;
 			for (var uuid in save.animations) {
 				var d = save.animations[uuid];
-				if (!d || typeof d.snapping !== 'number' || !(d.snapping >= 1) || d.snapping >= 10) continue;
+				if (!d) continue;
 				var list = $wnd.Animator.animations;
 				for (var i = 0; i < list.length; i++) {
-					if (list[i] && list[i].uuid === uuid && list[i].snapping !== d.snapping) list[i].snapping = d.snapping;
+					var a = list[i];
+					if (!a || a.uuid !== uuid) continue;
+					if (typeof d.snapping === 'number' && d.snapping >= 1 && d.snapping < 10 && a.snapping !== d.snapping) a.snapping = d.snapping;
+					// Animation.extend runs setLength BEFORE it puts the keys back, so undoing an edit that moved keys past
+					// the old end kept the longer length: put the saved length back now that the keys are restored
+					// (setLength never goes below the last key: it zeroes the length before measuring the keys)
+					if (typeof d.length === 'number' && Math.abs(a.length - d.length) > 1e-6 && typeof a.setLength === 'function') a.setLength(d.length);
 				}
 			}
 		} catch (e) {
-			console.warn('CPM+: could not restore the animation snapping after undo', e);
+			console.warn('CPM+: could not restore the animation snapping / length after undo', e);
 		}
 	}-*/;
 

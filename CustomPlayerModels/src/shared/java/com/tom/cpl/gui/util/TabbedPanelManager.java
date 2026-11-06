@@ -35,6 +35,12 @@ public class TabbedPanelManager extends Panel {
 		return btn;
 	}
 
+	/** CPM+ : shows a tab as if its button was clicked */
+	public void select(Panel panel) {
+		Button b = buttons.get(panel);
+		if(b != null && b.getAction() != null)b.getAction().run();
+	}
+
 	public void removeTab(Panel panel) {
 		elements.remove(panel);
 		buttons.remove(panel);
