@@ -350,10 +350,44 @@
     placements.forEach(function (p) { var it = typeof p[1] === 'string' ? G.BarItems[p[1]] : p[1]; placeOnce(p[0], it, p[2]); });
   }
   var placements = [];
+  /**
+   * beta31: the CPM+ art tools live in the CPM+ panel and inside Blockbench's own panels (Color, Palette, Textures),
+   * never on the top bars (tools / tool options): those stay exactly like Blockbench's.
+   */
+  var PANEL_BARS = { palette: 1, color_picker: 1, texturelist: 1 };
   function place(toolbarId, item, afterId) {
     if (item && created.indexOf(item) < 0) adoptStale(item);// items made by Java (actions) are not built by mk()
+    if (!PANEL_BARS[toolbarId]) return false;
     placements.push([toolbarId, item, afterId]);
     return placeOnce(toolbarId, item, afterId);
+  }
+  /**
+   * Takes the CPM+ art items off every bar that is not a panel bar - also the ones a beta29 / beta30 layout saved
+   * (Blockbench re-inserts saved ids when the item appears: its 'postload' list) - and saves the cleaned layout.
+   */
+  function clearTopBars() {
+    var bars = G.Toolbars || {}, mine = /^cpmplus_art_/;
+    Object.keys(bars).forEach(function (k) {
+      var bar = bars[k];
+      if (!bar || PANEL_BARS[k]) return;
+      var hit = false;
+      if (Array.isArray(bar.postload)) {
+        var n = bar.postload.length;
+        bar.postload = bar.postload.filter(function (p) { return !(p && typeof p[0] === 'string' && mine.test(p[0])); });
+        if (bar.postload.length !== n) hit = true;
+        if (!bar.postload.length) bar.postload = null;
+      }
+      var kids = bar.children;
+      if (Array.isArray(kids)) for (var i = kids.length - 1; i >= 0; i--) {
+        var c = kids[i];
+        if (c && typeof c === 'object' && mine.test(c.id || '')) {
+          kids.splice(i, 1);
+          try { if (c.toolbars && c.toolbars.remove) c.toolbars.remove(bar); } catch (e) { }
+          hit = true;
+        }
+      }
+      if (hit) { try { bar.update(true); bar.save(); } catch (e) { } }
+    });
   }
   function slider(id, nameKey, min, max, def, optName, cond, extra) {
     var s = mk('NumSlider', id, Object.assign({
@@ -560,8 +594,96 @@
     if (near) L[best] = [x, y]; else { L.push([x, y]); if (L.length > 8) L.shift(); }
     return prev;
   }
+  /**
+   * The pixels of a canvas as they were when the stroke started (one copy per canvas the stroke touches). get(x, y)
+   * -> [r,g,b,a] in TEXTURE pixels (layer offset handled), or null outside the canvas or the face being painted.
+   * done: per-pixel strongest weight already applied in this stroke.
+   */
+  function makeSnap(ctx, off) {
+    var c = ctx.canvas, w = c.width, h = c.height, d = ctx.getImageData(0, 0, w, h).data;
+    var s = { ctx: ctx, w: w, h: h, off: [off[0], off[1]], d: d, done: new Map() };
+    s.get = function (x, y) {
+      x = Math.round(x); y = Math.round(y);
+      var face = G.Painter && G.Painter.editing_area;
+      if (face && typeof face === 'object' && (x < Math.floor(face[0]) || y < Math.floor(face[1]) || x >= face[2] || y >= face[3])) return null;
+      var px = x - s.off[0], py = y - s.off[1];
+      if (px < 0 || py < 0 || px >= w || py >= h) return null;
+      var i = (py * w + px) * 4;
+      return [d[i], d[i + 1], d[i + 2], d[i + 3]];
+    };
+    return s;
+  }
+  function strokeSnap(ctx) {
+    var list = stroke.snaps || (stroke.snaps = []), off = (G.Painter && G.Painter.current && G.Painter.current.offset) || [0, 0], c = ctx.canvas;
+    for (var i = 0; i < list.length; i++) {
+      var s = list[i];
+      if (s.ctx !== ctx) continue;
+      if (s.w === c.width && s.h === c.height && s.off[0] === off[0] && s.off[1] === off[1]) return s;
+      // the layer grew under the brush: copy it again, the pixels already done stay done
+      var again = makeSnap(ctx, off); again.done = s.done; list[i] = again;
+      return again;
+    }
+    var n = makeSnap(ctx, off); list.push(n);
+    return n;
+  }
+  /**
+   * 'Misturar' (default): every pixel under the brush becomes the mix of itself and its neighbours AS THEY WERE when
+   * the stroke started (the two tones of a border give the tones in between), once per stroke - going over it again in
+   * the same stroke changes nothing, a new stroke mixes further. Only the face being painted is read.
+   */
+  function smudgeMix(o) {
+    var snap = strokeSnap(o.ctx), bs = brushSettings();
+    var strength = (G.BarItems.cpmplus_art_smudge_strength ? G.BarItems.cpmplus_art_smudge_strength.get() : 100) / 100;
+    var r = Math.max(1, Math.round((o.size || 1) / 4)), useSnap = opt('smudge.snap', false);
+    if (useSnap && !stroke.snap) stroke.snap = snapper(o.texture);
+    editBrush(o, function (px, local, x, y) {
+      if (px.a <= 0) return px;// never paints where there is nothing: the shape (alpha) of the texture is kept
+      var me = snap.get(x, y); if (!me || me[3] === 0) return px;
+      var a = clamp(strength * local * bs.opacity, 0, 1), key = y * 65536 + x, prev = snap.done.get(key);
+      if (prev !== undefined && a <= prev + 1e-6) return px;
+      var sum = [0, 0, 0], n = 0;
+      for (var j = -r; j <= r; j++) for (var i = -r; i <= r; i++) {
+        var c = snap.get(x + i, y + j); if (!c || c[3] === 0) continue;
+        sum[0] += c[0]; sum[1] += c[1]; sum[2] += c[2]; n++;
+      }
+      if (!n) return px;
+      snap.done.set(key, a);
+      var rgb = lerpRgb([me[0], me[1], me[2]], [sum[0] / n, sum[1] / n, sum[2] / n], a);
+      if (useSnap) rgb = stroke.snap(rgb);
+      return { r: byte(rgb[0]), g: byte(rgb[1]), b: byte(rgb[2]), a: px.a };
+    });
+  }
+  /**
+   * Esfumar pixel: where two colours meet, the pixels on both sides become a checker of THOSE two colours (no new
+   * colour; the checker is fixed to the texture so it lines up). Read from the stroke start: a stroke gives a 2 px
+   * band, going over it again in a new stroke widens it.
+   */
+  function smudgePxPixel(x, y, px, alpha, o) {
+    if (!px || px.a <= 0 || !o || !o.ctx) return px;
+    var snap = strokeSnap(o.ctx), me = snap.get(x, y);
+    if (!me || me[3] === 0) return px;
+    var counts = {}, best = null, bestN = 0;
+    for (var j = -1; j <= 1; j++) for (var i = -1; i <= 1; i++) {
+      if (!i && !j) continue;
+      var c = snap.get(x + i, y + j);
+      if (!c || c[3] === 0 || (c[0] === me[0] && c[1] === me[1] && c[2] === me[2])) continue;
+      if (okDist(me, c) < 0.02) continue;// almost the same colour (noise of an HD texture): not a border
+      var k = ckey(c[0], c[1], c[2]);
+      counts[k] = (counts[k] || 0) + 1;
+      if (counts[k] > bestN) { bestN = counts[k]; best = c; }
+    }
+    if (!best) return px;
+    // the same order on both sides of the border, so both halves of the band make ONE checker
+    var la = toLch(me[0], me[1], me[2]).L, lb = toLch(best[0], best[1], best[2]).L;
+    var meFirst = la > lb || (la === lb && ckey(me[0], me[1], me[2]) > ckey(best[0], best[1], best[2]));
+    var hi = meFirst ? me : best, lo = meFirst ? best : me, use = ((x + y) & 1) ? hi : lo;
+    return { r: use[0], g: use[1], b: use[2], a: px.a };
+  }
   function smudgeDab(o) {
-    var mode = opt('smudge.mode', 'smear'), last = lastNear(o.x, o.y);
+    var kind = opt('smudge.kind', 'mix');
+    if (kind === 'mix') { smudgeMix(o); return; }
+    // the older ways (Mais opções): drag the colour like a finger, drag whole pixels, jumble pixels
+    var mode = kind === 'drag' ? 'smear' : kind === 'dragpx' ? 'pixel' : 'jumble', last = lastNear(o.x, o.y);
     stroke.dab = (stroke.dab || 0) + 1;
     var dx = last ? o.x - last[0] : 0, dy = last ? o.y - last[1] : 0;
     if ((mode === 'smear' || mode === 'pixel') && (!last || (dx === 0 && dy === 0))) return;
@@ -607,21 +729,31 @@
       return { r: byte(rgb[0]), g: byte(rgb[1]), b: byte(rgb[2]), a: px.a };
     });
   }
+  /** a brush size the tool starts with the first time (Blockbench keeps one size per tool) */
+  function defaultSize(tool, size) {
+    try { if (tool && tool.tool_settings && tool.tool_settings.brush_size === undefined) tool.tool_settings.brush_size = size; } catch (e) { }
+  }
   function installSmudge() {
     var b = brushBase();
     b.blend_modes = false;
     b.interval = 1;
-    b.onStrokeStart = function (o) { beginStroke(o); stroke.snap = null; stroke.dab = 0; };
+    b.onStrokeStart = function (o) { beginStroke(o); stroke.snap = null; stroke.snaps = null; stroke.dab = 0; };
     b.draw = function (o) { smudgeDab(o); };
-    smudge.tool = makeTool('cpmplus_art_smudge', 'cpmplus.art.smudge', 'touch_app', b);
+    smudge.tool = makeTool('cpmplus_art_smudge', 'cpmplus.art.smudge', 'blur_on', b);
+    defaultSize(smudge.tool, 3);
     var on = function () { return isTool('cpmplus_art_smudge'); };
-    smudge.mode = select('cpmplus_art_smudge_mode', 'cpmplus.art.smudge.mode', ['smear', 'pixel', 'jumble', 'blur'], 'smear', 'smudge.mode', on);
-    smudge.strength = slider('cpmplus_art_smudge_strength', 'cpmplus.art.smudge.strength', 1, 100, 50, 'smudge.strength', on);
+    // beta31: new option names (smudge.kind / smudge.str), so a beta29 setting does not hide the new default
+    smudge.mode = select('cpmplus_art_smudge_mode', 'cpmplus.art.smudge.kind', ['mix', 'drag', 'dragpx', 'jumble'], 'mix', 'smudge.kind', on);
+    smudge.strength = slider('cpmplus_art_smudge_strength', 'cpmplus.art.smudge.strength', 1, 100, 100, 'smudge.str', on);
     smudge.snap = toggle('cpmplus_art_smudge_snap', 'cpmplus.art.smudge.snap', 'palette', false, 'smudge.snap',
-      function () { return on() && ['smear', 'blur'].indexOf(opt('smudge.mode', 'smear')) >= 0; });
-    place('tools', smudge.tool, 'cpmplus_art_shade');
-    var after = 'cpmplus_art_shade_once';
-    [smudge.mode, smudge.strength, smudge.snap].forEach(function (it) { place('brush', it, after); after = it.id; });
+      function () { return on() && ['mix', 'drag'].indexOf(opt('smudge.kind', 'mix')) >= 0; });
+    // Esfumar pixel: its own tool, nothing to set
+    var bp = brushBase();
+    bp.blend_modes = false;
+    bp.onStrokeStart = function (o) { beginStroke(o); stroke.snaps = null; };
+    bp.changePixel = function (x, y, px, alpha, o) { return smudgePxPixel(x, y, px, alpha, o); };
+    smudge.pxTool = makeTool('cpmplus_art_smudge_px', 'cpmplus.art.smudgepx', 'grid_on', bp);
+    defaultSize(smudge.pxTool, 3);
   }
 
   // =================================================================== dither patterns (shared by the brush, gradient and auto shading)
@@ -779,20 +911,25 @@
       try { G.Blockbench.setStatusBarText(Math.round(dd[0]) + ' x ' + Math.round(dd[1]) + ', ' + t('cpmplus.art.grad.status', n)); } catch (e) { }
     }, { no_undo: true, use_cache: true });
   }
+  /**
+   * beta31: the pixel art style is on only when it is chosen in the CPM+ panel / menu (api.pixelGradient); picking
+   * Blockbench's own Gradient button gives Blockbench's normal gradient, with nothing of CPM+ on its bar.
+   */
   function installGradient() {
-    var onGrad = function () { return isTool('gradient_tool'); };
-    var onPixel = function () { return onGrad() && opt('grad.style', 'smooth') === 'pixel'; };
-    grad.style = select('cpmplus_art_grad_style', 'cpmplus.art.grad.style', ['smooth', 'pixel'], 'smooth', 'grad.style', onGrad);
+    var onPixel = function () { return isTool('gradient_tool') && !!grad.pixelOn; };
     grad.colors = select('cpmplus_art_grad_colors', 'cpmplus.art.grad.colors', ['two', 'fade', 'ramp'], 'two', 'grad.colors', onPixel);
     grad.steps = slider('cpmplus_art_grad_steps', 'cpmplus.art.grad.steps', 2, 16, 5, 'grad.steps', function () { return onPixel() && opt('grad.colors', 'two') !== 'ramp'; });
     grad.dither = select('cpmplus_art_grad_dither', 'cpmplus.art.grad.dither', ['none', 'bayer2', 'bayer4', 'bayer8'], 'none', 'grad.dither', onPixel);
     grad.shape = select('cpmplus_art_grad_shape', 'cpmplus.art.grad.shape', ['linear', 'radial'], 'linear', 'grad.shape', onPixel);
-    var after = 'cpmplus_art_dither_shift';
-    [grad.style, grad.colors, grad.steps, grad.dither, grad.shape].forEach(function (it) { place('brush', it, after); after = it.id; });
+    var gt = G.BarItems.gradient_tool;
+    if (gt && typeof gt.on === 'function') {
+      var sub = gt.on('select', function () { grad.pixelOn = !!grad.viaApi; });
+      undoers.push(function () { try { if (sub) sub.delete(); } catch (e) { } });
+    }
     var P = G.Painter, orig = P && P.useGradientTool;
     if (typeof orig !== 'function') { warn('Painter.useGradientTool not found: the pixel art gradient is off'); return; }
     var patched = function (tex, x, y, event, uvTag) {
-      if (opt('grad.style', 'smooth') !== 'pixel') return orig.apply(this, arguments);
+      if (!grad.pixelOn) return orig.apply(this, arguments);
       try { return pixelGradient(tex, x, y, event, uvTag); } catch (e) { warn('pixel gradient failed, using the normal one', e); return orig.apply(this, arguments); }
     };
     P.useGradientTool = patched;
@@ -949,9 +1086,6 @@
           '<div>',
           '<p class="cpmplus_art_intro">' + esc(t('cpmplus.art.tnoise.intro')) + '</p>',
           '<div class="cpmplus_art_grid">',
-          '<label>' + esc(t('cpmplus.art.tnoise.mode')) + '</label><select v-model="mode" @change="upd">',
-          ['light', 'ramp', 'hue', 'rgb'].map(function (k) { return '<option value="' + k + '">' + esc(t('cpmplus.art.tnoise.mode.' + k)) + '</option>'; }).join(''),
-          '</select>',
           '<label>' + esc(t('cpmplus.art.tnoise.amount')) + ' <b>{{amount}}</b></label><input type="range" min="1" max="100" v-model="amount" @input="upd">',
           '<label>' + esc(t('cpmplus.art.tnoise.cover')) + ' <b>{{cover}}%</b></label><input type="range" min="1" max="100" v-model="cover" @input="upd">',
           '<label>' + esc(t('cpmplus.art.tnoise.where')) + '</label><select v-model="where" @change="upd">',
@@ -959,9 +1093,14 @@
           '<option value="selection" :disabled="!hasSel">' + esc(t('cpmplus.art.tnoise.where.selection')) + '</option>',
           '<option value="parts" :disabled="!hasParts">' + esc(t('cpmplus.art.tnoise.where.parts')) + '</option>',
           '</select>',
+          '</div>',
+          '<details class="cpmplus_art_more"><summary>' + esc(t('cpmplus.art.more')) + '</summary><div class="cpmplus_art_grid">',
+          '<label>' + esc(t('cpmplus.art.tnoise.mode')) + '</label><select v-model="mode" @change="upd">',
+          ['light', 'ramp', 'hue', 'rgb'].map(function (k) { return '<option value="' + k + '">' + esc(t('cpmplus.art.tnoise.mode.' + k)) + '</option>'; }).join(''),
+          '</select>',
           '<label>' + esc(t('cpmplus.art.tnoise.seed')) + '</label><div class="cpmplus_art_row" style="margin:0"><input type="number" min="1" max="99999" v-model="seed" @change="upd" style="width:90px"><button @click="reseed">' + esc(t('cpmplus.art.tnoise.reseed')) + '</button></div>',
           '<label>' + esc(t('cpmplus.art.tnoise.live')) + '</label><input type="checkbox" v-model="live" @change="upd">',
-          '</div>',
+          '</div></details>',
           '<p class="cpmplus_art_note">{{note}}</p>',
           '</div>'
         ].join('')
@@ -1054,15 +1193,17 @@
           '<span class="cpmplus_art_hint">{{f.count}} px</span></div></div>',
           '<div class="cpmplus_art_grid">',
           '<label>' + esc(t('cpmplus.art.swap.hue')) + ' <b>{{dh}}°</b></label><input type="range" min="-180" max="180" v-model="dh" @input="upd">',
-          '<label>' + esc(t('cpmplus.art.swap.sat')) + ' <b>{{sat}}%</b></label><input type="range" min="0" max="200" v-model="sat" @input="upd">',
-          '<label>' + esc(t('cpmplus.art.swap.light')) + ' <b>{{dl}}</b></label><input type="range" min="-50" max="50" v-model="dl" @input="upd">',
           '<label>' + esc(t('cpmplus.art.tnoise.where')) + '</label><select v-model="where" @change="upd">',
           '<option value="all">' + esc(t('cpmplus.art.tnoise.where.all')) + '</option>',
           '<option value="selection" :disabled="!hasSel">' + esc(t('cpmplus.art.tnoise.where.selection')) + '</option>',
           '<option value="parts" :disabled="!hasParts">' + esc(t('cpmplus.art.tnoise.where.parts')) + '</option>',
           '</select>',
-          '<label>' + esc(t('cpmplus.art.tnoise.live')) + '</label><input type="checkbox" v-model="live" @change="upd">',
           '</div>',
+          '<details class="cpmplus_art_more"><summary>' + esc(t('cpmplus.art.more')) + '</summary><div class="cpmplus_art_grid">',
+          '<label>' + esc(t('cpmplus.art.swap.sat')) + ' <b>{{sat}}%</b></label><input type="range" min="0" max="200" v-model="sat" @input="upd">',
+          '<label>' + esc(t('cpmplus.art.swap.light')) + ' <b>{{dl}}</b></label><input type="range" min="-50" max="50" v-model="dl" @input="upd">',
+          '<label>' + esc(t('cpmplus.art.tnoise.live')) + '</label><input type="checkbox" v-model="live" @change="upd">',
+          '</div></details>',
           '<div class="cpmplus_art_row"><button @click="toColor1">' + esc(t('cpmplus.art.swap.toColor1')) + '</button><button @click="reset">' + esc(t('cpmplus.art.swap.reset')) + '</button></div>',
           '<p class="cpmplus_art_note">{{note}}</p>',
           '</div>'
@@ -1309,6 +1450,8 @@
           '<div class="cpmplus_art_grid">',
           '<label>' + esc(t('cpmplus.art.as.scope')) + '</label><select v-model="scope" @change="rescope"><option value="selected" :disabled="!hasSel">' + esc(t('cpmplus.art.as.scope.selected')) + '</option><option value="all">' + esc(t('cpmplus.art.as.scope.all')) + '</option></select>',
           '<label>' + esc(t('cpmplus.art.as.light')) + '</label><select v-model="light" @change="upd">' + opts(['top', 'top_front', 'top_left'], 'light') + '</select>',
+          '</div>',
+          '<details class="cpmplus_art_more"><summary>' + esc(t('cpmplus.art.more')) + '</summary><div class="cpmplus_art_grid">',
           rng('face', 0, 3), rng('vertical', 0, 3), rng('ao', 0, 3), rng('range', 1, 8, ' px'),
           '<label>' + esc(t('cpmplus.art.as.edges')) + '</label><select v-model="edges" @change="upd">' + opts(['none', 'bevel', 'contour'], 'edges') + '</select>',
           '<template v-if="edges!==\'none\'">' + rng('edge', 1, 2) + '</template>',
@@ -1316,7 +1459,7 @@
           rng('step', 4, 40, '%'),
           '<label>' + esc(t('cpmplus.art.as.dither')) + '</label><select v-model="dither" @change="upd">' + opts(['none', 'bayer2', 'bayer4'], 'dither') + '</select>',
           '<label>' + esc(t('cpmplus.art.tnoise.live')) + '</label><input type="checkbox" v-model="live" @change="upd">',
-          '</div>',
+          '</div></details>',
           '<p class="cpmplus_art_note">{{note}}</p>',
           '</div>'
         ].join('')
@@ -1402,11 +1545,12 @@
           '<label v-if="mode==\'two\'">' + esc(t('cpmplus.art.ramp.colorB')) + ' <input type="color" v-model="b" @input="regen"></label></div>',
           '<div class="cpmplus_art_grid">',
           '<label>' + esc(t('cpmplus.art.ramp.steps')) + ' <b>{{steps}}</b></label><input type="range" min="3" max="16" v-model="steps" @input="regen">',
-          '<template v-if="mode==\'one\'">',
+          '</div>',
+          '<details class="cpmplus_art_more" v-if="mode==\'one\'"><summary>' + esc(t('cpmplus.art.more')) + '</summary><div class="cpmplus_art_grid">',
           '<label title="' + esc(t('cpmplus.art.ramp.hue.desc')) + '">' + esc(t('cpmplus.art.ramp.hue')) + ' <b>{{hue}}°</b></label><input type="range" min="0" max="90" v-model="hue" @input="regen">',
           '<label title="' + esc(t('cpmplus.art.ramp.contrast.desc')) + '">' + esc(t('cpmplus.art.ramp.contrast')) + ' <b>{{contrast}}%</b></label><input type="range" min="15" max="90" v-model="contrast" @input="regen">',
           '<label>' + esc(t('cpmplus.art.ramp.sat')) + ' <b>{{sat}}%</b></label><input type="range" min="0" max="100" v-model="sat" @input="regen">',
-          '</template></div>',
+          '</div></details>',
           '<div class="cpmplus_art_swatches big"><div v-for="c in colors" class="cpmplus_art_sw" :style="{background:c}" :title="c" @click="pick(c,$event)" @contextmenu.prevent="pick(c,{button:2})"></div></div>',
           '<p class="cpmplus_art_hint">' + esc(t('cpmplus.art.ramp.clickHint')) + '</p>',
           '<div class="cpmplus_art_row"><button @click="toPalette">' + esc(t('cpmplus.art.ramp.toPalette')) + '</button>',
@@ -1452,7 +1596,9 @@
       '.cpmplus_art_ramp h4{margin:12px 0 4px}',
       '.cpmplus_art_fams{max-height:260px;overflow-y:auto;margin:6px 0}',
       '.cpmplus_art_pickable{cursor:pointer;padding:2px 4px}',
-      '.cpmplus_art_pickable:hover{background:var(--color-button)}'
+      '.cpmplus_art_pickable:hover{background:var(--color-button)}',
+      '.cpmplus_art_more{margin:6px 0}',
+      '.cpmplus_art_more>summary{cursor:pointer;color:var(--color-accent);margin:4px 0;user-select:none}'
     ].join('\n');
     var st = document.createElement('style'); st.id = STYLE_ID; st.textContent = css; document.head.appendChild(st);
     undoers.push(function () { var e = document.getElementById(STYLE_ID); if (e) e.remove(); });
@@ -1482,7 +1628,7 @@
     env = Object.assign(env, bridge || {});
     loadState();
     installStyle();
-    var steps = [['shade', installShade], ['smudge', installSmudge], ['dither', installDither], ['gradient', installGradient], ['noise', installNoise], ['actions', installActions], ['hint', installHint]];
+    var steps = [['shade', installShade], ['smudge', installSmudge], ['dither', installDither], ['gradient', installGradient], ['noise', installNoise], ['actions', installActions], ['hint', installHint], ['bars', clearTopBars]];
     steps.forEach(function (s) { try { s[1](); } catch (e) { warn('could not install ' + s[0], e); } });
     installed = true;
     return api;
@@ -1497,6 +1643,27 @@
     if (a.swap && G.BarItems[a.swap]) place('color_picker', G.BarItems[a.swap], a.ramp || 'pick_screen_color');
     if (a.noise && G.BarItems[a.noise]) place('texturelist', G.BarItems[a.noise], 'append_to_template');
     if (a.autoshade && G.BarItems[a.autoshade]) place('texturelist', G.BarItems[a.autoshade], a.noise || 'append_to_template');
+    installTextureMenu(a);
+  }
+  /** right click on a texture (Textures panel): Sombra automática, Ruído na textura, Trocar cores */
+  function installTextureMenu(a) {
+    var M = G.Texture && G.Texture.prototype && G.Texture.prototype.menu;
+    if (!M || !Array.isArray(M.structure)) return;
+    var items = [a.autoshade, a.noise, a.swap].map(function (id) { return id && G.BarItems[id]; }).filter(Boolean);
+    if (!items.length) return;
+    // a beta loaded twice: drop the entries of the earlier copy first
+    for (var i = M.structure.length - 1; i >= 0; i--) {
+      var it = M.structure[i];
+      if (it && ((it.id && /^cpmplus_art/.test(it.id)) || it.__cpmplusArt)) M.structure.splice(i, 1);
+    }
+    var sep = typeof G.MenuSeparator === 'function' ? new G.MenuSeparator('cpmplus_art', 'CPM+') : '_';
+    if (sep && typeof sep === 'object') sep.__cpmplusArt = true;
+    M.structure.push(sep);
+    items.forEach(function (it) { M.structure.push(it); });
+    undoers.push(function () {
+      var k = M.structure.indexOf(sep); if (k >= 0) M.structure.splice(k, 1);
+      items.forEach(function (it) { var j = M.structure.indexOf(it); if (j >= 0) M.structure.splice(j, 1); });
+    });
   }
   // ---- modules (other plugin JS files that build on this core, e.g. the brush library)
   var modules = [];
@@ -1511,7 +1678,9 @@
       selectTool: function (id) { return api.selectTool(id); }, test: function () { return !!env.test; },
       onUninstall: function (f) { undoers.push(f); },
       /** true once the first-time 'new art tools' toast was shown (it already lists every tool for new users) */
-      artHintSeen: function () { return !!state.hint; }
+      artHintSeen: function () { return !!state.hint; },
+      /** the art core API (dialogs, tool selection, other modules) */
+      core: api, clearTopBars: clearTopBars
     };
   }
   /** evaluates a module source '(function (L) {... return api;})' with this core's helpers and installs it */
@@ -1519,8 +1688,9 @@
     if (api.modules[name]) return true;
     try {
       var m = (new Function('L', 'return (' + src + '\n)(L);'))(libFor());
-      if (m && typeof m.install === 'function') m.install();
       modules.push(m); api.modules[name] = m;
+      if (m && typeof m.install === 'function') m.install();
+      clearTopBars();
       return true;
     } catch (e) { warn('module ' + name + ' failed to start', e); return false; }
   };
@@ -1561,15 +1731,31 @@
     } catch (e) { warn('could not select ' + id, e); return false; }
     return true;
   };
-  /** the Gradient tool in its Pixel art style (menu entry) */
+  /** the Gradient tool in its Pixel art style (CPM+ panel / menu entry) */
   api.pixelGradient = function () {
-    setOpt('grad.style', 'pixel');
-    try { G.BarItems.cpmplus_art_grad_style.set('pixel'); } catch (e) { }
-    var ok = api.selectTool('gradient_tool');
+    grad.viaApi = true;
+    var ok = false;
+    try { ok = api.selectTool('gradient_tool'); } finally { grad.viaApi = false; }
+    grad.pixelOn = !!ok;
     refreshBrushBar();
     return ok;
   };
-  api.showToolsAgain = function () { replaceAll(); return true; };
+  /** true while the Gradient tool draws the pixel art style */
+  api.gradPixelOn = function () { return !!grad.pixelOn && isTool('gradient_tool'); };
+  /** menu 'Mostrar o painel de arte': the panel back in its place + the buttons in the Color / Textures panels */
+  api.showToolsAgain = function () {
+    replaceAll();
+    clearTopBars();
+    var p = api.modules.panel;
+    if (p && typeof p.show === 'function') p.show();
+    return true;
+  };
+  /** the CPM+ art panel, scrolled to a section ('brushes', 'tools', ...) when given */
+  api.showPanel = function (section) {
+    var p = api.modules.panel;
+    if (!p || typeof p.show !== 'function') return false;
+    return p.show(section);
+  };
   api.state = function () { return JSON.parse(JSON.stringify(state)); };
   /** QA: fixed random seed for the brushes that pick pixels at random (jumble / variation) */
   api.setSeed = function (n) { fixedSeed = n; };

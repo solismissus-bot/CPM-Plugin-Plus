@@ -754,78 +754,9 @@
     L.refreshBrushBar();
     return true;
   }
-  var libDialog = null;
-  function openLibrary() {
-    var c1 = L.primary(), c2 = L.secondary(), cur = L.opt('br.preset', 'lapis');
-    var model = {
-      sel: L.isTool(TOOL) ? cur : '',
-      groups: GROUPS.map(function (g) {
-        return {
-          id: g, name: t('cpmplus.art.br.g.' + g),
-          items: PRESETS.filter(function (p) { return p.group === g; }).map(function (p) {
-            return { id: p.id, name: t('cpmplus.art.br.p.' + p.id), desc: t('cpmplus.art.br.p.' + p.id + '.desc'), img: renderPreview(p.id, c1, c2) };
-          })
-        };
-      })
-    };
-    var dlg = new G.Dialog({
-      id: 'cpmplus_art_brush_library', title: t('cpmplus.art.br.lib.title'), width: 900, singleButton: true,
-      component: {
-        data: function () { return model; },
-        methods: { pick: function (id) { pick(id); this.sel = id; dlg.close(0); } },
-        template: [
-          '<div class="cpmplus_art_brlib">',
-          '<p class="cpmplus_art_hint">' + L.esc(t('cpmplus.art.br.lib.intro')) + '</p>',
-          '<div class="cpmplus_art_brscroll">',
-          '<div v-for="g in groups" :key="g.id"><h4>{{g.name}}</h4><div class="cpmplus_art_brgrid">',
-          '<div v-for="b in g.items" :key="b.id" class="cpmplus_art_brcard" :class="{active: b.id===sel}" :title="b.desc" :data-id="b.id" @click="pick(b.id)">',
-          '<img :src="b.img" width="128" height="48" alt=""><span>{{b.name}}</span></div>',
-          '</div></div></div></div>'
-        ].join('')
-      }
-    });
-    dlg.show();
-    libDialog = dlg;
-    return dlg;
-  }
-  var STYLE = 'cpmplus_art_brlib_style';
-  function installStyle() {
-    if (document.getElementById(STYLE)) return;
-    var st = document.createElement('style'); st.id = STYLE;
-    st.textContent = [
-      '.cpmplus_art_brscroll{max-height:calc(100vh - 260px);overflow-y:auto;overflow-x:hidden;padding-right:4px}',
-      '.cpmplus_art_brlib h4{margin:10px 0 4px}',
-      '.cpmplus_art_brgrid{display:flex;flex-wrap:wrap;gap:6px}',
-      '.cpmplus_art_brcard{width:134px;padding:3px;border:1px solid var(--color-border);border-radius:4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;box-sizing:border-box}',
-      '.cpmplus_art_brcard:hover{border-color:var(--color-accent)}',
-      '.cpmplus_art_brcard.active{border-color:var(--color-accent);background:var(--color-selected)}',
-      '.cpmplus_art_brcard img{image-rendering:pixelated;display:block;width:128px;height:48px}',
-      '.cpmplus_art_brcard span{font-size:.92em;margin-top:2px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:128px}'
-    ].join('\n');
-    document.head.appendChild(st);
-    L.onUninstall(function () { var e = document.getElementById(STYLE); if (e) e.remove(); });
-  }
-  /**
-   * one-time toast for people who already saw the beta29 'new art tools' toast (new users get that one, which now
-   * lists the Brushes too); never in the QA browser (it would cover other notices there)
-   */
-  function installHint() {
-    if (L.opt('br.hint', false)) return;
-    if (!L.artHintSeen()) { L.setOpt('br.hint', true); return; }
-    function onMode(e) {
-      try {
-        if (L.test() || L.opt('br.hint', false)) return;
-        var mode = e && e.mode ? e.mode : null, id = mode && mode.id ? mode.id : (G.Modes && G.Modes.selected && G.Modes.selected.id);
-        if (id !== 'paint') return;
-        L.setOpt('br.hint', true);
-        G.Blockbench.showToastNotification({ text: t('cpmplus.art.br.hint'), icon: 'brush', expire: 20000 });
-      } catch (x) { }
-    }
-    try { G.Blockbench.on('select_mode', onMode); L.onUninstall(function () { G.Blockbench.removeListener('select_mode', onMode); }); } catch (e) { }
-  }
+  /** beta31: the brush library is the 'Pincéis' part of the CPM+ panel (no window of its own any more) */
+  function openLibrary() { return L.core.showPanel('brushes'); }
   api.install = function () {
-    installStyle();
-    installHint();
     var b = L.brushBase();
     b.interval = 1;
     b.blend_modes = false;
@@ -844,18 +775,26 @@
       onChange: function (sel) { L.setOpt('br.preset', sel.value); L.refreshBrushBar(); }
     });
     try { ui.preset.set(start); } catch (e) { }
-    ui.library = L.mk('Action', 'cpmplus_art_br_library', {
-      name: t('cpmplus.art.br.lib.menu'), description: t('cpmplus.art.br.lib.menu.desc'), icon: 'auto_awesome_mosaic', category: 'paint', condition: on,
-      click: function () { openLibrary(); }
-    });
     ui.scatter = L.slider('cpmplus_art_br_scatter', 'cpmplus.art.br.scatter', 0, 200, 100, 'br.scatter', function () { return on() && !!USES_SCATTER[preset().fam]; });
     ui.vary = L.slider('cpmplus_art_br_vary', 'cpmplus.art.br.vary', 0, 200, 100, 'br.vary', function () { return on() && !!USES_VARY[preset().fam]; });
-    L.place('tools', ui.tool, 'cpmplus_art_noise');
-    var after = 'cpmplus_art_noise_cover';
-    [ui.library, ui.preset, ui.scatter, ui.vary].forEach(function (it) { L.place('brush', it, after); after = it.id; });
   };
-  api.uninstall = function () { S = null; T = null; previewCache = {}; try { if (libDialog) libDialog.close(); } catch (e) { } libDialog = null; };
+  api.uninstall = function () { S = null; T = null; previewCache = {}; };
   api.openLibrary = openLibrary;
+  /** the library for the CPM+ panel: groups in order, each brush with its name, tip and family */
+  api.catalog = function () {
+    return GROUPS.map(function (g) {
+      return {
+        id: g, name: t('cpmplus.art.br.g.' + g),
+        items: PRESETS.filter(function (p) { return p.group === g; }).map(function (p) {
+          return { id: p.id, name: t('cpmplus.art.br.p.' + p.id), desc: t('cpmplus.art.br.p.' + p.id + '.desc'), fam: p.fam };
+        })
+      };
+    });
+  };
+  /** the brush the Pincéis tool paints with */
+  api.current = function () { return preset().id; };
+  /** true when the options Espalhar / Variação do something for this brush */
+  api.uses = function (id) { var p = BY_ID[id] || preset(); return { scatter: !!USES_SCATTER[p.fam], vary: !!USES_VARY[p.fam] }; };
   api.pick = pick;
   api.setPreset = setPreset;
   api.groupOf = function (id) { return BY_ID[id] ? BY_ID[id].group : null; };

@@ -16,6 +16,8 @@ public final class ArtCore {
 	public static final String CORE = "assets/cpmplus_art/js/art_core.js";
 	/** beta30: the brush library (one engine, many community-style brushes), a module of the core */
 	public static final String BRUSHES = "assets/cpmplus_art/js/brush_core.js";
+	/** beta31: the "CPM+ Pintar" panel (every art tool with its name, the brushes, the options), a module of the core */
+	public static final String PANEL = "assets/cpmplus_art/js/panel_core.js";
 	private static Object core;
 
 	private ArtCore() {
@@ -39,22 +41,23 @@ public final class ArtCore {
 		String brushes = resource(BRUSHES);
 		if (brushes == null)DomGlobal.console.warn("CPM+: " + BRUSHES + " is missing from the plugin");
 		else loadModule(c, "brushes", brushes);
+		String panel = resource(PANEL);
+		if (panel == null)DomGlobal.console.warn("CPM+: " + PANEL + " is missing from the plugin");
+		else loadModule(c, "panel", panel);
 		if (test)expose(c);
 	}
 
-	/** the brush library dialog (CPM+ &gt; Textura) */
-	public static void openBrushLibrary() {
-		openBrushLibrary(core());
+	/** the "CPM+ Pintar" panel, scrolled to a section (brushes, tools, colours, auto) or null for the top */
+	public static void showPanel(String section) {
+		showPanel(core(), section);
 	}
 
 	private static native void loadModule(Object core, String name, String src) /*-{
 		core.loadModule(name, src);
 	}-*/;
 
-	private static native void openBrushLibrary(Object core) /*-{
-		var m = core.modules && core.modules.brushes;
-		if (!m)throw new Error('the brush library did not start');
-		m.openLibrary();
+	private static native void showPanel(Object core, String section) /*-{
+		if (!core.showPanel(section))throw new Error('the CPM+ art panel did not start');
 	}-*/;
 
 	public static void unload() {
