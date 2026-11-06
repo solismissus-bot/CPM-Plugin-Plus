@@ -33,7 +33,7 @@
 | **Ctrl + Alt + Shift + R** | Espelhar pose |
 | **Ctrl + Alt + Shift + V** | Colar pose |
 
-🆕 = novo na beta28. Pra trocar ou criar atalho pra qualquer outra ferramenta: **Arquivo > Configurações > Atalhos**, categoria **Ferramentas**, procure pelo nome. Se um atalho não funcionar, veja nessa mesma tela se outra ferramenta (de outro plugin, por exemplo) usa a mesma tecla e troque uma delas.
+🆕 = novidade recente (beta28: ferramentas de animação; beta29: Arte e cores, seção 5). Pra trocar ou criar atalho pra qualquer outra ferramenta: **Arquivo > Configurações > Atalhos**, categoria **Ferramentas**, procure pelo nome. Se um atalho não funcionar, veja nessa mesma tela se outra ferramenta (de outro plugin, por exemplo) usa a mesma tecla e troque uma delas.
 
 Quase tudo fica no menu **CPM+** (barra de cima do Blockbench), dividido em: **Ajustes do modelo, Animação, Modelagem, Textura, Otimizar, Prévia, Ajuda**. Muita coisa também aparece no **clique direito** numa pasta, num cubo ou numa animação.
 
@@ -177,7 +177,29 @@ Regras gerais:
 | **Membros dobráveis (cotovelo, joelho, cintura)...** | Divide braço, perna ou corpo em dois pra parte de baixo dobrar, sem estragar a skin. No clique direito: Criar cotovelo/joelho, Testar dobra, Desfazer. |
 | **Curvar peça (saia, poncho, cabelo, cauda)...** | O cubo vira uma corrente de fatias em arco. |
 
-## 5. Textura e otimização
+## 5. 🆕 Arte e cores (modo Pintar)
+
+Tudo fica na tela normal de pintura do Blockbench (aba **Pintar**), e também em **CPM+ > Textura**:
+- **Barra de ferramentas** (do lado do Pincel): **Sombra**, **Esfumar**, **Pontilhado** e **Variação**. As opções de cada uma aparecem na barra de cima, junto com tamanho, opacidade e suavidade do pincel. Passe o mouse em cima de uma opção pra ver a explicação.
+- **Degradê** do Blockbench: ganhou o estilo **Pixel art** (escolha na barra de cima quando o Degradê estiver selecionado).
+- **Painel de cores** (embaixo do seletor de cor, e na aba Paleta): **Gerar rampa** e **Trocar cores**.
+- **Painel de Texturas** (botões no topo): **Ruído na textura** e **Sombra automática**.
+
+Regras gerais: os pincéis usam o tamanho, a forma, a suavidade, o espelho e o pixel-perfect normais do Blockbench, funcionam no modelo 3D e na textura 2D, e **cada traço é um Ctrl+Z**. O **botão direito** faz o contrário do esquerdo; ele usa o atalho "Pintar com a cor secundária" do Blockbench, normalmente o botão direito. As janelas mostram **prévia ao vivo no modelo**, nada muda antes de Confirmar, e um Ctrl+Z desfaz tudo. Se uma ferramenta sumiu da barra: **CPM+ > Textura > Mostrar as ferramentas de arte na barra de novo**.
+
+| Ferramenta | Como usar |
+|---|---|
+| **Sombra** (pincel, ícone ◐) | Passe por cima do que já está pintado: escurece sem você escolher o tom (botão direito clareia). **Modos:** **Luz e sombra**: a sombra puxa pro azul e a luz pro amarelo, como os artistas fazem, sem precisar de paleta. **Degrau da rampa**: anda exatamente 1 tom na rampa, usando só tons que já existem na textura (ou nas suas rampas salvas); no tom mais escuro ele para. **Matiz/sat/luz**: soma os valores que você escolher. **Uma vez por traço** (ligado): passar de novo no mesmo pixel no mesmo traço não escurece mais; desligue pra acumular. **Força**: quanto cada passada muda. |
+| **Esfumar** (pincel, ícone de dedo) | Arraste na direção em que quer puxar a cor. **Suave**: mistura as cores (tons no meio), bom pra textura HD; ligue **Só cores que já existem** pra não sujar a paleta. **Arrastar pixels**: arrasta os pixels sem criar nenhuma cor nova (pixel art). **Misturar pixels**: embaralha os pixels perto do pincel (sem cor nova). **Desfocar**: média com os vizinhos. Nunca puxa cor de outra face do modelo e nunca pinta onde é transparente. |
+| **Pontilhado** (pincel, ícone de pontos) | Pinta um padrão de pontinhos alinhado aos pixels. **Padrão:** Xadrez, Bayer 4×4/8×8 (mais suave), Linhas, Colunas, Diagonais ou Pontos. **Densidade:** quantos pixels recebem a cor (50 = metade). **Buracos:** manter o que está embaixo ou pintar com a cor 2. **Botão direito:** pinta as casas que sobraram com a cor 2, e as duas passadas formam o padrão de duas cores. **Deslocar padrão:** empurra o padrão pro lado, pra casar os pontos entre faces vizinhas. |
+| **Variação** (pincel, ícone de pontos soltos) | Tira o "chapado" variando pixel por pixel. **Claro/escuro** (luz quente, sombra fria), **Degraus** (um tom acima ou abaixo, só tons que existem), **Matiz** ou **Cor 1 + 2** (pinta com a cor 1 ou a cor 2 ao acaso). **Cobertura:** quantos pixels mudam. |
+| **Degradê → estilo Pixel art** (ferramenta Degradê do Blockbench) | Selecione o Degradê e troque o **Estilo** pra **Pixel art**, ou use CPM+ > Textura > Degradê pixel art. **Cores:** Cor 1 → 2, Cor 1 → nada (some com pontilhado) ou **Rampa ativa** (suas rampas). **Degraus:** quantos tons (2 a 16). **Pontilhado:** mistura só tons vizinhos com pontinhos, em vez de faixas. **Forma:** linear ou radial. Arraste como no degradê normal; Shift trava a direção, botão direito inverte. O estilo **Suave** continua sendo o degradê original do Blockbench. |
+| **Gerar rampa** (painel de cores, ícone de paleta) | Cria os tons de sombra e luz de uma cor: a partir de **uma cor** (com mudança de matiz: sombras pro azul/roxo, luzes pro amarelo) ou **entre duas cores**. Ajuste tons, mudança de matiz, contraste e saturação nas pontas. Clique num tom pra usar como cor 1 (botão direito: cor 2). **Pôr na paleta**, **Salvar em Minhas rampas** (o pincel Sombra e o Degradê pixel art usam) e **Achar rampas na textura** (mostra as rampas que já existem no seu desenho). |
+| **Trocar cores (família)** (painel de cores) | Mostra as cores da textura agrupadas em famílias (mesma cor, do escuro ao claro). Clique numa família e mude **matiz**, **saturação** ou **brilho**: todos os tons dela mudam juntos e o **sombreado continua igual**. **Virar a cor 1** leva a família pra cor que está selecionada. **Onde:** textura inteira, só a seleção ou só as peças selecionadas. |
+| **Ruído na textura** (painel de Texturas) | Mesma ideia da Variação, de uma vez: textura inteira, seleção ou peças selecionadas. Tipo (claro/escuro, degraus da textura, matiz, colorido), intensidade, cobertura e **semente** (mesma semente = mesmo resultado; "Outra" sorteia). |
+| **Sombra automática (cubos)** (painel de Texturas) | Uma primeira passada de luz e sombra calculada pela forma do modelo, na pose normal. **A luz vem de** cima, de cima e frente, ou de cima e do lado esquerdo do personagem. **Luz por face:** faces viradas pra luz clareiam e as opostas escurecem. **Degradê de cima pra baixo:** o corpo todo fica mais claro em cima. **Sombra de contato:** escurece onde uma peça encosta em outra (pescoço, axila, embaixo do cabelo); **Alcance** diz até onde. **Bordas:** destaque em cima e sombra embaixo, ou contorno escuro. **Tons:** luz quente/sombra fria ou só tons que a textura já tem. **Pontilhado entre degraus** opcional. Use em **peças selecionadas** ou no modelo todo; depois é só retocar à mão. |
+
+## 6. Textura e otimização
 
 | Item | Onde | Como usar |
 |---|---|---|
@@ -185,7 +207,7 @@ Regras gerais:
 | **Conferir simetria (pintura espelhada)** | CPM+ > Textura | Mostra peças em que o pincel espelhado não pinta e ajuda a alinhar. |
 | **Achar peças de cor única** / **Virar cor sólida…** | CPM+ > Otimizar / clique direito no cubo | Peça de uma cor só vira cubo de cor (menos textura). |
 
-## 6. Prévia (CPM+ > Prévia)
+## 7. Prévia (CPM+ > Prévia)
 
 | Item | Como usar |
 |---|---|
@@ -194,13 +216,13 @@ Regras gerais:
 | **Item na mão (prévia do editor do CPM)** / **Item na mão...** | Mostra um item na mão pra conferir poses; escolha o item. Só visual, não vai no arquivo. |
 | **🆕 Rastro das pontas, Prévia em degrau, Silhueta, Clicar de novo pega a peça de trás** | Veja a seção 3, "Ver melhor". |
 
-## 7. Ajuda (CPM+ > Ajuda)
+## 8. Ajuda (CPM+ > Ajuda)
 
 - **Limpar armazenamento do CPM...**: mostra quanto espaço o editor do CPM usa dentro do Blockbench e apaga autosaves antigos.
 
 ---
 
-## 8. Avisos automáticos no export (Arquivo > Exportar .cpmproject)
+## 9. Avisos automáticos no export (Arquivo > Exportar .cpmproject)
 
 O plugin confere o modelo antes de exportar e mostra uma lista. Cada linha tem **Mostrar** (acha a peça) e, quando dá, um botão de conserto.
 
@@ -219,7 +241,7 @@ O plugin confere o modelo antes de exportar e mostra uma lista. Cada linha tem *
 | **🆕 Cabeça para de seguir o mouse** | Animação não aditiva com keys na cabeça desliga o olhar. Só informa (às vezes é de propósito). | Abre o Raio-X (Devolver pro Minecraft). |
 | **Fórmulas e camadas da skin** | Animação com fórmula Molang ou sem espaço nas camadas da skin. | Transformar em keyframes / escolher camadas. |
 
-## 9. Correções automáticas (não precisa fazer nada)
+## 10. Correções automáticas (não precisa fazer nada)
 
 - Animações saem iguais no jogo (sem quadros extras, suave continua suave, toggle de 1 quadro, fórmulas).
 - Modelos pesados abrem, salvam e exportam bem mais rápido, com barra de progresso.

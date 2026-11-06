@@ -218,6 +218,7 @@ public class PluginStart implements EntryPoint {
 		l.add(new Feature("W8LateInstall", W8LateInstall::install, W8LateInstall::uninstall));
 		l.add(new Feature("W10GatedInstall", W10GatedInstall::install, W10GatedInstall::uninstall));
 		l.add(new Feature("ExtraInstall", com.tom.cpm.blockbench.features.ExtraInstall::install, com.tom.cpm.blockbench.features.ExtraInstall::uninstall));// CPM+ beta2: F5 F6 G63 F4 E2+G61 G3
+		l.add(new Feature("ArtInstall", com.tom.cpm.blockbench.features.ArtInstall::install, com.tom.cpm.blockbench.features.ArtInstall::uninstall));// CPM+ beta29: Arte e cores
 		return l;
 	}
 
