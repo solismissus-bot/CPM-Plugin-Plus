@@ -34,7 +34,7 @@
       ctrls: [C('cpmplus_art_grad_steps', 'slider'), C('cpmplus_art_grad_dither', 'select'), C('cpmplus_art_grad_colors', 'select', 1),
         C('cpmplus_art_grad_shape', 'select', 1)] }
   ];
-  var BRUSH_TOOL = { id: BT, key: 'brushes', size: true, ctrls: [C('cpmplus_art_br_scatter', 'slider', 1), C('cpmplus_art_br_vary', 'slider', 1)] };
+  var BRUSH_TOOL = { id: BT, key: 'brushes', size: true, ctrls: [C('cpmplus_art_br_scatter', 'slider', 1), C('cpmplus_art_br_vary', 'slider', 1), C('cpmplus_art_br_style', 'seg', 1)] };
   var COLOURS = [{ id: 'ramp', icon: 'color_lens', key: 'ramp' }, { id: 'swap', icon: 'find_replace', key: 'swap' }];
   var AUTOS = [{ id: 'autoshade', icon: 'wb_shade', key: 'autoshade' }, { id: 'noise', icon: 'texture', key: 'tnoise' }];
   function toolDef(id) {
@@ -68,9 +68,13 @@
   }
   function sizeSlider() { return G.BarItems.slider_brush_size; }
   /** reads everything the panel shows from Blockbench (tool, brush, option values) */
+  var lastPixel = null;
   function refresh() {
     if (!vm) return;
     var id = activeTool(), def = toolDef(id), B = brushes();
+    // the previews follow the look of the texture being painted (HD or 64x64 pixel art)
+    var px = B && B.previewPixel ? B.previewPixel() : null;
+    if (px !== lastPixel) { lastPixel = px; refreshPreviews(); }
     vm.active = id;
     vm.brush = B ? B.current() : '';
     if (!def) { vm.title = ''; vm.tip = ''; vm.size = null; vm.main = []; vm.more = []; return; }
@@ -191,6 +195,7 @@
             else if (c.kind === 'select' || c.kind === 'seg') it.change(String(v));
             else if (c.kind === 'toggle') it.set(!!v);
           } catch (e) { L.warn('could not set ' + c.id, e); }
+          if (c.id === 'cpmplus_art_br_style') refreshPreviews();
           refresh();
         }
       },

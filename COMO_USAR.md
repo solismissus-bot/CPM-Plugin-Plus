@@ -33,7 +33,7 @@
 | **Ctrl + Alt + Shift + R** | Espelhar pose |
 | **Ctrl + Alt + Shift + V** | Colar pose |
 
-🆕 = novidade recente (beta28: ferramentas de animação; beta29-30: arte e pincéis; beta31: tudo de pintura no painel CPM+ Pintar, seção 5). Pra trocar ou criar atalho pra qualquer outra ferramenta: **Arquivo > Configurações > Atalhos**, categoria **Ferramentas**, procure pelo nome. Se um atalho não funcionar, veja nessa mesma tela se outra ferramenta (de outro plugin, por exemplo) usa a mesma tecla e troque uma delas.
+🆕 = novidade recente (beta28: ferramentas de animação; beta29-30: arte e pincéis; beta31: tudo de pintura no painel CPM+ Pintar; beta32: pincéis HD e Esfumar ao lado da Borracha, seção 5). Pra trocar ou criar atalho pra qualquer outra ferramenta: **Arquivo > Configurações > Atalhos**, categoria **Ferramentas**, procure pelo nome. Se um atalho não funcionar, veja nessa mesma tela se outra ferramenta (de outro plugin, por exemplo) usa a mesma tecla e troque uma delas.
 
 Quase tudo fica no menu **CPM+** (barra de cima do Blockbench), dividido em: **Ajustes do modelo, Animação, Modelagem, Textura, Otimizar, Prévia, Ajuda**. Muita coisa também aparece no **clique direito** numa pasta, num cubo ou numa animação.
 
@@ -180,11 +180,11 @@ Regras gerais:
 ## 5. 🆕 Pintar: painel CPM+ Pintar
 
 Na aba **Pintar**, embaixo do seletor de cores, fica o painel **CPM+ Pintar** (uma aba ao lado do Organizador). Tudo de arte do CPM+ está nele, com o nome escrito em cada botão:
-- **Ferramentas:** Sombrear, Esfumar, Esfumar pixel, Pontilhar, Variação e Degradê pixel. Clique e pinte. As opções aparecem embaixo do painel; as menos usadas ficam fechadas em **Mais opções**.
-- **Pincéis:** 44 pincéis em 6 grupos. Clique num grupo pra ver a prévia de cada um, e clique no pincel.
+- **Ferramentas:** Sombrear, Esfumar, Esfumar pixel, Pontilhar, Variação e Degradê pixel. Clique e pinte. As opções aparecem embaixo do painel; as menos usadas ficam fechadas em **Mais opções**. O **Esfumar** e o **Esfumar pixel** também estão na fileira de ferramentas do Blockbench, **logo depois da Borracha**.
+- **Pincéis:** 45 pincéis em 6 grupos. Clique num grupo pra ver a prévia de cada um, e clique no pincel.
 - **Cores e automático:** Criar tons, Trocar cor, Sombra no modelo e Ruído na textura. Abrem uma janela com prévia ao vivo no modelo; o resto também fica em **Mais opções**.
 
-Também dentro do próprio Blockbench: **clique direito numa textura** (Sombra no modelo, Ruído na textura, Trocar cor), a **setinha ao lado do Pincel** do Blockbench (lista dos pincéis do CPM+), os botões **Criar tons** e **Trocar cor** embaixo do seletor de cores, e **Ruído** e **Sombra no modelo** no painel de Texturas. E tudo em **CPM+ > Textura**. Se o painel sumiu: **CPM+ > Textura > Mostrar o painel CPM+ Pintar**. A barra de cima fica só com as coisas do Blockbench.
+Também dentro do próprio Blockbench: **clique direito numa textura** (Sombra no modelo, Ruído na textura, Trocar cor), a **setinha ao lado do Pincel** do Blockbench (lista dos pincéis do CPM+), os botões **Criar tons** e **Trocar cor** embaixo do seletor de cores, e **Ruído** e **Sombra no modelo** no painel de Texturas. E tudo em **CPM+ > Textura**. Se o painel sumiu: **CPM+ > Textura > Mostrar o painel CPM+ Pintar**. Na barra de cima só entram o Esfumar e o Esfumar pixel (ao lado da Borracha); o resto fica com as coisas do Blockbench.
 
 Regras: cada traço é **um Ctrl+Z**; nada vaza pra outra face do modelo; nunca pinta onde a textura é transparente (exceto os pincéis que pintam por cima de tudo). O **Tamanho** é o mesmo do pincel do Blockbench (também aparece no painel).
 
@@ -201,9 +201,13 @@ Regras: cada traço é **um Ctrl+Z**; nada vaza pra outra face do modelo; nunca 
 | **Sombra no modelo** | Luz e sombra calculadas pela forma do modelo: escolha **de onde vem a luz** e confirme. Funciona nas peças selecionadas ou no modelo todo; depois é só retocar à mão. |
 | **Ruído na textura** | A Variação de uma vez: na textura inteira, na seleção ou nas peças selecionadas. |
 
-### 🆕 Pincéis (44)
+### 🆕 Pincéis (45)
 
-Pincéis no estilo dos mais usados pela comunidade dos apps de desenho (os mais instalados da galeria do ibisPaint), refeitos do zero pra skin 64×64. Em tamanho pequeno viram carimbos desenhados pixel a pixel; em tamanho grande ficam mais detalhados. Ficam na parte **Pincéis** do painel CPM+ Pintar.
+Pincéis no estilo dos mais usados pela comunidade dos apps de desenho (os mais instalados da galeria do ibisPaint), refeitos do zero. Ficam na parte **Pincéis** do painel CPM+ Pintar. Cada pincel tem dois jeitos:
+- **HD**: pontas desenhadas, bordas lisas, textura e mistura de cor, como num app de desenho (lápis com grão, render que mistura com a cor de baixo, óleo com cerdas, fita de fogo com brilho, nuvens, penas...). Pra texturas de 128 px ou mais.
+- **Pixel art**: carimbos desenhados pixel a pixel, sem cor nova. Pra skin 64×64.
+
+O CPM+ escolhe sozinho pelo tamanho da textura, e a prévia de cada pincel já mostra o jeito que vai sair. Pra trocar na mão: **Mais opções > Estilo** (Automático, HD, Pixel art).
 
 - **Cor 1 e cor 2:** o clique esquerdo pinta com a cor 1, e a cor 2 entra nos detalhes (miolo da flor, contorno cor 2, xadrez, pontos da cicatriz). O clique direito troca as duas.
 - O **Tamanho** muda o tamanho dos carimbos, fios e padrões. Nos carimbos, *Mais opções* tem **Espalhar** e **Variação** (0 a 200%).
@@ -211,14 +215,14 @@ Pincéis no estilo dos mais usados pela comunidade dos apps de desenho (os mais 
 
 | Grupo | Pincéis |
 |---|---|
-| **Desenho e pintura** | **Lápis com grão**, **Lineart** (afina no começo e no fim; em 1px faz linha pixel-perfect), **Contorno auto** (cor + contorno escuro de 1px), **Contorno cor 2**, **Renderizar** (mistura suave, pra skin HD), **Render pixel** (sombra suave feita de pontilhado, sem cor nova), **Aquarela**, **Óleo / guache**, **Arco-íris**, **Pixel 1px** (atalho: o Pincel do Blockbench em 1px com pixel-perfect) |
+| **Desenho e pintura** | **Lápis com grão** (grafite que afina nas pontas, grão na borda), **Lineart** (afina no começo e no fim; em 1px faz linha pixel-perfect), **Contorno auto** (cor + contorno escuro), **Contorno cor 2**, **Renderizar** (cobre com borda macia e mistura um pouco com a cor de baixo), **Mesclar suave** (aerógrafo leve: passe na divisa de duas cores pra mesclar; em 64×64 é pontilhado, sem cor nova), **Aquarela**, **Óleo / guache** (cerdas, arrasta a cor de baixo), **Arco-íris**, **Pixel 1px** (atalho: o Pincel do Blockbench em 1px com pixel-perfect) |
 | **Cabelo, pelo e escamas** | **Cabelo (fios)**, **Cachos**, **Brilho de cabelo** (só clareia o que já está pintado), **Pelo**, **Penas**, **Escamas** |
-| **Natureza e efeitos** | **Grama**, **Folhas**, **Flores**, **Nuvens**, **Fogo**, **Respingos** (sangue, lama, tinta), **Bolhas** |
+| **Natureza e efeitos** | **Grama**, **Folhagem** (tufos de borda serrilhada em cor chapada, no estilo do pincel de grama mais instalado da comunidade: grama, arbusto, copa de árvore), **Folhas**, **Flores**, **Nuvens**, **Fogo**, **Respingos** (sangue, lama, tinta), **Bolhas** |
 | **Brilho, glitter e rosto** | **Glitter**, **Brilhos**, **Estrelas**, **Neon**, **Blush**, **Olhos (íris)** |
 | **Enfeites** | **Corações**, **Renda**, **Pérolas**, **Corrente**, **Costura**, **Cicatriz** |
 | **Padrões e texturas** | **Xadrez**, **Listras**, **Bolinhas**, **Xadrez escocês**, **Jeans**, **Tricô**, **Papel**, **Grão**, **Retícula** |
 
-Dicas: **Fogo** fica melhor com laranja ou vermelho como cor 1. **Brilho de cabelo**, **Papel** e **Grão** vão por cima de uma cor já pintada. **Olhos**: um clique em cada olho. **Renda**, **Pérolas** e **Corrente** ficam mais bonitas em traço reto (segure Shift pra fazer linha reta).
+Dicas: **Fogo** fica melhor com laranja como cor 1 (em HD é uma fita de fogo com miolo claro e brilho, que fica ainda melhor em fundo escuro). **Nuvens**: pinte com 2 ou 3 tons pra dar volume. **Folhagem**: é de uma cor só, como o original; pinte primeiro o verde escuro e depois um verde mais claro por cima, mais pro alto, pra dar volume. Dá pra clicar (um tufo) ou arrastar (uma faixa). **Brilho de cabelo**, **Papel** e **Grão** vão por cima de uma cor já pintada. **Olhos**: um clique em cada olho. **Renda**, **Pérolas** e **Corrente** ficam mais bonitas em traço reto (segure Shift pra fazer linha reta).
 
 ## 6. Textura e otimização
 

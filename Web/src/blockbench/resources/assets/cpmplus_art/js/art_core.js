@@ -329,11 +329,11 @@
     });
   }
   /** adds an item to a Blockbench toolbar ONCE (later the toolbar remembers it, and a user removal is respected) */
-  function placeOnce(toolbarId, item, afterId) {
+  function placeOnce(toolbarId, item, afterId, flagName) {
     try {
       var bar = G.Toolbars && G.Toolbars[toolbarId];
       if (!bar || !item) return false;
-      var flag = toolbarId + ':' + item.id;
+      var flag = flagName || (toolbarId + ':' + item.id);
       if (bar.children.indexOf(item) >= 0) { if (!state.tb[flag]) { state.tb[flag] = true; saveState(); } return true; }
       if (state.tb[flag]) return false;
       var idx = -1;
@@ -347,7 +347,7 @@
   function replaceAll() {
     Object.keys(state.tb).forEach(function (k) { delete state.tb[k]; });
     saveState();
-    placements.forEach(function (p) { var it = typeof p[1] === 'string' ? G.BarItems[p[1]] : p[1]; placeOnce(p[0], it, p[2]); });
+    placements.forEach(function (p) { var it = typeof p[1] === 'string' ? G.BarItems[p[1]] : p[1]; placeOnce(p[0], it, p[2], it && TOOL_ROW[it.id] === p[0] ? p[0] + '32:' + it.id : null); });
   }
   var placements = [];
   /**
@@ -355,11 +355,18 @@
    * never on the top bars (tools / tool options): those stay exactly like Blockbench's.
    */
   var PANEL_BARS = { palette: 1, color_picker: 1, texturelist: 1 };
+  /**
+   * beta32: the two smudge tools also sit in Blockbench's own row of paint tools, right after the Eraser (where
+   * everybody looks for a smudge) - only the tool icon, their options stay in the CPM+ panel
+   */
+  var TOOL_ROW = { cpmplus_art_smudge: 'tools', cpmplus_art_smudge_px: 'tools' };
   function place(toolbarId, item, afterId) {
     if (item && created.indexOf(item) < 0) adoptStale(item);// items made by Java (actions) are not built by mk()
-    if (!PANEL_BARS[toolbarId]) return false;
+    var row = item && TOOL_ROW[item.id] === toolbarId;
+    if (!PANEL_BARS[toolbarId] && !row) return false;
     placements.push([toolbarId, item, afterId]);
-    return placeOnce(toolbarId, item, afterId);
+    // a new flag name: beta29/30 placed (and beta31 removed) these icons, the old flag would read as 'the user removed it'
+    return placeOnce(toolbarId, item, afterId, row ? toolbarId + '32:' + item.id : null);
   }
   /**
    * Takes the CPM+ art items off every bar that is not a panel bar - also the ones a beta29 / beta30 layout saved
@@ -380,7 +387,7 @@
       var kids = bar.children;
       if (Array.isArray(kids)) for (var i = kids.length - 1; i >= 0; i--) {
         var c = kids[i];
-        if (c && typeof c === 'object' && mine.test(c.id || '')) {
+        if (c && typeof c === 'object' && mine.test(c.id || '') && TOOL_ROW[c.id] !== k) {
           kids.splice(i, 1);
           try { if (c.toolbars && c.toolbars.remove) c.toolbars.remove(bar); } catch (e) { }
           hit = true;
@@ -754,6 +761,9 @@
     bp.changePixel = function (x, y, px, alpha, o) { return smudgePxPixel(x, y, px, alpha, o); };
     smudge.pxTool = makeTool('cpmplus_art_smudge_px', 'cpmplus.art.smudgepx', 'grid_on', bp);
     defaultSize(smudge.pxTool, 3);
+    // in Blockbench's own row of paint tools, right after the Eraser
+    place('tools', smudge.tool, 'eraser');
+    place('tools', smudge.pxTool, 'cpmplus_art_smudge');
   }
 
   // =================================================================== dither patterns (shared by the brush, gradient and auto shading)
