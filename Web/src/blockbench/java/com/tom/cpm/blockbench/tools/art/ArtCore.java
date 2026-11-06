@@ -14,6 +14,8 @@ import elemental2.dom.DomGlobal;
  */
 public final class ArtCore {
 	public static final String CORE = "assets/cpmplus_art/js/art_core.js";
+	/** beta30: the brush library (one engine, many community-style brushes), a module of the core */
+	public static final String BRUSHES = "assets/cpmplus_art/js/brush_core.js";
 	private static Object core;
 
 	private ArtCore() {
@@ -32,9 +34,28 @@ public final class ArtCore {
 
 	/** starts the core with the translations / prefs bridge; actions = {ramp, swap, noise, autoshade} action ids */
 	public static void start(Object actions, boolean test) {
-		init(core(), bridge(test, actions));
-		if (test)expose(core());
+		Object c = core();
+		init(c, bridge(test, actions));
+		String brushes = resource(BRUSHES);
+		if (brushes == null)DomGlobal.console.warn("CPM+: " + BRUSHES + " is missing from the plugin");
+		else loadModule(c, "brushes", brushes);
+		if (test)expose(c);
 	}
+
+	/** the brush library dialog (CPM+ &gt; Textura) */
+	public static void openBrushLibrary() {
+		openBrushLibrary(core());
+	}
+
+	private static native void loadModule(Object core, String name, String src) /*-{
+		core.loadModule(name, src);
+	}-*/;
+
+	private static native void openBrushLibrary(Object core) /*-{
+		var m = core.modules && core.modules.brushes;
+		if (!m)throw new Error('the brush library did not start');
+		m.openLibrary();
+	}-*/;
 
 	public static void unload() {
 		if (core != null) {

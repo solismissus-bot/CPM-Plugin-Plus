@@ -1498,7 +1498,35 @@
     if (a.noise && G.BarItems[a.noise]) place('texturelist', G.BarItems[a.noise], 'append_to_template');
     if (a.autoshade && G.BarItems[a.autoshade]) place('texturelist', G.BarItems[a.autoshade], a.noise || 'append_to_template');
   }
+  // ---- modules (other plugin JS files that build on this core, e.g. the brush library)
+  var modules = [];
+  api.modules = {};
+  function libFor() {
+    return {
+      G: G, t: t, esc: esc, warn: warn, clamp: clamp, byte: byte, hex: hex, parseHex: parseHex, hash3: hash3,
+      rgbToHsv: rgbToHsv, hsvToRgb: hsvToRgb, rgbToOklab: rgbToOklab, oklabToRgb: oklabToRgb, hueShade: hueShade,
+      ditherThreshold: ditherThreshold, textureCanvasInfo: textureCanvasInfo, primary: primary, secondary: secondary,
+      opt: opt, setOpt: setOpt, mk: mk, place: place, select: select, slider: slider, toggle: toggle, makeTool: makeTool,
+      brushBase: brushBase, secondaryClick: secondaryClick, isTool: isTool, refreshBrushBar: refreshBrushBar,
+      selectTool: function (id) { return api.selectTool(id); }, test: function () { return !!env.test; },
+      onUninstall: function (f) { undoers.push(f); },
+      /** true once the first-time 'new art tools' toast was shown (it already lists every tool for new users) */
+      artHintSeen: function () { return !!state.hint; }
+    };
+  }
+  /** evaluates a module source '(function (L) {... return api;})' with this core's helpers and installs it */
+  api.loadModule = function (name, src) {
+    if (api.modules[name]) return true;
+    try {
+      var m = (new Function('L', 'return (' + src + '\n)(L);'))(libFor());
+      if (m && typeof m.install === 'function') m.install();
+      modules.push(m); api.modules[name] = m;
+      return true;
+    } catch (e) { warn('module ' + name + ' failed to start', e); return false; }
+  };
   api.uninstall = function () {
+    modules.splice(0).reverse().forEach(function (m) { try { if (m && m.uninstall) m.uninstall(); } catch (e) { } });
+    api.modules = {};
     undoers.splice(0).reverse().forEach(function (f) { try { f(); } catch (e) { } });
     var mine = created.splice(0), bars = G.Toolbars || {}, off = mine.slice();
     placements.forEach(function (p) { if (p[1] && typeof p[1] === 'object' && off.indexOf(p[1]) < 0) off.push(p[1]); });

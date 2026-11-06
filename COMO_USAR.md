@@ -33,7 +33,7 @@
 | **Ctrl + Alt + Shift + R** | Espelhar pose |
 | **Ctrl + Alt + Shift + V** | Colar pose |
 
-🆕 = novidade recente (beta28: ferramentas de animação; beta29: Arte e cores, seção 5). Pra trocar ou criar atalho pra qualquer outra ferramenta: **Arquivo > Configurações > Atalhos**, categoria **Ferramentas**, procure pelo nome. Se um atalho não funcionar, veja nessa mesma tela se outra ferramenta (de outro plugin, por exemplo) usa a mesma tecla e troque uma delas.
+🆕 = novidade recente (beta28: ferramentas de animação; beta29: Arte e cores, seção 5; beta30: Pincéis, também na seção 5). Pra trocar ou criar atalho pra qualquer outra ferramenta: **Arquivo > Configurações > Atalhos**, categoria **Ferramentas**, procure pelo nome. Se um atalho não funcionar, veja nessa mesma tela se outra ferramenta (de outro plugin, por exemplo) usa a mesma tecla e troque uma delas.
 
 Quase tudo fica no menu **CPM+** (barra de cima do Blockbench), dividido em: **Ajustes do modelo, Animação, Modelagem, Textura, Otimizar, Prévia, Ajuda**. Muita coisa também aparece no **clique direito** numa pasta, num cubo ou numa animação.
 
@@ -180,7 +180,7 @@ Regras gerais:
 ## 5. 🆕 Arte e cores (modo Pintar)
 
 Tudo fica na tela normal de pintura do Blockbench (aba **Pintar**), e também em **CPM+ > Textura**:
-- **Barra de ferramentas** (do lado do Pincel): **Sombra**, **Esfumar**, **Pontilhado** e **Variação**. As opções de cada uma aparecem na barra de cima, junto com tamanho, opacidade e suavidade do pincel. Passe o mouse em cima de uma opção pra ver a explicação.
+- **Barra de ferramentas** (do lado do Pincel): **Sombra**, **Esfumar**, **Pontilhado**, **Variação** e 🆕 **Pincéis** (biblioteca com 44 pincéis, veja logo abaixo da tabela). As opções de cada uma aparecem na barra de cima, junto com tamanho, opacidade e suavidade do pincel. Passe o mouse em cima de uma opção pra ver a explicação.
 - **Degradê** do Blockbench: ganhou o estilo **Pixel art** (escolha na barra de cima quando o Degradê estiver selecionado).
 - **Painel de cores** (embaixo do seletor de cor, e na aba Paleta): **Gerar rampa** e **Trocar cores**.
 - **Painel de Texturas** (botões no topo): **Ruído na textura** e **Sombra automática**.
@@ -189,7 +189,7 @@ Regras gerais: os pincéis usam o tamanho, a forma, a suavidade, o espelho e o p
 
 | Ferramenta | Como usar |
 |---|---|
-| **Sombra** (pincel, ícone ◐) | Passe por cima do que já está pintado: escurece sem você escolher o tom (botão direito clareia). **Modos:** **Luz e sombra**: a sombra puxa pro azul e a luz pro amarelo, como os artistas fazem, sem precisar de paleta. **Degrau da rampa**: anda exatamente 1 tom na rampa, usando só tons que já existem na textura (ou nas suas rampas salvas); no tom mais escuro ele para. **Matiz/sat/luz**: soma os valores que você escolher. **Uma vez por traço** (ligado): passar de novo no mesmo pixel no mesmo traço não escurece mais; desligue pra acumular. **Força**: quanto cada passada muda. |
+| **Sombra** (pincel, ícone ◐) | Passe por cima do que já está pintado: escurece sem você escolher o tom (botão direito clareia). **Modos:** **Luz/sombra**: a sombra puxa pro azul e a luz pro amarelo, como os artistas fazem, sem precisar de paleta. **Degrau da rampa**: anda exatamente 1 tom na rampa, usando só tons que já existem na textura (ou nas suas rampas salvas); no tom mais escuro ele para. **Matiz/sat/luz**: soma os valores que você escolher. **Uma vez por traço** (ligado): passar de novo no mesmo pixel no mesmo traço não escurece mais; desligue pra acumular. **Força**: quanto cada passada muda. |
 | **Esfumar** (pincel, ícone de dedo) | Arraste na direção em que quer puxar a cor. **Suave**: mistura as cores (tons no meio), bom pra textura HD; ligue **Só cores que já existem** pra não sujar a paleta. **Arrastar pixels**: arrasta os pixels sem criar nenhuma cor nova (pixel art). **Misturar pixels**: embaralha os pixels perto do pincel (sem cor nova). **Desfocar**: média com os vizinhos. Nunca puxa cor de outra face do modelo e nunca pinta onde é transparente. |
 | **Pontilhado** (pincel, ícone de pontos) | Pinta um padrão de pontinhos alinhado aos pixels. **Padrão:** Xadrez, Bayer 4×4/8×8 (mais suave), Linhas, Colunas, Diagonais ou Pontos. **Densidade:** quantos pixels recebem a cor (50 = metade). **Buracos:** manter o que está embaixo ou pintar com a cor 2. **Botão direito:** pinta as casas que sobraram com a cor 2, e as duas passadas formam o padrão de duas cores. **Deslocar padrão:** empurra o padrão pro lado, pra casar os pontos entre faces vizinhas. |
 | **Variação** (pincel, ícone de pontos soltos) | Tira o "chapado" variando pixel por pixel. **Claro/escuro** (luz quente, sombra fria), **Degraus** (um tom acima ou abaixo, só tons que existem), **Matiz** ou **Cor 1 + 2** (pinta com a cor 1 ou a cor 2 ao acaso). **Cobertura:** quantos pixels mudam. |
@@ -198,6 +198,28 @@ Regras gerais: os pincéis usam o tamanho, a forma, a suavidade, o espelho e o p
 | **Trocar cores (família)** (painel de cores) | Mostra as cores da textura agrupadas em famílias (mesma cor, do escuro ao claro). Clique numa família e mude **matiz**, **saturação** ou **brilho**: todos os tons dela mudam juntos e o **sombreado continua igual**. **Virar a cor 1** leva a família pra cor que está selecionada. **Onde:** textura inteira, só a seleção ou só as peças selecionadas. |
 | **Ruído na textura** (painel de Texturas) | Mesma ideia da Variação, de uma vez: textura inteira, seleção ou peças selecionadas. Tipo (claro/escuro, degraus da textura, matiz, colorido), intensidade, cobertura e **semente** (mesma semente = mesmo resultado; "Outra" sorteia). |
 | **Sombra automática (cubos)** (painel de Texturas) | Uma primeira passada de luz e sombra calculada pela forma do modelo, na pose normal. **A luz vem de** cima, de cima e frente, ou de cima e do lado esquerdo do personagem. **Luz por face:** faces viradas pra luz clareiam e as opostas escurecem. **Degradê de cima pra baixo:** o corpo todo fica mais claro em cima. **Sombra de contato:** escurece onde uma peça encosta em outra (pescoço, axila, embaixo do cabelo); **Alcance** diz até onde. **Bordas:** destaque em cima e sombra embaixo, ou contorno escuro. **Tons:** luz quente/sombra fria ou só tons que a textura já tem. **Pontilhado entre degraus** opcional. Use em **peças selecionadas** ou no modelo todo; depois é só retocar à mão. |
+
+### 🆕 Pincéis (biblioteca, beta30)
+
+Pincéis no estilo dos mais usados pela comunidade dos apps de desenho (os mais instalados da galeria do ibisPaint), refeitos do zero pra skin 64×64. Em tamanho pequeno eles viram versões em pixel art (carimbos desenhados pixel a pixel); em tamanho grande ficam mais detalhados.
+
+**Como usar:** aba **Pintar** → ferramenta **Pincéis** (ícone de pincel, depois da Variação) → na barra de cima, botão **Biblioteca de pincéis** (ícone de mosaico) → clique no pincel. Também em **CPM+ > Textura > Pincéis (biblioteca)…**. Pra trocar rápido, use o menu **Pincel** na barra de cima.
+
+- **Cor 1 e cor 2:** o clique esquerdo pinta com a cor 1, e a cor 2 entra nos detalhes (miolo da flor, contorno cor 2, xadrez, pontos da cicatriz). O clique direito troca as duas.
+- **Tamanho do pincel** muda o tamanho dos carimbos, fios e padrões. **Espalhar** (0 a 200%): quanto os carimbos se espalham em volta do traço. **Variação** (0 a 200%): quanto variam o tamanho e o tom. Essas duas só aparecem nos pincéis que usam.
+- Cada traço é **um Ctrl+Z**, nunca sai da face que você está pintando, e funciona com espelho, seleção, travar transparência e camadas. Passar de novo no mesmo lugar, no mesmo traço, **não acumula**.
+- Os padrões (xadrez, listras, escamas, jeans, tricô...) ficam **presos à textura**: pinte em vários traços que o padrão continua alinhado.
+
+| Grupo | Pincéis |
+|---|---|
+| **Desenho e pintura** | **Lápis com grão**, **Lineart** (afina no começo e no fim; em 1px faz linha pixel-perfect), **Contorno auto** (cor + contorno escuro de 1px), **Contorno cor 2**, **Renderizar** (mistura suave, pra skin HD), **Render pixel** (sombra suave feita de pontilhado, sem cor nova), **Aquarela**, **Óleo / guache**, **Arco-íris**, **Pixel 1px** (atalho: o Pincel do Blockbench em 1px com pixel-perfect) |
+| **Cabelo, pelo e escamas** | **Cabelo (fios)**, **Cachos**, **Brilho de cabelo** (só clareia o que já está pintado), **Pelo**, **Penas**, **Escamas** |
+| **Natureza e efeitos** | **Grama**, **Folhas**, **Flores**, **Nuvens**, **Fogo**, **Respingos** (sangue, lama, tinta), **Bolhas** |
+| **Brilho, glitter e rosto** | **Glitter**, **Brilhos**, **Estrelas**, **Neon**, **Blush**, **Olhos (íris)** |
+| **Enfeites** | **Corações**, **Renda**, **Pérolas**, **Corrente**, **Costura**, **Cicatriz** |
+| **Padrões e texturas** | **Xadrez**, **Listras**, **Bolinhas**, **Xadrez escocês**, **Jeans**, **Tricô**, **Papel**, **Grão**, **Retícula** |
+
+Dicas: **Fogo** fica melhor com laranja ou vermelho como cor 1. **Brilho de cabelo**, **Papel** e **Grão** vão por cima de uma cor já pintada. **Olhos**: um clique em cada olho. **Renda**, **Pérolas** e **Corrente** ficam mais bonitas em traço reto (segure Shift pra fazer linha reta).
 
 ## 6. Textura e otimização
 

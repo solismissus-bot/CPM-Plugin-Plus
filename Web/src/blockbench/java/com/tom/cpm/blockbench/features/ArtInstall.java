@@ -27,6 +27,8 @@ public final class ArtInstall {
 	public static final String A_NOISE = "cpmplus_art_noise_tex";
 	public static final String A_SWAP = "cpmplus_art_swap";
 	public static final String A_AUTOSHADE = "cpmplus_art_autoshade";
+	/** beta30: the brush library (Pincéis) */
+	public static final String A_BRUSHES = "cpmplus_art_brush_library_menu";
 
 	private ArtInstall() {
 	}
@@ -42,7 +44,8 @@ public final class ArtInstall {
 		Action swap = PlusMenus.action(A_SWAP, "cpmplus.art.swap.menu", "find_replace", Cond.ANY_PROJECT, () -> ArtCore.open("swap"));
 		Action auto = PlusMenus.action(A_AUTOSHADE, "cpmplus.art.as.menu", "wb_shade", Cond.ANY_PROJECT, () -> ArtCore.open("autoshade"));
 		Action again = PlusMenus.action("cpmplus_art_show_again", "cpmplus.art.showAgain", "build", Cond.ANY_PROJECT, ArtCore::showToolsAgain);
-		for (Action a : new Action[] {shade, smudge, dither, noise, grad, ramp, swap, tnoise, auto, again})PlusMenus.add(PlusMenus.SUB_TEX, a);
+		Action brushes = PlusMenus.action(A_BRUSHES, "cpmplus.art.br.menu", "brush", Cond.ANY_PROJECT, ArtCore::openBrushLibrary);
+		for (Action a : new Action[] {brushes, shade, smudge, dither, noise, grad, ramp, swap, tnoise, auto, again})PlusMenus.add(PlusMenus.SUB_TEX, a);
 		JsPropertyMap<Object> ids = JsPropertyMap.of();
 		ids.set("ramp", A_RAMP);
 		ids.set("swap", A_SWAP);
