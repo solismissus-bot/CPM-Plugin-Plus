@@ -1520,6 +1520,9 @@ public class BlockbenchExport {
 		if(!l.contains(n))l.add(n);
 	}
 
+	/** CPM+ : a rotation step between two exported frames must stay BELOW this (degrees): 180 itself is ambiguous in CPM */
+	public static final double ROT_SPLIT = 179.999;
+
 	/** CPM+ : largest rotation change (degrees, raw values) between consecutive samples */
 	private static double maxRotStep(List<double[]> s) {
 		double max = 0;
@@ -1570,17 +1573,19 @@ public class BlockbenchExport {
 			}
 		}
 		// CPM+ : CPM always interpolates rotation the short way: subdivide the grid (keys stay on it,
-		// linear segments are reproduced exactly) until no step exceeds 180 degrees, so spins authored
-		// in Blockbench don't play backwards / not at all.
+		// linear segments are reproduced exactly) until every step is below 180 degrees, so spins authored
+		// in Blockbench don't play backwards / not at all. A step of EXACTLY 180 is split too: the short
+		// way is ambiguous there and CPM took the other side (+90 -> -90 played through 180; real CPM
+		// classes, beta34 rig probe).
 		if(!stepFam) {
 			double step = maxRotStep(s);
-			if(step > 180.001) {
+			if(step > ROT_SPLIT) {
 				int nm = refineGrid(m, m * (int) Math.ceil(step / 170.0));
 				if(nm > m) {
 					m = nm;
 					s = sampleGrid(anims, len, m);
 				}
-				if(maxRotStep(s) > 180.001)addOnce(animsFastRot, anim.name);
+				if(maxRotStep(s) > ROT_SPLIT)addOnce(animsFastRot, anim.name);
 			}
 		}
 		float h = len / m;

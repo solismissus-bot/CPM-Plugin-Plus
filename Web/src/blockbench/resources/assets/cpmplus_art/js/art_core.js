@@ -361,7 +361,8 @@
    * everybody looks for a smudge) - only the tool icon, their options stay in the CPM+ panel
    */
   // beta33: the modelling tools that are real tools (Medir, Construir) sit in the same row, after 'Snap to vertex'
-  var TOOL_ROW = { cpmplus_art_smudge: 'tools', cpmplus_art_smudge_px: 'tools', cpmplus_model_measure: 'tools', cpmplus_model_build: 'tools' };
+  // beta34: the Encaixe magnetico toggle sits right after Construir
+  var TOOL_ROW = { cpmplus_art_smudge: 'tools', cpmplus_art_smudge_px: 'tools', cpmplus_model_measure: 'tools', cpmplus_model_build: 'tools', cpmplus_model_magnet: 'tools' };
   function place(toolbarId, item, afterId) {
     if (item && created.indexOf(item) < 0) adoptStale(item);// items made by Java (actions) are not built by mk()
     var row = item && TOOL_ROW[item.id] === toolbarId;

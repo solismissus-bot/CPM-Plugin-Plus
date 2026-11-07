@@ -1,12 +1,7 @@
 /*
- * CPM Plugin+ "CPM+ Modelar" - generated library parts with their animations: wings (feathered: angel, sun angel,
- * fallen angel, phoenix; membrane: bat, demon, dragon; insect: fairy) and tails. Every part is built from anatomy (bones
- * as nested groups with pivots at the joints, feathers / membrane panels / fur hung on them) and comes with fluid
- * animations baked from smooth periodic curves (rest breathing, flight cycle, glide...), overlapping action between
- * joints.
- * Feathered wings: every feather is a flat plane painted with an HD feather picture drawn here (one picture per kind of
- * feather, shared on the skin), every feather is a bone of its own, the coverts ride on the flight feather under them,
- * and each wing has a slider (value layer) that folds / opens it.
+ * CPM Plugin+ "CPM+ Modelar" - generated library parts with their animations: ears, halo, crown, hats, horns (real
+ * and mythical) and tails. Every part is built from anatomy (bones as nested groups with pivots at the joints) and
+ * comes with fluid animations baked from smooth periodic curves, overlapping action between joints.
  * Loaded before the library (L.core.modules.model_library reads api.items()).
  */
 (function (L) {
@@ -22,7 +17,13 @@
     return (Math.round(lerp((a >> 16) & 255, (b >> 16) & 255, f)) << 16) | (Math.round(lerp((a >> 8) & 255, (b >> 8) & 255, f)) << 8) | Math.round(lerp(a & 255, b & 255, f));
   }
   function shade(c, k) { return lerpCol(c, k > 0 ? 0xffffff : 0x000000, Math.abs(k)); }
-  function C(n, f, t, col, x) { var c = Object.assign({ c: 1, n: n, f: [sn(f[0]), sn(f[1]), sn(f[2])], t: [sn(t[0]), sn(t[1]), sn(t[2])] }, x || {}); if (typeof col === 'number') c.col = col; return c; }
+  // (CPM writes a cube's size as (int)(v * 10) / 10: every size is snapped to 0.1 px here, keeping the centre, a hair
+  // over the step so the game's cut lands on it - the shape in Blockbench is the shape in the game)
+  function C(n, f, t, col, x) {
+    var F = [], T = [];
+    for (var k = 0; k < 3; k++) { var a = Math.min(f[k], t[k]), b = Math.max(f[k], t[k]), m = (a + b) / 2, s = Math.max(0.1, Math.round((b - a) * 10) / 10) + 0.004; F.push(sn(m - s / 2)); T.push(sn(m + s / 2)); }
+    var c = Object.assign({ c: 1, n: n, f: F, t: T }, x || {}); if (typeof col === 'number') c.col = col; return c;
+  }
   function Gp(n, o, r, kids, aid, x) { var g = Object.assign({ g: 1, n: n, o: [sn(o[0]), sn(o[1]), sn(o[2])], kids: kids || [] }, x || {}); if (r && (r[0] || r[1] || r[2])) g.r = r.map(sn); if (aid) g.aid = aid; return g; }
   function smooth(e0, e1, x) { var t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); }
 
@@ -69,8 +70,8 @@
     return { name: def.name, type: def.type || 'global', additive: true, loop: 'loop', length: def.length, snapping: def.fps || 20, tracks: tracks };
   }
 
-  // =================================================================== HD feather pictures
-  /** texture pixels per skin pixel the feather pictures are drawn with (the library offers Textura em HD to match) */
+  // =================================================================== HD pictures (shared helpers)
+  /** texture pixels per skin pixel the pictures are drawn with (the library offers Textura em HD to match) */
   var HD = 8;
   function rng(seed) { var s = (seed >>> 0) || 1; return function () { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
   function ramp(stops, t) {
@@ -79,34 +80,6 @@
     return stops[stops.length - 1][1];
   }
   function b64(u8) { var s = ''; for (var i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
-  /**
-   * kinds of feathers (the picture's root at the top): uw x uh = skin pixels it takes (the plane may be any size, the
-   * picture stretches over it); split = for a flight feather in two parts (root part, tip part: it bends), skin pixels of
-   * the root part; outer = width of the outer vane against the inner one (flight feathers: narrow outer vane); tip =
-   * how the vane ends; widest = where it is widest (0 root .. 1 tip); quill = bare shaft; down = soft downy part above
-   * the vane; curve = how much the shaft bends towards the inner vane; emarg = [where, how much] the outer vane narrows
-   * (the "fingers" of the outer primaries), notch = the same on the inner vane; splits = gaps where the barbs part;
-   * ramp = colour ramp of the palette; soft = fluffy edge (small coverts, underwing); vis = the part of the feather left
-   * in sight by the row lying over it (its shadow falls just above that line)
-   */
-  // (sizes after real feathers: flight feathers about 4 times as long as wide, coverts about twice, the small coverts a
-  // little longer than wide - not round scales)
-  var KIND = {
-    prim: { uw: 4, uh: 16, split: 9, outer: 0.32, tip: 'round', widest: 0.4, quill: 0.04, down: 0.08, curve: 0.12, splits: 3, ramp: 'remex', vis: 0.68, seed: 11 },
-    primE: { uw: 4, uh: 16, split: 9, outer: 0.28, tip: 'point', widest: 0.32, quill: 0.04, down: 0.08, curve: 0.14, emarg: [0.5, 0.55], notch: [0.6, 0.3], splits: 3, ramp: 'remex', vis: 0.7, seed: 13 },
-    sec: { uw: 4, uh: 12, split: 7, outer: 0.55, tip: 'blunt', widest: 0.48, quill: 0.04, down: 0.1, curve: 0.06, splits: 3, ramp: 'remex', vis: 0.52, seed: 23 },
-    ter: { uw: 4, uh: 10, outer: 0.75, tip: 'round', widest: 0.5, quill: 0.04, down: 0.12, curve: 0.04, splits: 2, ramp: 'remex', vis: 0.7, seed: 31 },
-    scap: { uw: 4, uh: 8, outer: 0.9, tip: 'round', widest: 0.52, quill: 0.03, down: 0.14, curve: 0.04, splits: 2, ramp: 'covert', vis: 0.55, cov: 1, seed: 37 },
-    gcov: { uw: 3, uh: 7, outer: 0.7, tip: 'round', widest: 0.5, quill: 0.03, down: 0.12, curve: 0.06, splits: 2, ramp: 'covert', vis: 0.5, cov: 1, seed: 41 },
-    pcov: { uw: 3, uh: 7, outer: 0.5, tip: 'point', widest: 0.45, quill: 0.03, down: 0.12, curve: 0.08, splits: 1, ramp: 'covert', vis: 0.55, cov: 1, seed: 43 },
-    mcov: { uw: 3, uh: 5, outer: 0.85, tip: 'round', widest: 0.5, quill: 0.03, down: 0.16, curve: 0.04, splits: 1, ramp: 'covert', vis: 0.48, cov: 1, seed: 47 },
-    lcov: { uw: 2, uh: 3, outer: 1, tip: 'round', widest: 0.52, quill: 0.02, down: 0.22, curve: 0, splits: 0, ramp: 'soft', soft: 0.7, vis: 0.45, cov: 1, seed: 53 },
-    alula: { uw: 2, uh: 5, outer: 0.4, tip: 'point', widest: 0.38, quill: 0.03, down: 0.1, curve: 0.12, splits: 1, ramp: 'covert', vis: 0.7, seed: 59 },
-    ucov: { uw: 3, uh: 5, outer: 0.95, tip: 'round', widest: 0.5, quill: 0.03, down: 0.3, curve: 0.02, splits: 1, ramp: 'under', soft: 1, vis: 0.5, cov: 1, seed: 61 },
-    axil: { uw: 3, uh: 8, outer: 0.9, tip: 'round', widest: 0.5, quill: 0.03, down: 0.2, curve: 0.03, splits: 2, ramp: 'under', soft: 0.6, vis: 0.6, cov: 1, seed: 67 }
-  };
-  // (cov = a covert: they lie flat and overlap their neighbours a lot, so their sides and shafts stay quiet - strong side
-  // rims and shafts on every covert read as vertical slats; what shows is the rounded tip over the shadow of the next row)
   /** small smooth noise (value noise, repeatable): 0..1 */
   function noise2(seed) {
     var R = rng(seed), T = []; for (var i = 0; i < 256; i++) T.push(R());
@@ -116,172 +89,7 @@
       return lerp(lerp(h(xi, yi), h(xi + 1, yi), sx), lerp(h(xi, yi + 1), h(xi + 1, yi + 1), sx), sy);
     };
   }
-  /**
-   * one feather picture, HD pixels per skin pixel, the root at the top -> {w, h, d (RGBA)}. Drawn like a real feather:
-   * a smooth vane (outer vane narrower), the shaft bending a little towards the inner vane, a few gaps where the barbs
-   * part (along the barbs, towards the tip), soft down above the vane, the "fingers" of the outer primaries, fine barb
-   * texture, the vane lighter along the shaft and a little darker and cooler towards its edges, the edge a darker tone
-   * of the feather's own colour (no cartoon outline), optional bars across it (eagle, owl)
-   */
-  function featherPixels(kind, pal) {
-    var K = KIND[kind], W = K.uw * HD, H = K.uh * HD, rnd = rng(K.seed * 7919 + (pal.seed || 0) * 131), nz = noise2(K.seed + (pal.seed || 0) * 17);
-    // the shaft sits off centre: the inner (back) vane gets most of the width, the outer (front) vane the rest
-    var room = (W - 2.5) / (1 + K.outer), x0 = 1.25 + room, x, y, t, i;
-    // barbs leave the shaft towards the tip: about 40 degrees in the inner vane, about 20 in the outer one
-    function slopeOf(side) { return side > 0 ? 2.75 : 1.2; }
-    var slope = 1.2;
-    function rx(tt) { return x0 - K.curve * room * tt * tt; }
-    function profile(tt) {
-      if (tt < K.quill) return 0;
-      if (tt <= K.widest) { var s = (tt - K.quill) / (K.widest - K.quill); return Math.pow(Math.sin(Math.min(1, s) * Math.PI / 2), 0.75); }
-      var s2 = (tt - K.widest) / (1 - K.widest);
-      return K.tip === 'round' ? Math.sqrt(Math.max(0, 1 - Math.pow(s2, 2.6))) : K.tip === 'blunt' ? Math.pow(Math.max(0, 1 - Math.pow(s2, 2.1)), 0.55) : Math.pow(Math.max(0, 1 - Math.pow(s2, 1.4)), 0.9);
-    }
-    // half width (px) of one vane at tt: side -1 = inner (wide) vane, +1 = outer vane
-    function vane(tt, side) {
-      var w = profile(tt) * room;
-      if (side > 0) { w *= K.outer; if (K.emarg) w *= 1 - K.emarg[1] * smooth(K.emarg[0] - 0.05, K.emarg[0] + 0.05, tt); }
-      else if (K.notch) w *= 1 - K.notch[1] * smooth(K.notch[0] - 0.05, K.notch[0] + 0.05, tt);
-      return w;
-    }
-    // the gaps: [y on the edge, side, depth (part of the vane), width (px)]
-    var gaps = [];
-    // a few clean V-shaped gaps (1 to 3, as on real feathers), mostly in the inner vane (every third one in the outer
-    // vane), spread along the vane so they never bunch up
-    var nG = K.splits || 0;
-    for (i = 0; i < nG; i++) gaps.push([H * lerp(0.32, 0.84, (i + 0.25 + 0.5 * rnd()) / nG), i % 3 === 2 ? 1 : -1, 0.22 + 0.22 * rnd(), 1.3 + 0.9 * rnd()]);
-    function cut(px, py, u, side, lim) {
-      for (var g = 0; g < gaps.length; g++) {
-        var G = gaps[g]; if (G[1] !== side) continue;
-        var a = Math.abs(u) / Math.max(1, lim), a0 = 1 - G[2]; if (a <= a0) continue;
-        // a V along a barb (y grows with the distance from the shaft), opening towards the edge
-        var yb = G[0] - (lim - Math.abs(u)) * slopeOf(side), open = (a - a0) / G[2];
-        if (Math.abs(py - yb) < G[3] * Math.pow(open, 1.4)) return true;
-      }
-      return false;
-    }
-    var inside = new Uint8Array(W * H), u0 = new Float32Array(W * H), lim0 = new Float32Array(W * H);
-    var downEnd = K.quill + K.down;
-    for (y = 0; y < H; y++) {
-      t = (y + 0.5) / H;
-      for (x = 0; x < W; x++) {
-        var k = y * W + x, u = x + 0.5 - rx(t), side = u < 0 ? -1 : 1, lim = vane(t, side);
-        var shaft = t < 0.95 && Math.abs(u) < (t < 0.3 ? 1.0 : 0.6);
-        var inV = Math.abs(u) <= lim;
-        // soft feathers: the edge breaks up into wisps
-        if (inV && K.soft && Math.abs(u) > lim * (1 - 0.35 * K.soft) && nz(x * 0.7, y * 0.35) < 0.5 * K.soft * (Math.abs(u) / Math.max(1, lim) - 0.6) * 2.5) inV = false;
-        // the down: wisps above the vane
-        if (inV && t < downEnd && nz(x * 0.9 + 11, y * 0.5) > 0.35 + 0.65 * (t - K.quill) / K.down) inV = false;
-        if (inV && cut(x, y + 0.5, u, side, lim)) inV = false;
-        if (inV || shaft) { inside[k] = 1; u0[k] = u; lim0[k] = Math.max(1, lim); }
-      }
-    }
-    function at(px, py) { return px >= 0 && py >= 0 && px < W && py < H && inside[py * W + px] === 1; }
-    var d = new Uint8ClampedArray(W * H * 4), stops = pal[K.ramp] || pal.remex, bars = pal.bars && (kind === 'prim' || kind === 'primE' || kind === 'sec' || kind === 'ter') ? pal.bars : null;
-    for (y = 0; y < H; y++) {
-      t = (y + 0.5) / H;
-      for (x = 0; x < W; x++) {
-        var k2 = y * W + x; if (!inside[k2]) continue;
-        var uu = u0[k2], a2 = Math.min(1, Math.abs(uu) / lim0[k2]), col = ramp(stops, t);
-        // the root lies in the shadow of the row over it: the shadow is deepest just under that row's edge and fades
-        // into the part in sight, so every feather reads on its own, even white on white (no outline needed)
-        if (pal.root) { var sEnd = 1 - (K.vis || 0.5) + 0.14; col = lerpCol(col, pal.root, (pal.rootK || 0.35) * (1 - smooth(sEnd - 0.3, sEnd, t))); }
-        if (bars) {
-          // bars across the feather (a little wavy), fading towards the root
-          var bq = (t * bars.n + 0.15 * Math.sin(uu * 0.5 + t * 7)) % 1;
-          col = lerpCol(col, bars.col, bars.k * smooth(0.55, 0.75, bq) * (1 - smooth(0.85, 1, bq)) * smooth(0.15, 0.4, t));
-        }
-        // a warm hint at the root
-        if (pal.warm) col = lerpCol(col, pal.warm, 0.04 * (1 - smooth(0, 0.25, t)));
-        var shaftW = t < 0.33 ? 1.0 : 0.6, cv = K.cov ? 1 : 0;
-        // the shaft: pale at the root; on dark feathers it fades towards the tip (a white line all along reads as a scratch)
-        if (Math.abs(uu) < shaftW && t < 0.95) col = lerpCol(col, pal.shaft, (cv ? 0.3 : (pal.shaftK || 0.85)) * (1 - smooth(0.85, 0.95, t)) * (1 - (pal.shaftFade || 0) * t));
-        else {
-          // the inner (back) vane 5 % darker, cooler and darker towards the edges; the shaft's shadow on its back side
-          if (uu < 0) { col = lerpCol(col, pal.shade, cv ? 0.02 : 0.05); if (uu > -shaftW - 1.2 && t < 0.93) col = lerpCol(col, pal.shade, cv ? 0.03 : 0.12); }
-          col = lerpCol(col, pal.shade, (pal.edgeK || 0.14) * (cv ? 0.5 : 1) * a2 * a2);
-          // a soft sheen along the shaft, and on dark feathers a coloured band in the inner vane
-          var sh = Math.max(0, 1 - Math.abs(uu) / 3);
-          col = lerpCol(col, pal.sheen || 0xffffff, (pal.sheenK || 0.12) * sh);
-          if (pal.band && uu < 0) col = lerpCol(col, pal.band, pal.bandK * smooth(1.5, 2.5, -uu) * (1 - smooth(4.5, 6, -uu)) * smooth(0.15, 0.3, t) * (1 - smooth(0.8, 0.95, t)));
-          // fine barb texture: faint lines towards the tip (their own angle in each vane), each barb a touch different
-          var q = (y + 0.5 - Math.abs(uu) * slopeOf(uu)) / 2.4, fq = q - Math.floor(q), bi = Math.floor(q);
-          col = lerpCol(col, pal.shade, 0.06 * Math.max(0, 1 - Math.min(fq, 1 - fq) * 2.4 / 0.7) * smooth(1, 3, Math.abs(uu)));
-          col = shade(col, ((bi * 2654435761 >>> 0) % 1000 / 1000 - 0.5) * 0.035 + (rnd() - 0.5) * 0.015);
-          // the down is lighter and softer
-          if (t < downEnd + 0.04) col = lerpCol(col, pal.down || 0xffffff, 0.45 * (1 - smooth(K.quill, downEnd + 0.04, t)));
-        }
-        // the edge, no outline: the back (inner) edge and the tip a soft cooler rim, the front edge catching a little
-        // light, the sides of a gap barely darker (like a real feather: it reads by its shading)
-        var edge = !at(x - 1, y) || !at(x + 1, y) || !at(x, y - 1) || !at(x, y + 1);
-        if (edge) {
-          var outside = Math.abs(uu) >= lim0[k2] - 1.5 || t > 0.97 || t < downEnd + 0.02;
-          if (!outside) col = lerpCol(col, pal.shade, 0.07);
-          // a covert's rounded tip catches the light (it lies over the next row's shadow: that is the scallop line)
-          else if (K.cov && t > 0.9) col = shade(col, pal.tipK || 0.06);
-          else if (uu < 0 || t > 0.97) col = lerpCol(col, pal.shade, (pal.rimK || 0.2) * (K.cov ? 0.35 : 1));
-          else col = shade(col, pal.lightK || 0.05);
-        }
-        // the pale worn tip of dark feathers
-        if (pal.tipEdge && t > 0.9 && edge) col = lerpCol(col, pal.tipEdge, 0.5);
-        var j = k2 * 4; d[j] = (col >> 16) & 255; d[j + 1] = (col >> 8) & 255; d[j + 2] = col & 255; d[j + 3] = 255;
-      }
-    }
-    return { w: W, h: H, d: d };
-  }
-  var picCache = {};
-  function featherPicture(kind, pal) {
-    var p = featherPixels(kind, pal);
-    return { w: p.w, h: p.h, px: b64(p.d) };
-  }
-  /** rows [y0, y1) of a picture as its own picture */
-  function rowsOf(p, y0, y1) { return { w: p.w, h: y1 - y0, px: b64(p.d.subarray(y0 * p.w * 4, y1 * p.w * 4)) }; }
-  /**
-   * the paintings of a feather (one picture, or two for a flight feather in two parts: [root part, tip part]): the
-   * picture on both sides of the plane (the back one mirrored, like one sheet seen from behind), the thin rim switched
-   * off; key = one area on the skin for every feather of this kind and palette
-   */
-  function featherTex(palId, pal, kind) {
-    var K = KIND[kind], ck = palId + '|' + kind;
-    if (picCache[ck]) return picCache[ck];
-    var p = featherPixels(kind, pal);
-    function tex(pic, uh, part) {
-      var key = 'fe_' + palId + '_' + kind + (part ? '_' + part : '');
-      function face(name, flipU) { return { face: name, rel: [0, 0, K.uw, uh], w: pic.w, h: pic.h, px: pic.px, flip: [flipU, false], rot: 0, key: key, hd: true }; }
-      return { box: false, off: [0, 0], faces: [face('south', false), face('north', true)], fs: { east: -1, west: -1, up: -1, down: -1 } };
-    }
-    var out = K.split ? [tex(rowsOf(p, 0, K.split * HD), K.split, 'a'), tex(rowsOf(p, K.split * HD, p.h), K.uh - K.split, 'b')] : [tex({ w: p.w, h: p.h, px: b64(p.d) }, K.uh)];
-    picCache[ck] = out;
-    return out;
-  }
-
   var DEG = Math.PI / 180;
-
-  /**
-   * feather palettes: colour ramps from root (0) to tip (1) - remex = flight feathers, covert = big coverts and
-   * scapulars, covert2 = small coverts; line = outline, edge = towards the vane's edge, barb = barb lines, shaft
-   */
-  // feather palettes: ramps from root (0) to tip (1): remex = flight feathers, covert = coverts / scapulars / alula,
-  // soft = small and underwing coverts; shade = the cool tone of the edges, line = mixed into the edge, sheen = light
-  // along the shaft, down = the downy part, bars = bands across the flight feathers
-  // (value design for reading at a distance, after photos of real wings: no outlines; every feather is darkest in the
-  // shadow of the row over it and brightest at its tip, the back edge a soft cool rim, the front edge catching light.
-  // White feathers keep cool blue-grey shadows with a faint warm tint at the root (swan); dark feathers get a blue-violet
-  // sheen band and pale worn tips; eagle: bars on the flight feathers, golden coverts; under the wing a bit darker)
-  var FPAL = {
-    angel: { seed: 1, remex: [[0, 0xdfe3ea], [0.3, 0xf6f7f9], [0.55, 0xffffff], [1, 0xffffff]], covert: [[0, 0xdee2e9], [0.35, 0xf7f8fa], [0.6, 0xffffff], [1, 0xffffff]],
-      soft: [[0, 0xeef0f4], [1, 0xffffff]], under: [[0, 0xccd2dc], [1, 0xf0f2f5]], shade: 0xa6b0c2, edgeK: 0.07, rimK: 0.26, lightK: 0.03, shaft: 0xffffff, down: 0xffffff,
-      sheen: 0xffffff, sheenK: 0.06, root: 0x97a2b7, rootK: 0.46, warm: 0xf3e3c2, emarg: 8 },
-    dark: { seed: 3, remex: [[0, 0x0b0a0f], [0.45, 0x1c1a24], [1, 0x2c2a36]], covert: [[0, 0x0e0d13], [0.5, 0x23202c], [1, 0x34313f]], soft: [[0, 0x1d1b24], [1, 0x3a3746]],
-      under: [[0, 0x18161e], [1, 0x2a2832]], shade: 0x050507, rimK: 0.25, lightK: 0.1, shaft: 0x5d5a72, shaftK: 0.6, shaftFade: 0.6, down: 0x3a3744, sheen: 0x6a7cb0, sheenK: 0.2,
-      band: 0x4c5a8c, bandK: 0.35, tipEdge: 0x77758a, root: 0x030305, rootK: 0.55, emarg: 7 },
-    eagle: { seed: 5, remex: [[0, 0x1d150d], [0.45, 0x3a2a1c], [1, 0x4f3b29]], covert: [[0, 0x2e1f12], [0.45, 0x74502f], [1, 0xa8804f]], soft: [[0, 0x6a4a2c], [1, 0xb48e60]],
-      under: [[0, 0x5e4430], [1, 0x8c6a46]], shade: 0x1c140d, rimK: 0.3, lightK: 0.08, shaft: 0xd6c4a6, shaftK: 0.45, shaftFade: 0.75, down: 0xc4ab88, sheen: 0xd2b48c, sheenK: 0.08,
-      bars: { n: 6, col: 0x140d08, k: 0.32 }, tipEdge: 0xb3a184, root: 0x120b06, rootK: 0.5, emarg: 4 },
-    phoenix: { seed: 4, remex: [[0, 0x8f1108], [0.35, 0xe2441a], [0.7, 0xff9a24], [1, 0xffe27a]], covert: [[0, 0xa3150e], [0.5, 0xff7a1c], [1, 0xffd45a]],
-      soft: [[0, 0xff8a24], [1, 0xfff0a0]], under: [[0, 0xd2481a], [1, 0xffb84a]], shade: 0x7a0d06, rimK: 0.3, lightK: 0.1, shaft: 0xfff4b8, shaftK: 0.6, shaftFade: 0.4, down: 0xfff6d0,
-      sheen: 0xfff2b0, sheenK: 0.18, root: 0x5e0904, rootK: 0.45, glow: true }
-  };
 
   // =================================================================== horns (real and mythical)
   // (from the horn study: a horn is a chain of bones with the same turn at every joint. A constant bend with segments
@@ -378,7 +186,8 @@
    */
   function hornStrip(G, look, Wst, Hst, seed) {
     var Wt = Wst * HD, Ht = Hst * HD, d = new Uint8ClampedArray(Wt * Ht * 4), R = rng(seed), nz = noise2(seed * 3 + 1), Ltot = G.L, rings = [], k, s;
-    if (look.rings) {
+    if (look.rings && look.toon) { for (s = look.rings.k; s < look.rings.end * Ltot; s += look.rings.k) rings.push([s, 1]); }
+    else if (look.rings) {
       // growth rings from the root up to 'end': spaced by the horn's thickness there, closer at the root (old horn
       // grows less each year), a little uneven
       s = 0.35;
@@ -389,9 +198,10 @@
     }
     // a faint ring exactly at every joint: the seam reads as one more ridge (not on smooth cones: there it would
     // only point at the steps)
-    if (look.joints !== false) G.segs.forEach(function (sg, i) { if (i) rings.push([sg.s, (look.rings ? look.rings.depth || 0.3 : 0.25) * 0.5]); });
+    if (look.joints !== false && !look.toon) G.segs.forEach(function (sg, i) { if (i) rings.push([sg.s, (look.rings ? look.rings.depth || 0.3 : 0.25) * 0.5]); });
     for (var y = 0; y < Ht; y++) {
       var sp = Hst - (y + 0.5) / HD - G.sink, f = Math.max(0, Math.min(1, sp / Ltot));
+      if (look.toon) { for (var xt = 0; xt < Wt; xt++) { var ct = toonHorn(look, G, sp, f, (xt + 0.5) / HD - Wst / 2, rings), jt = (y * Wt + xt) * 4; d[jt] = (ct >> 16) & 255; d[jt + 1] = (ct >> 8) & 255; d[jt + 2] = ct & 255; d[jt + 3] = 255; } continue; }
       for (var x = 0; x < Wt; x++) {
         var u = (x + 0.5) / HD - Wst / 2, col = ramp(look.ramp, f);
         // grain along the horn and fine growth lines across it
@@ -425,6 +235,20 @@
       }
     }
     return { w: Wt, h: Ht, px: b64(d) };
+  }
+  /**
+   * a cartoon horn's colour: the ramp cut into flat bands along it (look.toon.cuts), across each face a shadow side,
+   * the base and a crisp light streak (cel shading, after toon shaders: 2-3 values per material), bold clean rings
+   */
+  function toonHorn(look, G, sp, f, u, rings) {
+    var T = look.toon, cuts = T.cuts || [0.45, 0.8], q = 0;
+    while (q < cuts.length && f >= cuts[q]) q++;
+    var col = ramp(look.ramp, cuts.length ? (q === 0 ? cuts[0] * 0.5 : q === cuts.length ? (1 + cuts[q - 1]) / 2 : (cuts[q - 1] + cuts[q]) / 2) : f);
+    if (T.alt) col = T.alt[q % T.alt.length];
+    if (sp < 0.45) col = shade(col, -(T.root || 0.16));
+    for (var k = 0; k < rings.length; k++) { var dd = (sp - rings[k][0]) * HD; if (dd > -1.6 && dd <= 0) { col = shade(col, -(T.ring || 0.22)); break; } }
+    if (T.tip && f > T.tip[0]) col = T.tip[1];
+    return col;
   }
   /**
    * the piece of a painted strip one box needs: whole skin pixels around its stretch, cut once (cached) so the boxes
@@ -576,11 +400,23 @@
         { name: 'shardside', at: [3.0, 7.0, 0.4], dir: [0.55, 0.8, 0.2], curl: [1, -0.2, 0], L: 4.2, t0: 1.3, p: 1, n: 3, turn: 30, roll: 45, section: [1, 1], sink: 0.5 },
         { name: 'shardback', at: [2.2, 7.3, 2.2], dir: [0.3, 0.8, 0.52], curl: [0.4, 0, 1], L: 3.0, t0: 1.0, p: 1, n: 2, turn: 20, roll: 45, section: [1, 1], sink: 0.5 }] }
   ];
+  // cartoon horns (toon look: chunky, a few long segments, flat bands, a shadow side and a crisp gloss streak)
+  HORNS.push(
+    { id: 'horns_devil_toon', look: { ramp: [[0, 0xad113b], [0.5, 0xdb2733], [1, 0xf55b49]], toon: { cuts: [0.55, 0.85] }, joints: false },
+      chains: [{ at: [2.4, 7.5, -1.6], dir: [0.42, 0.9, -0.05], curl: [-1, 0, 0], L: 5, t0: 3, p: 0.6, n: 8, turn: 40, section: [1, 1], octa: true, tMin: 0.25 }] },
+    { id: 'horns_ram_toon', look: { ramp: [[0, 0xc4a78d], [0.5, 0xf2e2c2], [1, 0xfffceb]], rings: { k: 1.35, end: 0.82 }, toon: { cuts: [0.45, 0.8], ring: 0.2 } },
+      chains: [{ at: [3.0, 7.0, 0.4], dir: [0.5, 0.66, 0.56], curl: [0, -0.6, 0.8], L: 13.5, t0: 3.7, p: 0.5, n: 13, turn: 330, alpha: 76, drift: 3.2, section: [0.92, 1.12] }] },
+    { id: 'horns_unicorn_toon', look: { ramp: [[0, 0xf2e2c2], [1, 0xfff4dc]], toon: { cuts: [0.17, 0.34, 0.5, 0.67, 0.84], alt: [0xf7e8c8, 0xfcb1cc] }, joints: false },
+      chains: [{ single: true, at: [0, 7.4, -3.2], dir: [0, 0.93, -0.37], curl: [0, 0, -1], L: 7, t0: 2.5, p: 0.9, n: 6, turn: 0, roll: 45, section: [1, 1], tMin: 0.4 }] },
+    { id: 'horns_dragon_toon', look: { ramp: [[0, 0x4a2d6e], [0.55, 0x7a4fb0], [1, 0xd9c7ff]], toon: { cuts: [0.5, 0.82] }, joints: false },
+      chains: [{ at: [2.8, 7.2, 1.0], dir: [0.3, 0.62, 0.72], curl: [0, -1, 0.3], L: 7, t0: 2.8, p: 0.7, n: 5, turn: 44, section: [1, 1.1], octa: true, tMin: 0.7 }] }
+  );
+  // lang: lib.p.{horns_devil_toon|horns_ram_toon|horns_unicorn_toon|horns_dragon_toon}
   function hornItem(spec, order) { return { id: spec.id, root: 'head', cat: 'head', order: 20 + order, hd: HD, replaces: spec.id, parts: hornParts(spec.id, spec) }; }
   // lang: lib.p.{horns_devil|horns_oni|horns_unicorn|horns_ibex|horns_kudu|horns_bull|horns_oryx|antlers_deer|horns_crystal}
   // lang: lib.n.{horn|horn_r|horn_l|hornlet_r|hornlet_l|hornlow_r|hornlow_l|antler_r|antler_l|shard_r|shard_l|shardside_r|shardside_l|shardback_r|shardback_l|tine|burr}
 
-  // =================================================================== head accessories (ears, halo, crown, hats, a skull)
+  // =================================================================== head accessories (ears, halo, crown, hats)
   // (materials as small painted tiles: every box shows a part of its material's tile, picked by where the box is so
   // neighbours differ, and all the boxes of a material share one small area of the skin; parts that grow in one
   // direction - ears, a hat's cone - use strips like the horns)
@@ -906,6 +742,215 @@
     return { id: 'bunny_ears', root: 'head', cat: 'head', order: 2, hd: HD, replaces: 'bunny_ears', parts: [ear], anims: anims };
   }
 
+  // ---- elf ears: a human ear (rounded lobe, the helix rolling up from the front) drawn out into a point that sweeps up
+  // and back. The outline is drawn from the side, like a sketch (a smooth closed curve through a few points), and
+  // painted on thin plates laid along the ear's axis (see-through round it: a smooth shape, never a staircase of
+  // slices): a root plate and a tip plate hinged at 55 % (twitch, droop); the realistic ear also has its helix as a
+  // rolled strip. The ear swings out from the head about its front edge. Every face is painted in a reference skin tone
+  // (TONE_REF, flag 'tone') that the library turns into the model's own skin colour when it puts the ears on.
+  // Side frame: Y up, Z back, the origin at the front of the lobe where the ear meets the head.
+  var TONE_REF = 0xf0c4a4;
+  /** the closed outline of an ear (side frame) as a dense polyline, with which points belong to the free edge */
+  function earOutline(pts) {
+    var n = pts.length, out = [];
+    for (var i = 0; i < n; i++) {
+      var p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+      for (var k = 0; k < 12; k++) {
+        var t = k / 12, t2 = t * t, t3 = t2 * t, q = [0, 1].map(function (j) { return 0.5 * (2 * p1[j] + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2 + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t3); });
+        out.push({ y: q[0], z: q[1], free: !(p1[2] && p2[2]) });
+      }
+    }
+    return out;
+  }
+  /** inside the outline? and how far from its free edge (the attached front edge does not count) */
+  function earAt(E, Y, Z) {
+    var inside = false, dFree = 1e9, n = E.length;
+    for (var i = 0, j = n - 1; i < n; j = i++) {
+      var a = E[i], b = E[j];
+      if (((a.y > Y) !== (b.y > Y)) && (Z < (b.z - a.z) * (Y - a.y) / (b.y - a.y) + a.z)) inside = !inside;
+      if (a.free && b.free) {
+        var dy = b.y - a.y, dz = b.z - a.z, l2 = dy * dy + dz * dz || 1, t = Math.max(0, Math.min(1, ((Y - a.y) * dy + (Z - a.z) * dz) / l2));
+        dFree = Math.min(dFree, Math.hypot(a.y + dy * t - Y, a.z + dz * t - Z));
+      }
+    }
+    return { inside: inside, d: dFree };
+  }
+  /** the ear's outer side at (Y, Z): skin with the helix rim, the groove inside it, the antihelix, the hollow, a warm tip */
+  function elfOuter(o, Y, Z) {
+    var q = earAt(o.E, Y, Z); if (!q.inside) return null;
+    var d = q.d, f = Math.max(0, Math.min(1, ((Y - o.root[0]) * o.ax[0] + (Z - o.root[1]) * o.ax[1]) / o.len)), col = TONE_REF;
+    // the hollow (concha): an ellipse in the ear's own frame (s along the axis, w across), the canal its darkest point
+    var sA = (Y - o.root[0]) * o.ax[0] + (Z - o.root[1]) * o.ax[1], wA = -(Y - o.root[0]) * o.ax[1] + (Z - o.root[1]) * o.ax[0];
+    var cc = Math.pow((sA - o.concha[0] * o.len) / (o.concha[2] * o.len), 2) + Math.pow((wA - o.concha[1]) / o.concha[3], 2);
+    if (o.toon) {
+      // cel: the hollow one flat shadow shape, a light band along the top edge, a blush on the outer 30 %, and a 1-texel
+      // ink line only on the back / bottom edge (outlines all round look like stickers)
+      col = cc < 1 ? shade(col, -0.15) : d < 0.36 && wA < 0.1 ? shade(col, 0.09) : col;
+      if (f > 0.7) col = lerpCol(col, 0xf5a3a3, f > 0.85 ? 0.38 : 0.2);           // the blush in two steps
+      if (d < 0.13 && wA > -0.15) col = shade(col, -0.34);
+      return col;
+    }
+    col = shade(col, 0.04 - 0.08 * Math.max(0, Math.min(1, (o.top - Y) / o.top)));
+    if (d < 0.3) col = shade(col, 0.15);                                     // the rolled rim catches the light
+    else if (d < 0.58) col = shade(col, -0.17);                              // the groove inside it
+    else if (d < 0.95) col = shade(col, 0.07);                               // the antihelix ridge
+    if (cc < 1) col = shade(col, cc < 0.35 ? -0.27 : -0.19);                 // the hollow, the canal deepest
+    if (f > 0.66) col = lerpCol(col, 0xe9998a, 0.3 * smooth(0.66, 1, f));    // thin skin at the tip
+    if (Y < 0.7 && Z > 0.2) col = lerpCol(col, 0xf3b7a3, 0.15);              // the soft lobe
+    return col;
+  }
+  /** the inner side (towards the head): darker, the root in the head's shadow */
+  function elfInner(o, Y, Z) {
+    var q = earAt(o.E, Y, Z); if (!q.inside) return null;
+    var f = Math.max(0, Math.min(1, ((Y - o.root[0]) * o.ax[0] + (Z - o.root[1]) * o.ax[1]) / o.len)), col = shade(TONE_REF, -0.08 - 0.12 * (1 - smooth(0, 0.35, f)));
+    if (o.toon && q.d < 0.13 && (-(Y - o.root[0]) * o.ax[1] + (Z - o.root[1]) * o.ax[0]) > -0.15) col = shade(col, -0.3);
+    if (f > 0.66) col = lerpCol(col, 0xe9998a, 0.25 * smooth(0.66, 1, f));
+    return col;
+  }
+  /**
+   * one plate of the ear: the stretch [s0, s1] along its axis (from the root), as wide as the outline there; a thin box
+   * laid on the side of the head and turned (about x) along the axis; its outer / inner faces painted, the rim faces off
+   */
+  function elfPlate(o, key, name, x0, s0, s1) {
+    var th = (90 - o.elev) * DEG, ax = o.ax, bx = [-ax[1], ax[0]]; // (Y, Z) of the axis and of the across direction
+    var lo = 1e9, hi = -1e9, i, j;
+    o.E.forEach(function (p) { var s = (p.y - o.root[0]) * ax[0] + (p.z - o.root[1]) * ax[1]; if (s < s0 - 0.3 || s > s1 + 0.3) return; var w = (p.y - o.root[0]) * bx[0] + (p.z - o.root[1]) * bx[1]; lo = Math.min(lo, w); hi = Math.max(hi, w); });
+    lo = Math.floor((lo - 0.15) * HD) / HD; hi = Math.ceil((hi + 0.15) * HD) / HD;
+    var hs = s1 - s0, hw = hi - lo, W = Math.max(1, Math.round(hw * HD)), H = Math.max(1, Math.round(hs * HD));
+    // the box before its turn: y along the axis, z across; its centre in the side frame
+    var cs = (s0 + s1) / 2, cw = (lo + hi) / 2, cY = o.root[0] + ax[0] * cs + bx[0] * cw, cZ = o.root[1] + ax[1] * cs + bx[1] * cw;
+    function side(east, fn) {
+      var d = new Uint8ClampedArray(W * H * 4);
+      for (j = 0; j < H; j++) for (i = 0; i < W; i++) {
+        // box frame: y down the rows (the far end at the top), z across the columns (east: +z on the left)
+        var yl = hs / 2 - (j + 0.5) / HD, zl = east ? hw / 2 - (i + 0.5) / HD : -hw / 2 + (i + 0.5) / HD;
+        // turned about x by th: +y goes along the axis, +z across (towards the back edge)
+        var Y = cY + yl * Math.cos(th) - zl * Math.sin(th), Z = cZ + yl * Math.sin(th) + zl * Math.cos(th);
+        var c = fn(o, Y, Z); if (c === null) continue;
+        var k = (j * W + i) * 4; d[k] = (c >> 16) & 255; d[k + 1] = (c >> 8) & 255; d[k + 2] = c & 255; d[k + 3] = 255;
+      }
+      return { w: W, h: H, px: b64(d) };
+    }
+    function face(nm, p, k) { return { face: nm, rel: [0, 0, sn(hw), sn(hs)], w: p.w, h: p.h, px: p.px, flip: [false, false], rot: 0, key: k, hd: true, tone: 1 }; }
+    var tex = { box: false, off: [0, 0], faces: [face('east', side(true, elfOuter), key + '_o'), face('west', side(false, elfInner), key + '_i')], fs: { north: -1, south: -1, up: -1, down: -1 } };
+    return C(name, [x0 - o.T / 2, cY - hs / 2, cZ - hw / 2], [x0 + o.T / 2, cY + hs / 2, cZ + hw / 2], undefined, { tex: tex, alt: TONE_REF, r: [sn(o.elevTurn), 0, 0], o: [sn(x0), sn(cY), sn(cZ)] });
+  }
+  /** the helix as a rolled strip along the free top edge (from the upper root to the tip), in short straight pieces */
+  function elfRim(o, key, x0, from, to, n) {
+    var out = [], strip = paintStrip(1, 12, 0, 11, function (u, s, f) {
+      var col = shade(TONE_REF, 0.09 - 0.2 * Math.abs(u));
+      return [s > 6.5 ? lerpCol(col, 0xe9998a, 0.25 * smooth(6.5, 9, s)) : col, 1];
+    });
+    for (var k = 0; k < n; k++) {
+      var a = o.helix(from + (to - from) * k / n), b = o.helix(from + (to - from) * (k + 1) / n), len = Math.hypot(b[0] - a[0], b[1] - a[1]) + 0.1;
+      var cY = (a[0] + b[0]) / 2, cZ = (a[1] + b[1]) / 2, w = 0.4 * (1 - 0.4 * (from + (to - from) * (k + 0.5) / n)), thk = o.T + 0.22, xc = x0 + 0.11;
+      var s0 = 1 + 9 * (from + (to - from) * k / n), tex = hornTex(key, strip, 1, 12, 0, thk, w, s0, s0 + len);
+      tex.faces.forEach(function (f) { f.tone = 1; });
+      out.push(C('@rim', [xc - thk / 2, cY - len / 2, cZ - w / 2], [xc + thk / 2, cY + len / 2, cZ + w / 2], undefined,
+        { tex: tex, alt: TONE_REF, r: [sn(Math.atan2(b[1] - a[1], b[0] - a[0]) / DEG), 0, 0], o: [sn(xc), sn(cY), sn(cZ)] }));
+    }
+    return out;
+  }
+  /**
+   * an elf ear item. st = {id, pts (outline in the side frame: [Y, Z, attached]), tip, concha [Y, Z, rY, rZ], T,
+   * rim, toon, splay (degrees the ear swings out about its front edge), tilt, at [x, y, z] (the front of the lobe on
+   * the head), twitch, droop [ear, tip], order}
+   */
+  function elfEarsItem(st0) {
+    // the outline is drawn at any size and scaled (k) to the ear's length
+    var k = st0.k || 1, st = Object.assign({}, st0, { pts: st0.pts.map(function (p) { return p.length > 2 ? [p[0] * k, p[1] * k, p[2]] : [p[0] * k, p[1] * k]; }), tip: [st0.tip[0] * k, st0.tip[1] * k] });
+    var o = Object.assign({}, st), E = earOutline(st.pts);
+    var top = 0; E.forEach(function (p) { top = Math.max(top, p.y); });
+    // the axis: from the middle of the attached edge to the tip
+    var att = st.pts.filter(function (p) { return p[2]; }), rY = 0, rZ = 0; att.forEach(function (p) { rY += p[0] / att.length; rZ += p[1] / att.length; });
+    var dY = st.tip[0] - rY, dZ = st.tip[1] - rZ, len = Math.hypot(dY, dZ);
+    o.E = E; o.top = top; o.root = [rY, rZ]; o.ax = [dY / len, dZ / len]; o.len = len;
+    o.elev = Math.atan2(dY, dZ) / DEG; o.elevTurn = 90 - o.elev;
+    // the helix: the free edge from the top of the attached edge round to the tip, as a function of 0..1
+    var tipI = 0; st.pts.forEach(function (p, i) { if (p[0] === st.tip[0] && p[1] === st.tip[1]) tipI = i; });
+    var upI = tipI + 1; while (upI < st.pts.length - 1 && !st.pts[upI][2]) upI++;
+    var path = E.slice(tipI * 12, upI * 12 + 1).reverse();
+    o.helix = function (t) { var x = Math.max(0, Math.min(path.length - 1, t * (path.length - 1))), i0 = Math.floor(x), i1 = Math.min(path.length - 1, i0 + 1), u = x - i0, a = path[i0], b = path[i1]; return [a.y + (b.y - a.y) * u - 0.2 * o.ax[1], a.z + (b.z - a.z) * u + 0.2 * o.ax[0]]; };
+    var x0 = st.at[0] + st.T / 2 - 0.05, key = 'elf_' + st.id, hinge = 0.55 * len;
+    // the side frame sits at the ear's place on the head
+    function place(n) { if (n.c) { [n.f, n.t, n.o].forEach(function (v) { if (v) { v[1] = sn(v[1] + st.at[1]); v[2] = sn(v[2] + st.at[2]); } }); } else { n.o[1] = sn(n.o[1] + st.at[1]); n.o[2] = sn(n.o[2] + st.at[2]); n.kids.forEach(place); } }
+    var lower = [elfPlate(o, key + '_a', '@base', x0, -0.6, hinge + 0.12)], upper = [elfPlate(o, key + '_b', '@tip', x0, hinge - 0.05, len + 0.25)];
+    if (st.rim) { lower = lower.concat(elfRim(o, key + '_rim', x0, 0, 0.5, 3)); upper = upper.concat(elfRim(o, key + '_rim', x0, 0.5, 0.97, 3)); }
+    var hp = [rY + o.ax[0] * hinge, rZ + o.ax[1] * hinge];
+    var tip = Gp('@ear_tip_r', [x0, hp[0], hp[1]], null, upper, 'elft');
+    var ear = Gp('@ear_r', [st.at[0], 0, 0], [0, st.splay, st.tilt || 0], lower.concat([tip]), 'elf', { mirror: '@ear_l' });
+    place(ear);
+    // twitches (each ear at its own moment: a quick flick, the tip a little after), a slow swivel; the ears droop when
+    // crouching, more when asleep, and perk up when jumping. The tip folds about the hinge (across the ear)
+    function pulse(dtSec) { if (dtSec < 0 || dtSec > 0.6) return 0; if (dtSec < 0.1) return W2(dtSec / 0.1); if (dtSec < 0.35) return 1 - 1.25 * W2((dtSec - 0.1) / 0.25); return -0.25 * (1 - W2((dtSec - 0.35) / 0.25)); }
+    function W2(x) { return smooth(0, 1, x); }
+    function tw(at, k) { return function (t) { var sec = t * 9.6, a = at * 9.6; return k * (st.twitch * pulse(sec - a) + 1.5 * Math.sin(2 * Math.PI * 3 * t)); }; }
+    function sides(name, type, len, keys, jr, jl) {
+      var a = bake({ name: name, type: type, length: len, keys: keys, fps: 20, joints: jr }), b = bake({ name: name, type: type, length: len, keys: keys, fps: 20, joints: jl });
+      a.tracks.forEach(function (t) { t.side = 'r'; }); b.tracks.forEach(function (t) { t.side = 'l'; a.tracks.push(t); });
+      return a;
+    }
+    // jumping: a dip (+6) for 0.08 s, up to -14 by 0.2 s, overshoot -18, settled by 0.45 s (+ x = down)
+    function perk(sec) { if (sec < 0.08) return 6 * W2(sec / 0.08); if (sec < 0.2) return 6 - 24 * W2((sec - 0.08) / 0.12); if (sec < 0.3) return -18 + 4 * W2((sec - 0.2) / 0.1); return -14 * (1 - W2(Math.min(1, (sec - 0.3) / 0.2))); }
+    // (the tip folds in the ear's own plane: + x turns it back and down)
+    function tipJ(fk) { return { r: [fk, 0, 0] }; }
+    var idle = sides('@anim_idle', 'global', 9.6, 192, { elf: { r: [0, tw(2.6 / 9.6, 1), wave(0.8, 0.1, 2)] }, elft: tipJ(function (t) { return 0.45 * tw(2.65 / 9.6, 1)(t); }) },
+      { elf: { r: [0, tw(7.1 / 9.6, 1), wave(0.8, 0.45, 2)] }, elft: tipJ(function (t) { return 0.45 * tw(7.15 / 9.6, 1)(t); }) });
+    // droop: the ear swings back flat against the head (less splay) and turns down; the tip folds
+    var anims = [idle,
+      bake({ name: '@anim_sneak', type: 'sneaking', length: 1, keys: 4, fps: 20, joints: { elf: { r: [st.droop[0], -st.splay * 0.35, 0] }, elft: tipJ(st.droop[1]) } }),
+      bake({ name: '@anim_sleep', type: 'sleeping', length: 1, keys: 4, fps: 20, joints: { elf: { r: [st.droop[0] * 1.7, -st.splay * 0.6, 0] }, elft: tipJ(st.droop[1] * 1.6) } }),
+      Object.assign(bake({ name: '@anim_jump', type: 'jumping', length: 0.5, keys: 10, fps: 20, joints: { elf: { r: [function (t) { return perk(t * 0.5); }, function (t) { return -0.3 * perk(t * 0.5); }, 0] }, elft: tipJ(function (t) { return 0.6 * perk(Math.max(0, (t * 0.5 - 0.05) / 0.45 * 0.5)); }) } }), { mustFinish: true }),
+      bake({ name: '@anim_walk', type: 'walking', length: 1, keys: 20, fps: 20, joints: { elf: { r: [wave(3.5, 0, 2), 0, wave(1.5, 0.25, 2)] }, elft: tipJ(wave(5, -0.12, 2)) } })];
+    return { id: st.id, root: 'head', cat: 'head', order: st.order, hd: HD, replaces: st.id, tone: true, parts: [ear], anims: anims };
+  }
+  // the kinds (side frame, px; [Y, Z, 1] = a point of the edge attached to the head). Realistic: a human ear (lobe,
+  // the helix rolling up from the front) drawn out to a point up and back, about 6 px long, swung out 28 degrees.
+  // Cartoon (anime): longer and more upright, narrow, flat cel bands and a darker line round it.
+  var ELVES = [
+    { id: 'ears_elf', pts: [[0, 0, 1], [-0.35, 0.65], [-0.1, 1.45], [0.6, 2.0], [1.9, 2.75], [3.5, 3.8], [5.25, 5.2], [6.8, 6.55], [6.15, 5.05], [5.4, 3.5], [4.7, 2.0], [4.05, 0.6, 1], [2.0, 0.05, 1]],
+      tip: [6.8, 6.55], k: 0.62, concha: [0.2, 0.1, 0.17, 0.36], T: 0.1, splay: 32, tilt: -8, at: [4, 2.4, 0.4], twitch: 12, droop: [10, 8], order: 2.1 },
+    { id: 'ears_elf_toon', toon: true, pts: [[0, 0, 1], [-0.3, 0.5], [0.05, 1.25], [1.2, 2.25], [2.8, 3.75], [4.5, 5.6], [6.3, 8.2], [5.6, 6.0], [4.9, 4.0], [4.2, 2.1], [3.5, 0.55, 1], [1.8, 0.05, 1]],
+      tip: [6.3, 8.2], k: 0.65, concha: [0.33, 0.16, 0.26, 0.25], T: 0.1, splay: 58, tilt: -12, at: [4, 2.5, 0.3], twitch: 15, droop: [20, 12], order: 2.2 }
+  ];
+  /**
+   * low-poly elf ears (16x pixel art, like a vanilla skin): three boxes stepping to the tip along the ear's axis, every
+   * face painted pixel by pixel in four tones of the reference skin (the library tints them to the model's skin)
+   */
+  function elfLowItem() {
+    var L1 = shade(TONE_REF, 0.08), B0 = TONE_REF, S1 = shade(TONE_REF, -0.13), S2 = shade(TONE_REF, -0.27), TIP = lerpCol(TONE_REF, 0xe9998a, 0.45);
+    // [s0, s1 (along the axis), w0, w1 (across: - = the top / helix edge)], whole pixels
+    var elev = 62, th = 90 - elev, x0 = 4.45, kids = [], INNER = lerpCol(S1, 0xd6a996, 0.5);
+    function pic(w, h, fn) { var d = new Uint8ClampedArray(w * h * 4); for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) { var c = fn(i, j, w, h), k = (j * w + i) * 4; d[k] = (c >> 16) & 255; d[k + 1] = (c >> 8) & 255; d[k + 2] = c & 255; d[k + 3] = 255; } return { w: w, h: h, px: b64(d) }; }
+    function face(nm, p, key, uw, uh) { return { face: nm, rel: [0, 0, uw, uh], w: p.w, h: p.h, px: p.px, flip: [false, false], rot: 0, key: key, tone: 1 }; }
+    function rx2(p, c, deg) { var a = deg * DEG, y = p[0] - c[0], z = p[1] - c[1]; return [c[0] + y * Math.cos(a) - z * Math.sin(a), c[1] + y * Math.sin(a) + z * Math.cos(a)]; }
+    // [s0, s1 (along the axis), w0, w1 (across: - = the top edge)], whole pixels; extra turn after the root's
+    var BOXES = [[0, 3, -1, 1, 0], [3, 5, -1, 0, 20], [5, 6, -1, 0, 65]], joint = rx2([3, -0.5], [0, 0], th);
+    BOXES.forEach(function (bx, n) {
+      var Ls = bx[1] - bx[0], Wd = bx[3] - bx[2], last = n === BOXES.length - 1;
+      var c0 = rx2([(bx[0] + bx[1]) / 2, (bx[2] + bx[3]) / 2], [0, 0], th), c = n ? rx2(c0, joint, 20) : c0, turn = th + bx[4];
+      var outer = pic(Wd, Ls, function (i, j) { return last ? TIP : n === 0 && i === Wd - 1 && j >= 1 ? INNER : B0; });
+      var flat = function (col) { return function () { return col; }; };
+      var key = 'elfl_' + n;
+      var tex = { box: false, off: [0, 0], faces: [face('east', outer, key + 'o', Wd, Ls), face('west', pic(Wd, Ls, flat(S1)), key + 'i', Wd, Ls), face('north', pic(1, Ls, flat(last ? TIP : L1)), key + 'r', 1, Ls),
+        face('south', pic(1, Ls, flat(S1)), key + 'b', 1, Ls), face('up', pic(1, Wd, flat(last ? TIP : L1)), key + 'u', 1, Wd), face('down', pic(1, Wd, flat(S2)), key + 'd', 1, Wd)] };
+      kids.push(C(n ? '@seg_' + n : '@base', [x0 - 0.5, c[0] - Ls / 2, c[1] - Wd / 2], [x0 + 0.5, c[0] + Ls / 2, c[1] + Wd / 2], undefined, { tex: tex, alt: TONE_REF, r: [sn(turn), 0, 0], o: [x0, sn(c[0]), sn(c[1])] }));
+    });
+    // the middle and the tip twitch together about the joint
+    var tipG = Gp('@ear_tip_r', [x0, sn(joint[0]), sn(joint[1])], null, kids.splice(1, 2), 'elft');
+    var ear = Gp('@ear_r', [4, 3, 0.4], [0, 30, -6], kids.concat([tipG]), 'elf', { mirror: '@ear_l' });
+    (function place(n) { if (n.c) { [n.f, n.t, n.o].forEach(function (v) { v[1] = sn(v[1] + 3); v[2] = sn(v[2] + 0.4); }); } else { if (n !== ear) { n.o[1] = sn(n.o[1] + 3); n.o[2] = sn(n.o[2] + 0.4); } n.kids.forEach(place); } })(ear);
+    function tw(at) { return function (t) { var dt = ((t - at) % 1 + 1) % 1; return 8 * Math.exp(-Math.pow((dt - 0.03) / 0.025, 2)); }; }
+    var idle = bake({ name: '@anim_idle', type: 'global', length: 6, keys: 60, fps: 20, joints: { elf: { r: [0, tw(0.3), 0] }, elft: { r: [function (t) { return 0.6 * tw(0.33)(t); }, 0, 0] } } });
+    var anims = [idle,
+      bake({ name: '@anim_sneak', type: 'sneaking', length: 1, keys: 4, fps: 20, joints: { elf: { r: [16, -12, 0] }, elft: { r: [12, 0, 0] } } }),
+      bake({ name: '@anim_sleep', type: 'sleeping', length: 1, keys: 4, fps: 20, joints: { elf: { r: [26, -20, 0] }, elft: { r: [18, 0, 0] } } }),
+      Object.assign(bake({ name: '@anim_jump', type: 'jumping', length: 0.5, keys: 10, fps: 20, joints: { elf: { r: [function (t) { return -7 * Math.sin(Math.PI * t); }, 0, 0] } } }), { mustFinish: true })];
+    return { id: 'ears_elf_lowpoly', root: 'head', cat: 'head', order: 2.3, hd: 1, replaces: 'ears_elf_lowpoly', tone: true, parts: [ear], anims: anims };
+  }
+  // lang: lib.p.{ears_elf|ears_elf_toon|ears_elf_lowpoly}
+  // lang: lib.n.{rim}
+
   // ---- hand-painted faces (pixel art): every face of a box gets its own picture, lit by its direction (top brightest,
   // the bottom in shadow), a light top edge, darker bottom edge and corners (contact shadow), the material's detail,
   // and every pixel snapped to the material's few tones (shadows shifted cooler, lights warmer) - how Blockbench artists
@@ -1010,81 +1055,7 @@
     return [node, m];
   }
 
-  // ---- dragon skull headdress: a bone skull worn over the head (brow with dark eye sockets, a long snout over the face
-  // with a row of teeth, a jaw under the chin with its own teeth, cheek bones laced to it with leather), two horns
-  // swept back with iron bands, small spikes along the crest and a mane of dark feathers falling from the back
-  function skullItem() {
-    var out = [];
-    function add(list) { list.forEach(function (q) { out.push(q); }); }
-    // the cranium: a dome in tiers with bevelled long edges, a ridge on top, the back of the skull bulging out
-    add([pbox('@skull', [-4.8, 7.6, -4.2], [4.8, 10.0, 4.6], 'bone'), pbox('@skull', [-4.2, 10.0, -3.4], [4.2, 11.0, 4.0], 'bone'),
-      pbox('@skull', [-0.6, 11.0, -2.6], [0.6, 11.6, 3.6], 'bone'), pbox('@skull', [-4.0, 7.2, 4.4], [4.0, 10.2, 5.6], 'bone'),
-      pbox('@skull', [-3.2, 7.6, 5.4], [3.2, 9.6, 6.2], 'bone')]);
-    add(both(pcbox('@skull', [4.5, 9.95, 0.2], [0.9, 0.9, 8.4], 'bone', [0, 0, 45])));
-    add(both(pcbox('@skull', [3.9, 10.75, 0.3], [0.7, 0.7, 7.2], 'bone', [0, 0, 45])));
-    // brow ridges over the eyes, slanting down to the middle (an angry brow)
-    add(both(pcbox('@skull', [2.75, 9.35, -4.65], [4.3, 1.4, 1.6], 'bone', [0, 0, -9])));
-    // the eye sockets: real holes - a dark hollow framed by bone (outer bar, inner bar, the cheekbone under it)
-    add(both(pbox('@socket', [1.2, 6.4, -5.2], [4.2, 8.7, -4.0], 'void')));
-    add(both(pbox('@skull', [4.1, 6.0, -5.4], [4.9, 8.8, -3.6], 'bone')));
-    add(both(pbox('@skull', [0.6, 6.2, -5.6], [1.4, 8.6, -3.8], 'bone')));
-    add(both(pbox('@skull', [0.8, 5.6, -5.6], [4.9, 6.4, -3.6], 'bone')));
-    // the snout over the face: tapering forward, the nasal ridge sloping down, a small hook at the tip, nostrils
-    add([pbox('@snout', [-3.6, 6.0, -9.0], [3.6, 8.2, -5.2], 'bone'), pbox('@snout', [-2.8, 6.0, -11.8], [2.8, 7.8, -8.8], 'bone')]);
-    add([pcbox('@snout', [0, 8.55, -8.2], [2.8, 0.8, 5.8], 'bone', [-8, 0, 0]), pcbox('@snout', [0, 6.6, -12.5], [4.0, 1.6, 1.8], 'bone', [6, 0, 0]),
-      pbox('@snout', [-1.0, 5.2, -13.9], [1.0, 6.4, -12.9], 'bone')]);
-    add(both(pbox('@nostril', [0.4, 7.0, -13.0], [1.4, 7.5, -12.2], 'void')));
-    add(both(pcbox('@snout', [3.35, 6.1, -8.8], [0.7, 1.0, 6.4], 'bone', [0, -5, 0])));
-    // upper teeth along the snout's edges: irregular sizes, the canines long and curved back; the small front teeth
-    function tooth(x, y, z, len, dir, lean, side) {
-      var w0 = len > 1.8 ? 0.7 : 0.55, y0 = y + dir * len * 0.3, y1 = y + dir * len * 0.78;
-      return [pcbox('@tooth', [x, y0, z], [w0, len * 0.62, w0], 'tooth', [sn(lean), 45, sn(side || 0)], null, { root: dir < 0 ? 'top' : 'bottom' }),
-        pcbox('@tooth', [x, y1, z + lean * 0.012 * len], [w0 * 0.55, len * 0.45, w0 * 0.55], 'tooth', [sn(lean * 1.6), 45, sn(side || 0)])];
-    }
-    var up = [[-6.0, 1.0], [-6.9, 1.3], [-7.8, 0.9], [-8.7, 1.4], [-9.6, 1.0], [-10.5, 2.6], [-11.4, 1.1], [-12.1, 0.8]];
-    up.forEach(function (q, i) { tooth(3.25, 5.6, q[0], q[1], -1, q[1] > 2 ? -10 : -3 + (i % 3) * 3, i % 2 ? 4 : -3).forEach(function (t) { add(both(t)); }); });
-    [-1.1, 0, 1.1].forEach(function (x, i) { add(tooth(x, 5.2, -13.4, i === 1 ? 0.7 : 0.9, -1, -4, x * 3)); });
-    // the cheek arches back to the jaw hinge, the hinge coming down behind the face
-    add(both(pcbox('@bone', [4.55, 5.5, -1.1], [0.8, 0.8, 5.6], 'bone', [8, 0, 0])));
-    add(both(pbox('@jaw', [4.2, -0.6, 0.6], [5.0, 6.0, 1.8], 'bone')));
-    // the jaw under the chin: two bars converging to the front, a chin piece, teeth pointing up
-    add(both(pcbox('@jaw', [3.35, -0.9, -5.2], [1.1, 1.3, 12.6], 'bone', [0, -10, 0])));
-    add([pbox('@jaw', [-2.6, -1.6, -12.0], [2.6, -0.2, -10.6], 'bone')]);
-    var low = [[-4.0, 0.9], [-5.2, 1.2], [-6.4, 0.8], [-7.6, 1.6], [-8.8, 1.0], [-10.0, 0.9]];
-    low.forEach(function (q, i) { var x = 4.3 - (q[0] + 0.0) * -0.17 - 1.9; tooth(Math.max(2.3, Math.min(4.0, 3.3 + (q[0] + 4) * 0.17)), -0.2, q[0], q[1], 1, 4 + (i % 2) * 4, i % 2 ? -4 : 3).forEach(function (t) { add(both(t)); }); });
-    [-1.2, 0, 1.2].forEach(function (x, i) { add(tooth(x, -0.2, -11.3, i === 1 ? 0.7 : 1.0, 1, 4, -x * 3)); });
-    // leather straps on the cheeks from the skull to the jaw, laced across (the M lacing), bone beads
-    add(both(pbox('@strap', [4.75, 1.2, -1.2], [4.95, 6.4, -0.85], 'leather')));
-    add(both(pbox('@strap', [4.75, 1.2, -2.6], [4.95, 6.4, -2.25], 'leather')));
-    [2.3, 3.8, 5.3].forEach(function (yy, j) { add(both(pcbox('@strap', [4.88, yy, -1.73], [0.14, 1.9, 0.3], 'leather', [sn(j % 2 ? 38 : -38), 0, 0]))); });
-    add(both(pcbox('@bone', [4.98, 6.55, -1.73], [0.35, 0.5, 0.5], 'tooth', [45, 0, 0])));
-    // horns from the back of the skull, swept back and up, ringed, with two iron cuffs each (the horn generator)
-    var horns = hornParts('skull_horn', { look: { ramp: [[0, 0xa8977a], [0.55, 0xd8cba8], [1, 0xf4ecd6]], rings: { k: 0.75, end: 0.82, depth: 0.24 }, fibre: 0.12,
-      bands: [[0.2, 0.28, 0, 0x2c2c32], [0.46, 0.52, 0, 0x2c2c32]] },
-      chains: [{ at: [3.0, 9.4, 3.6], dir: [0.3, 0.55, 0.78], curl: [0, 1, 0.15], L: 13, t0: 2.4, p: 0.65, n: 12, turn: 70, alpha: 70, drift: 1.2, section: [0.9, 1.2] }] });
-    // small spikes along the crest
-    var crest = hornParts('skull_crest', { look: { ramp: [[0, 0xb5a586], [1, 0xefe6d0]], fibre: 0.08, joints: false },
-      chains: [-1.8, 0.2, 2.2].map(function (z, j) { return { single: true, name: 'spike', at: [0, 11.3, z], dir: [0, 0.75, 0.66], curl: [0, 0, 1], L: 2.2 - 0.4 * j, t0: 1.0, p: 1, n: 3, turn: 24, section: [1, 1], sink: 0.4, octa: true }; }) });
-    // the feather mane: four rows from the back of the skull, fanning round the sides, the lower rows shorter
-    var pal = FPAL.dark, rows = [{ y: 10.2, z: 4.9, n: 11, len: 10.5, tilt: -28, spread: 80, kind: 'ter', span: 4.6 }, { y: 9.0, z: 5.4, n: 11, len: 9.5, tilt: -18, spread: 96, kind: 'ter', span: 5.0 },
-      { y: 7.6, z: 5.6, n: 10, len: 8.0, tilt: -10, spread: 112, kind: 'ter', span: 5.2 }, { y: 6.2, z: 5.3, n: 9, len: 6.2, tilt: -4, spread: 128, kind: 'scap', span: 5.0 }];
-    var mane = [];
-    rows.forEach(function (rw, ri) {
-      var fk = [];
-      for (var j = 0; j < rw.n; j++) {
-        var f = rw.n > 1 ? j / (rw.n - 1) : 0.5, ang = lerp(-rw.spread / 2, rw.spread / 2, f), x = lerp(-rw.span, rw.span, f), w = 1.8, len = rw.len * (0.88 + 0.24 * hash01(ri, j, 3));
-        var zz = rw.z - 0.9 * Math.abs(f - 0.5) * 2 + 0.01 * j, tex = featherTex('dark', pal, rw.kind)[0];
-        fk.push(C('@feather', [x - w / 2, rw.y - len, zz], [x + w / 2, rw.y, zz + 0.01], undefined, { tex: tex, alt: 0x26232e, r: [sn(rw.tilt), sn(-ang * 0.35), sn(ang * 0.6)], o: [x, rw.y, zz] }));
-      }
-      mane.push(Gp('@feathers', [0, rw.y, rw.z], null, fk, 'fr' + ri));
-    });
-    var skull = Gp('@skull', [0, 8, 0], null, out.concat(horns, crest, mane), 'skull');
-    var anim = bake({ name: '@anim_idle', type: 'global', length: 4, keys: 40, fps: 20, joints: {
-      fr0: { r: [wave(2, 0), 0, wave(1.5, 0.2)] }, fr1: { r: [wave(2.5, -0.08), 0, wave(2, 0.12)] }, fr2: { r: [wave(3, -0.16), 0, wave(2.5, 0.04)] }, fr3: { r: [wave(3.5, -0.24), 0, wave(3, -0.04)] } } });
-    return { id: 'skull_dragon', root: 'head', cat: 'head', order: 7, hd: HD, parts: [skull], anims: [anim] };
-  }
-  // lang: lib.p.{skull_dragon}
-  // lang: lib.n.{pearl|leaf|arch|orb|cross|crown|hat|hat_mid|hat_tip|ear_tip_r|ear_tip_l|ear_mid_r|ear_mid_l|skull|socket|snout|nostril|tooth|jaw|feather|feathers|patch}
+  // lang: lib.n.{pearl|leaf|arch|orb|cross|crown|hat|hat_mid|hat_tip|ear_tip_r|ear_tip_l|ear_mid_r|ear_mid_l|patch}
 
   // =================================================================== tails (with an animation for every player state)
   // (from the tail study: a chain of bones from the lower back, built straight along +y and turned back and down at
@@ -1140,6 +1111,7 @@
       if (a > hw - cut || s > Ltot + 0.2) return null;
       // the very tip closes in a soft point
       if (s > Ltot - 0.6 && a > hw * (Ltot + 0.2 - s) / 0.8) return null;
+      if (look.toon) return [toonTail(look, look.ramp, s, f, u / Math.max(0.01, hw), Ltot, x), 1];
       var col = ramp(look.ramp, f), k = a / Math.max(0.01, hw);
       col = shade(col, -0.24 * (1 - k) * (1 - k) + 0.12 * k * k);
       col = shade(col, (nz(x * 0.55, s * 0.35) - 0.5) * 0.18);
@@ -1152,6 +1124,7 @@
   function coreStrip(look, Ltot, Wst, Hst, sink, seed) {
     var nz = noise2(seed);
     return paintStrip(Wst, Hst, sink, Ltot, function (u, s, f, x) {
+      if (look.toon) return [toonTail(look, look.coreRamp || look.ramp, s, f, u / Math.max(0.2, Wst / 2), Ltot, x), 1];
       var col = ramp(look.coreRamp || look.ramp, f);
       if (look.scales) {
         // scales: staggered rows, a light upper rim and a dark lower edge, smaller towards the tip
@@ -1168,6 +1141,19 @@
       return [col, 1];
     });
   }
+  /**
+   * a cartoon tail's colour: flat bands of the ramp (the tip a clean other colour), a shadow side, a light streak,
+   * bold rings with clean edges; un = -1..1 across the strip
+   */
+  function toonTail(look, rmp, s, f, un, Ltot, x) {
+    var T = look.toon, cuts = T.cuts || [], q = 0, fz = f + (T.zig ? T.zig * (Math.abs((((x || 0) / HD * 1.5) % 2 + 2) % 2 - 1) - 0.5) * 2 : 0);
+    while (q < cuts.length && fz >= cuts[q]) q++;
+    var col = ramp(rmp, cuts.length ? (q === 0 ? cuts[0] * 0.5 : q === cuts.length ? (1 + cuts[q - 1]) / 2 : (cuts[q - 1] + cuts[q]) / 2) : f);
+    if (T.alt) col = T.alt[q % T.alt.length];
+    if (s < 0.4) col = shade(col, -(T.root || 0.14));
+    if (look.rings) { var r = look.rings, qq = s / (Ltot / r.n), fr = qq - Math.floor(qq); if (s > r.from * Ltot && s < r.to * Ltot && fr < r.k) col = lerpCol(col, r.col, 0.85); }
+    return col;
+  }
   /** tabby / raccoon rings: zig-zag edged bands of a darker colour */
   function ringsOn(look, col, s, Ltot, u, x) {
     var r = look.rings, q = s / (Ltot / r.n) + 0.12 * Math.sin(u * 3.1 + x * 0.2), fr = q - Math.floor(q);
@@ -1181,7 +1167,8 @@
       var fx = (x + 0.5) / W, fy = (y + 0.5) / H, lim = Math.pow(fy, 1.4) * (1 - 0.15 * (1 - fy));
       if (fx > lim) continue;
       var col = lerpCol(look.spine[0], look.spine[1], fx);
-      col = shade(col, (nz(x * 0.5, y * 0.3) - 0.5) * 0.15 + (fx > lim * 0.85 ? 0.15 : 0));
+      if (look.toon) col = fx > lim * 0.55 ? look.spine[1] : look.spine[0];
+      else col = shade(col, (nz(x * 0.5, y * 0.3) - 0.5) * 0.15 + (fx > lim * 0.85 ? 0.15 : 0));
       var j = (y * W + x) * 4; d[j] = (col >> 16) & 255; d[j + 1] = (col >> 8) & 255; d[j + 2] = col & 255; d[j + 3] = 255;
     }
     return { w: W, h: H, px: b64(d) };
@@ -1195,7 +1182,8 @@
       else inside = Math.abs(u) < (v < 0.62 ? v / 0.62 : 1 - (v - 0.62) / 0.38 * 0.75) * 0.95;
       if (!inside) continue;
       var col = lerpCol(look.spadeCol[0], look.spadeCol[1], v);
-      col = shade(col, 0.18 * (1 - Math.abs(u)) - 0.1 * v + (nz(x * 0.4, y * 0.4) - 0.5) * 0.1);
+      if (look.toon) col = shade(look.spadeCol[0], u < -0.45 ? -0.2 : (u > 0.1 && u < 0.45 && v > 0.25 && v < 0.75) ? 0.22 : 0);
+      else col = shade(col, 0.18 * (1 - Math.abs(u)) - 0.1 * v + (nz(x * 0.4, y * 0.4) - 0.5) * 0.1);
       var j = (y * W + x) * 4; d[j] = (col >> 16) & 255; d[j + 1] = (col >> 8) & 255; d[j + 2] = col & 255; d[j + 3] = 255;
     }
     return { w: W, h: H, px: b64(d) };
@@ -1239,6 +1227,8 @@
         var ty = y + Ls - 0.2;
         kids.push(C('@spade', [R0[0] - o.spade[0] / 2, ty, R0[2] - 0.01], [R0[0] + o.spade[0] / 2, ty + o.spade[1], R0[2] + 0.01], undefined,
           Object.assign({ tex: plateTex(pics.spadeKey, pics.spade, 4, 4), alt: o.look.spadeCol[0] }, o.spadeGlow ? { glow: true } : {})));
+        if (o.spadeCross) kids.push(C('@spade', [R0[0] - o.spade[0] / 2, ty, R0[2] - 0.01], [R0[0] + o.spade[0] / 2, ty + o.spade[1], R0[2] + 0.01], undefined,
+          Object.assign({ tex: plateTex(pics.spadeKey, pics.spade, 4, 4), alt: o.look.spadeCol[0], r: [0, 90, 0], o: [R0[0], sn(ty + o.spade[1] / 2), R0[2]] }, o.spadeGlow ? { glow: true } : {})));
       }
       var r = i ? [o.bends ? o.bends[i] || 0 : 0, 0, 0] : [90 + (o.droop || 0), o.yaw || 0, 0];
       var g = Gp(i ? '@tail_' + (i + 1) : nm, [R0[0], y, R0[2]], r, kids, aid);
@@ -1270,14 +1260,15 @@
     bones.forEach(function (aid, i) {
       var f = n > 1 ? i / (n - 1) : 0, A = lerp(p.amp[0], p.amp[1], f), Pp = p.pitch ? lerp(p.pitch[0], p.pitch[1], f) : 0, Rr = p.roll ? lerp(p.roll[0], p.roll[1], f) : 0;
       var lag = i * (p.lag || 0.1) + ph, P2 = p.pitch2 ? lerp(p.pitch2[0], p.pitch2[1], f) : 0;
+      var env = p.env ? function (t) { return Math.sin(Math.PI * t); } : function () { return 1; };
       function sw(t) {
-        var v = A * Math.sin(2 * Math.PI * (t - lag));
+        var v = A * Math.sin(2 * Math.PI * (t - lag)) * env(t);
         // two unrelated sines on top (it never looks looped)
         if (p.noise) v += A * 0.22 * Math.sin(2 * Math.PI * (2 * t - lag * 1.3 + 0.37)) + A * 0.12 * Math.sin(2 * Math.PI * (3 * t - lag * 0.7 + 0.11));
         if (p.flick) { var dt = ((t - p.flick.at - lag * 0.5) % 1 + 1) % 1; v += p.flick.k * f * f * Math.exp(-Math.pow((dt - 0.05) / 0.04, 2)); }
         return v + (i ? (p.side || 0) * (0.6 + 0.8 * f) : 0);
       }
-      function pt(t) { return Pp * Math.sin(2 * Math.PI * (t - lag) + 1.2) + P2 * Math.sin(4 * Math.PI * (t - lag * 0.5)) + (i ? (p.curl || 0) : (p.lift || 0)); }
+      function pt(t) { return (Pp * Math.sin(2 * Math.PI * (t - lag) + 1.2) + P2 * Math.sin(4 * Math.PI * (t - lag * 0.5))) * env(t) + (i ? (p.curl || 0) : (p.lift || 0)) * (p.env ? env(t) : 1); }
       function rl(t) { return Rr * Math.sin(2 * Math.PI * (t - lag) + 1.9); }
       // root: x lifts / lowers, y swings round the body's vertical axis; the others: x bends, z swings sideways
       J[aid] = { r: i ? [pt, rl, sw] : [pt, sw, rl] };
@@ -1333,17 +1324,36 @@
       creative_flying: { P: 2.6, amp: [1.5, 3], lag: 0.08, pitch: [2, 7], lift: -26 }
     }
   };
+  // cartoon motion (research: idle sway 1.6 - 2.4 s, walk 0.55 s, run 0.36 s; root 3-10, tip up to 10 per joint, lag
+  // 25-45 degrees per joint): the same states, livelier
+  FAMILY.fluffy_toon = { standing: { P: 1.6, amp: [3, 8], lag: 0.08, pitch: [1, 2], roll: [2, 6] }, walking: { P: 0.55, amp: [4, 10], lag: 0.085, pitch2: [2, 4], lift: -18 },
+    running: { P: 0.36, amp: [2, 5], lag: 0.11, pitch: [6, 10], lift: -32 }, sneaking: { P: 2.4, amp: [1.5, 4], lag: 0.08, lift: 18 }, sneak_walk: { P: 0.7, amp: [3, 7], lag: 0.09, lift: 15 },
+    swimming: { P: 0.8, amp: [4, 12], lag: 0.125, lift: -40 }, falling: { P: 0.5, amp: [3, 10], lag: 0.1, pitch: [3, 8], lift: -40 }, jumping: { P: 0.6, amp: [2, 6], lag: 0.1, lift: -35 },
+    riding: { P: 3.2, amp: [1, 3], lag: 0.08, lift: 30, side: 14 }, sleeping: { P: 4, amp: [0.5, 1.5], lag: 0.06, lift: 30, side: 24 }, creative_flying: { P: 1.2, amp: [2, 8], lag: 0.12, pitch: [2, 6], lift: -55 } };
+  FAMILY.thin_toon = { standing: { P: 2.4, amp: [3, 9], lag: 0.1, pitch: [1, 3], roll: [1, 4], flick: { at: 0.6, k: 22 } }, walking: { P: 0.55, amp: [3, 9], lag: 0.11, pitch2: [2, 4], lift: -16 },
+    running: { P: 0.36, amp: [1.5, 4], lag: 0.13, pitch: [5, 10], lift: -26 }, sneaking: { P: 2.4, amp: [2, 6], lag: 0.1, lift: 20, flick: { at: 0.4, k: 16 } }, sneak_walk: { P: 0.7, amp: [3, 7], lag: 0.11, lift: 18 },
+    swimming: { P: 0.8, amp: [4, 12], lag: 0.125, lift: -42 }, falling: { P: 0.4, amp: [4, 14], lag: 0.12, pitch: [4, 10], lift: -40 }, jumping: { P: 0.6, amp: [2, 6], lag: 0.12, lift: -30 },
+    riding: { P: 3.2, amp: [1, 4], lag: 0.1, lift: 26, side: 18, flick: { at: 0.5, k: 16 } }, sleeping: { P: 4, amp: [0.5, 1.5], lag: 0.06, lift: 30, side: 26 }, creative_flying: { P: 1.2, amp: [2, 6], lag: 0.12, pitch: [3, 8], lift: -52 } };
+  FAMILY.heavy_toon = { standing: { P: 2.4, amp: [2, 6], lag: 0.07, pitch: [0.5, 2], roll: [0, 2] }, walking: { P: 0.6, amp: [4, 9], lag: 0.08, pitch2: [1, 3], lift: -4 },
+    running: { P: 0.4, amp: [1.5, 3], lag: 0.08, pitch: [2, 6], lift: -12 }, sneaking: { P: 3, amp: [1, 3], lag: 0.06, lift: 10 }, sneak_walk: { P: 0.8, amp: [2, 5], lag: 0.07, lift: 8 },
+    swimming: { P: 0.8, amp: [6, 15], lag: 0.12, lift: -16 }, falling: { P: 0.5, amp: [2, 6], lag: 0.08, pitch: [2, 5], lift: -22 }, jumping: { P: 0.6, amp: [1, 4], lag: 0.07, lift: -15 },
+    riding: { P: 3.2, amp: [0.5, 2], lag: 0.05, lift: 14, side: 10 }, sleeping: { P: 4, amp: [0.3, 1.2], lag: 0.04, lift: 18, side: 16 }, creative_flying: { P: 1.4, amp: [1.5, 4], lag: 0.08, pitch: [2, 6], lift: -26 } };
   /** every state's animation for the chains of a tail item (chains: [{bones, ph (phase), k (amplitude scale)}]) */
   function tailAnims(family, chains) {
     var fam = FAMILY[family];
     return STATES.map(function (st) {
-      var p = fam[st[0]], joints = {};
+      var p = Object.assign({}, fam[st[0]]), joints = {};
+      var LIFT = 12, SIDE = 8;
+      if (st[0] === 'jumping') { p.P = 0.5; p.env = true; p.lift = Math.max(-28, Math.min(28, p.lift || 0)); }
+      else { if (p.lift) p.lift = Math.max(-LIFT, Math.min(LIFT, p.lift)); if (p.side) p.side = Math.max(-SIDE, Math.min(SIDE, p.side)); }
       chains.forEach(function (ch) {
         Object.assign(joints, tailMotion(ch.bones, Object.assign({}, p, { ph: ch.ph || 0, amp: [p.amp[0] * (ch.k || 1), p.amp[1] * (ch.k || 1)] })));
       });
       // a key every frame or two (or three on long calm cycles): smooth at 20 fps, within CPM's 255 frames
       var frames = Math.round(p.P * 20), keys = Math.max(8, Math.round(frames / (p.P > 3 ? 3 : p.P > 1.5 ? 2 : 1)));
-      return bake({ name: st[1], type: st[0], length: p.P, keys: keys, fps: 20, joints: joints });
+      var an = bake({ name: st[1], type: st[0], length: p.P, keys: keys, fps: 20, joints: joints });
+      if (st[0] === 'jumping') an.mustFinish = true;
+      return an;
     });
   }
   // the tail kinds (sizes in px of the player: L = length, width base / mid / tip with the widest point at 'at')
@@ -1369,6 +1379,19 @@
     { id: 'tail_demon', family: 'thin', o: { n: 11, L: 18, width: { base: 1.3, mid: 1.05, tip: 0.8, at: 0.4 }, droop: 34, bends: [0, 6, 8, 6, 0, -8, -12, -12, -8, 0, 6], octa: true, coreK: 1, spade: [3.6, 3.8], spadeGlow: true,
       look: { ramp: [[0, 0x1c0e10], [0.7, 0x2e1214], [1, 0x4a1418]], coreDark: 0, gloss: 0.15, spadeCol: [0xff3a3a, 0x8a0e14], spadeShape: 'heart' } } }
   ];
+  // cartoon tails: chunkier shapes, flat colour bands (a clean white tip, bold stripes), a shadow side and a light
+  // streak, big round fur clumps, a big heart; the same motion families
+  TAILS.push(
+    { id: 'tail_fox_toon', family: 'fluffy_toon', o: { n: 6, L: 16, width: { base: 3.0, mid: 7.4, tip: 2.6, at: 0.6 }, droop: 32, bends: [0, -8, -12, -12, -10, -10], cards: 2, coreK: 0.85,
+      look: { ramp: [[0, 0xd2581a], [0.69, 0xed7a21], [0.7, 0xfcf8f0], [1, 0xfffefa]], coreRamp: [[0, 0xd2581a], [0.69, 0xed7a21], [0.7, 0xe3e8f0], [1, 0xfcf8f0]], clump: 3.5, cutK: 0.08, toon: { cuts: [0.7], zig: 0.035 } } } },
+    { id: 'tail_cat_toon', family: 'thin_toon', o: { n: 9, L: 15, width: { base: 2.0, mid: 2.0, tip: 1.9, at: 0.5 }, droop: 30, bends: [0, 0, -10, -18, -24, -30, -36, -40, -40], octa: true, coreK: 1,
+      look: { ramp: [[0, 0xe08a3a], [1, 0xf5a345]], rings: { n: 6, k: 0.3, from: 0.12, to: 0.96, col: 0x99301c }, toon: { cuts: [] } } } },
+    { id: 'tail_devil_toon', family: 'thin_toon', o: { n: 12, L: 20, width: { base: 1.6, mid: 1.3, tip: 1.0, at: 0.4 }, droop: 30, bends: [0, -10, -12, -12, -8, 0, 8, 12, 14, 12, 8, 4], octa: true, coreK: 1, spade: [6.5, 6.5], spadeCross: true,
+      look: { ramp: [[0, 0x221c2c], [1, 0x2f2738]], spadeCol: [0xdb2733, 0xad113b], spadeShape: 'heart', toon: { cuts: [] } } } },
+    { id: 'tail_dragon_toon', family: 'heavy_toon', o: { n: 6, L: 18, width: { base: 5.0, mid: 3.8, tip: 1.6, at: 0.2 }, droop: 25, bends: [0, -5, -8, -10, -12, -12], octa: true, coreK: 1, spines: [3.0, 1.4], spade: [4.4, 4.0], spadeCross: true,
+      look: { ramp: [[0, 0x29838a], [1, 0x69d1b2]], spine: [0xcc6a14, 0xffe14d], spadeCol: [0xfab62d, 0xcc6a14], toon: { cuts: [0.5] } } } }
+  );
+  // lang: lib.p.{tail_fox_toon|tail_cat_toon|tail_devil_toon|tail_dragon_toon}
   function tailItem(spec, order) {
     var pics = tailPics(spec.id, spec.o), parts = [], chains = [];
     if (spec.fan) {
@@ -1388,13 +1411,85 @@
   // lang: lib.p.{tail_fox|tail_kitsune|tail_wolf|tail_dragon|tail_demon}
   // lang: lib.n.{tail|fur|spade|anim_idle|anim_walk|anim_run|anim_sneak|anim_sneakwalk|anim_swim|anim_fall|anim_jump|anim_sit|anim_sleep|anim_fly}
 
+  // =================================================================== low poly (16x pixel art, like a vanilla skin)
+  // boxes of whole pixels, every face painted pixel by pixel in four tones of one colour: the lit side light, the
+  // other side in shadow, the front / back base, the far end light and the root end dark; stripes / a tip colour by
+  // segment. The chains use the same bones and motion as the HD parts.
+  function pxPic(w, h, fn) { w = Math.max(1, Math.round(w)); h = Math.max(1, Math.round(h)); var d = new Uint8ClampedArray(w * h * 4); for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) { var c = fn(i, j, w, h), k = (j * w + i) * 4; d[k] = (c >> 16) & 255; d[k + 1] = (c >> 8) & 255; d[k + 2] = c & 255; d[k + 3] = 255; } return { w: w, h: h, px: b64(d) }; }
+  /** a low-poly box along a chain (local +y), w x len x d px, coloured by tones t = {light, base, shadow, dark}; key = shared pictures */
+  function pxBox(name, at, y0, y1, w, d, t, key, x) {
+    var len = y1 - y0, L = Math.max(1, Math.round(len)), W = Math.max(1, Math.round(w)), D = Math.max(1, Math.round(d));
+    function side(tone, k, ww) { var p = pxPic(ww, L, function () { return tone; }); return { pic: p, rel: [0, 0, ww, L], key: key + k }; }
+    var F = { east: side(t.light, 'e', D), west: side(t.shadow, 'w', D), north: side(t.base, 'n', W), south: side(t.base, 's', W) };
+    var up = pxPic(W, D, function () { return t.light; }), dn = pxPic(W, D, function () { return t.dark; });
+    var faces = Object.keys(F).map(function (k) { return { face: k, rel: F[k].rel, w: F[k].pic.w, h: F[k].pic.h, px: F[k].pic.px, flip: [false, false], rot: 0, key: F[k].key }; });
+    faces.push({ face: 'up', rel: [0, 0, W, D], w: up.w, h: up.h, px: up.px, flip: [false, false], rot: 0, key: key + 'u' }, { face: 'down', rel: [0, 0, W, D], w: dn.w, h: dn.h, px: dn.px, flip: [false, false], rot: 0, key: key + 'd' });
+    return C(name, [at[0] - w / 2, y0, at[2] - d / 2], [at[0] + w / 2, y1, at[2] + d / 2], undefined, Object.assign({ tex: { box: false, off: [0, 0], faces: faces }, alt: t.base }, x || {}));
+  }
+  // 4-shade ramps (dark, shadow, base, light) after the research's hue-shift rule
+  var LP = { fox: { light: 0xff9e42, base: 0xed7a21, shadow: 0xd16024, dark: 0xb04923 }, white: { light: 0xfffefa, base: 0xfcf8f0, shadow: 0xcad0db, dark: 0xa4abba },
+    ginger: { light: 0xffbf66, base: 0xf5a345, shadow: 0xd98643, dark: 0xb86b3e }, teal: { light: 0x69d1be, base: 0x46b8a8, shadow: 0x409c97, dark: 0x36787a },
+    gold: { light: 0xffcc4d, base: 0xfab62d, shadow: 0xde952f, dark: 0xbd752d }, devil: { light: 0xf5494c, base: 0xdb2733, shadow: 0xbf283f, dark: 0x9e2642 },
+    ivory: { light: 0xfff9eb, base: 0xf2e2c2, shadow: 0xd6c7b2, dark: 0xb5a89c }, tan: { light: 0xe0c29d, base: 0xc79d73, shadow: 0xab8468, dark: 0x8a6958 },
+    pink: { light: 0xffd1e0, base: 0xfcb1cc, shadow: 0xe0a4bf, dark: 0xbf91aa } };
+  function palOf(c) { return typeof c === 'number' ? tones(c) : c; }
+  function tones(c, k) { k = k || 1; return { light: shade(c, 0.14 * k), base: c, shadow: shade(c, -0.16 * k), dark: shade(c, -0.3 * k) }; }
+  /** a low-poly horn: o = {at, dir, curl, turn, drift, roll, single, name, segs: [[w, len], ...], col (per segment index -> colour)} */
+  function lowHornItem(spec, order) {
+    var parts = [];
+    spec.chains.forEach(function (o, ci) {
+      var n = o.segs.length, L = o.segs.reduce(function (a, sg) { return a + sg[1]; }, 0);
+      var G = hornGeom({ dir: o.dir, curl: o.curl, L: L, t0: 2, n: n, turn: o.turn || 0, drift: o.drift, roll: o.roll, sink: 1 }), top = null, up = null, y = o.at[1], nm = o.name || 'horn', cnt = 0;
+      G.segs.forEach(function (sg, i) {
+        var w = o.segs[i][0], len = o.segs[i][1], e = i ? w / 2 * Math.tan(Math.abs(o.turn || 0) / Math.max(1, n - 1) * DEG / 2) + 0.1 : 1;
+        var t = palOf(spec.col(i, n));
+        var g = Gp(i ? '@seg_' + (++cnt) : '@' + nm + (o.single ? '' : '_r'), [o.at[0], y, o.at[2]], sg.r, [pxBox(i ? '@seg_' + cnt : '@base', o.at, y - e, y + len, w, w, t, 'lh_' + spec.id + '_' + ci + '_' + i)]);
+        if (up) up.kids.push(g); else top = g;
+        up = g; y += len;
+      });
+      if (!o.single) top.mirror = '@' + nm + '_l';
+      parts.push(top);
+    });
+    return { id: spec.id, root: 'head', cat: 'head', order: 36 + order, hd: 1, replaces: spec.id, parts: parts };
+  }
+  var LOW_HORNS = [
+    { id: 'horns_devil_lowpoly', col: function (i, n) { return i === n - 1 ? { light: 0xff6a5c, base: 0xf5494c, shadow: 0xdb2733, dark: 0xbf283f } : LP.devil; }, chains: [{ at: [2.5, 7.5, -1.5], dir: [0.34, 0.94, 0], curl: [-1, 0, 0], turn: 30, segs: [[2, 2], [1, 2]] }] },
+    { id: 'horns_ram_lowpoly', col: function (i, n) { return i === n - 1 ? LP.tan : LP.ivory; }, chains: [{ at: [4.2, 6.6, 0.6], dir: [0.8, 0.5, 0.33], curl: [0, -0.6, 0.8], turn: 200, drift: 3, segs: [[2, 3], [2, 2], [2, 3], [1, 2]] }] },
+    { id: 'horns_unicorn_lowpoly', col: function (i) { return i % 2 ? LP.pink : LP.ivory; }, chains: [{ single: true, at: [0, 7.4, -3.2], dir: [0, 0.94, -0.34], curl: [0, 0, -1], turn: 0, roll: 45, segs: [[2, 2], [2, 2], [1, 3]] }] }
+  ];
+  // lang: lib.p.{horns_devil_lowpoly|horns_ram_lowpoly|horns_unicorn_lowpoly}
+  /** a low-poly tail: whole-pixel boxes on the same bones as the HD tails (so the same motion), o = {segs: [[w, len]], droop, bends, col} */
+  function lowTailItem(spec, order) {
+    var o = spec.o, R0 = TAIL_ROOT, bones = [], top = null, up = null, y = R0[1];
+    o.segs.forEach(function (sg, i) {
+      var aid = 'lt' + i, w = sg[0], len = sg[1], t = palOf(o.col(i, o.segs.length)), e = i ? Math.min(1, w / 2) : 0.6;
+      var kids = [pxBox(i ? '@seg_' + i : '@base', R0, y - e, y + len, w, w, t, 'ltl_' + spec.id + '_' + i)];
+      // spikes on the top (the chain's -z): one small box per segment
+      if (o.spike && i < o.segs.length - 1) { var sp = palOf(o.spike), ym = y + len / 2; kids.push(pxBox('@spike', [R0[0], 0, R0[2] - w / 2 - 0.5], ym - 0.5, ym + 0.5, 1, 1, sp, 'ltl_' + spec.id + '_sp')); }
+      var r = i ? [o.bends ? o.bends[i] || 0 : 0, 0, 0] : [90 + (o.droop || 0), 0, 0];
+      var g = Gp(i ? '@tail_' + (i + 1) : '@tail', [R0[0], y, R0[2]], r, kids, aid);
+      bones.push(aid);
+      if (up) up.kids.push(g); else top = g;
+      up = g; y += len;
+    });
+    return { id: spec.id, root: 'body', cat: 'tail', order: 50 + order, hd: 1, replaces: spec.id, parts: [top], anims: tailAnims(spec.family, [{ bones: bones, ph: 0, k: 1 }]) };
+  }
+  // (research: vanilla-like 1-4 boxes - the fox a 3 x 3 x 4 root, a 6 x 6 x 8 brush and a white 4 x 4 x 4 tip; the cat 2 x 2
+  // boxes in a '?' (1-px tails are too thin at player scale); the dragon 5 -> 2 px with gold spikes)
+  var LOW_TAILS = [
+    { id: 'tail_fox_lowpoly', family: 'fluffy_toon', o: { segs: [[3, 3], [5, 7], [3, 3]], droop: 40, bends: [0, -50, 0], col: function (i) { return i === 2 ? LP.white : LP.fox; } } },
+    { id: 'tail_cat_lowpoly', family: 'thin_toon', o: { segs: [[2, 7], [2, 6], [2, 4]], droop: 50, bends: [0, -80, -35], col: function () { return LP.ginger; } } },
+    { id: 'tail_dragon_lowpoly', family: 'heavy_toon', o: { segs: [[4, 6], [3, 6], [2, 5]], droop: 20, bends: [0, -6, -10], col: function () { return LP.teal; }, spike: LP.gold } }
+  ];
+  // lang: lib.p.{tail_fox_lowpoly|tail_cat_lowpoly|tail_dragon_lowpoly}
+
   // =================================================================== the items
   var cache = null;
   function build() {
-    return [catEarsItem(), bunnyEarsItem(), haloItem(), crownItem(), topHatItem(), witchHatItem(), skullItem()].concat(HORNS.map(hornItem), TAILS.map(tailItem));
+    return [catEarsItem(), bunnyEarsItem()].concat(ELVES.map(elfEarsItem), [elfLowItem(), haloItem(), crownItem(), topHatItem(), witchHatItem()], HORNS.map(hornItem), LOW_HORNS.map(lowHornItem), TAILS.map(tailItem), LOW_TAILS.map(lowTailItem));
   }
   api.items = function () { if (!cache) cache = build(); return cache; };
   api.hornGeom = hornGeom; api.HORNS = HORNS;
-  api.curve = curve; api.bake = bake; api.wave = wave; api.featherPicture = featherPicture; api.KIND = KIND; api.HD = HD; api.FPAL = FPAL;
+  api.curve = curve; api.bake = bake; api.wave = wave; api.HD = HD;
   return api;
 })

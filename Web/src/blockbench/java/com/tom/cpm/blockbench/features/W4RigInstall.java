@@ -63,11 +63,13 @@ public final class W4RigInstall {
 		PluginStart.addEventListener("select_mode", __ -> DomGlobal.setTimeout(x -> BlockAnim.refreshOutliner(), 0));
 		PluginStart.addEventListener("select_project", __ -> DomGlobal.setTimeout(x -> BlockAnim.refreshOutliner(), 0));
 		if (PlusTestHooks.active())registerTestTools();
+		com.tom.cpm.blockbench.tools.rig.RigPro.install();// CPM+ beta34: pro rig tools (Reagir ao jogo, Acompanhar parte do corpo)
 	}
 
 	public static void uninstall() {
 		JointCheck.clearMarkers();
 		BlockAnim.uninstall();
+		com.tom.cpm.blockbench.tools.rig.RigPro.uninstall();
 	}
 
 	// ====================================================================== test tools (test mode only)

@@ -23,6 +23,8 @@ public final class MotionPresets {
 	public static final double SPIN_MAX_STEP = 120;
 	/** the export subdivides any rotation step above this (BlockbenchExport.emitGrid) */
 	public static final double EXPORT_REFINE_STEP = 170;
+	/** = BlockbenchExport.ROT_SPLIT (kept here: the W3-ANIMGEN javac unit compiles this class on its own) */
+	public static final double EXPORT_ROT_SPLIT = 179.999;
 	public static final int MAX_FRAMES = 255;
 
 	public static final String POS = "position", ROT = "rotation", SCALE = "scale";
@@ -281,7 +283,7 @@ public final class MotionPresets {
 	public static int spinExportIntervals(double len, int fps, int turns) {
 		int m = spinGrid(1, len, fps, turns);
 		double step = 360.0 * turns / m;
-		if (step > 180.001) {
+		if (step > EXPORT_ROT_SPLIT) {
 			int nm = refine(m, m * (int) Math.ceil(step / EXPORT_REFINE_STEP));
 			if (nm > m)m = nm;
 		}

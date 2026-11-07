@@ -1,7 +1,7 @@
 /*
  * CPM Plugin+ beta33 "CPM+ Modelar" - Biblioteca de pecas (parts library):
  * - ready-made parts made of CPM colour cubes (they take no skin space), each one fitted to the body part it belongs
- *   to: cat ears, bunny ears, horns, halo, crown, top hat, witch hat, glasses, backpack, bat wings, cat tail (a chain of
+ *   to: cat ears, bunny ears, horns, halo, crown, top hat, witch hat, glasses, backpack, cat tail (a chain of
  *   groups, ready to animate)
  * - your own parts: 'Salvar na biblioteca' keeps the selection (cubes, groups, rotations, colours, glow, the painting
  *   of textured cubes, the body part each piece sits on). Put on any model, a part lands on the same body part, its
@@ -114,12 +114,12 @@
     { id: 'cat_tail', root: 'body', cat: 'tail', parts: [catTail()] }
   ];
   // lang: lib.p.{cat_ears|bunny_ears|horns_demon|horns_ram|horns_dragon|halo|crown|top_hat|witch_hat|cat_tail}
-  var CATS = ['head', 'face', 'body', 'tail', 'wings', 'other'];
+  var CATS = ['head', 'face', 'body', 'tail', 'other'];
   // community parts (model_parts.js, generated from credited .bbmodel files, with their animations): next to ours, or
   // instead of the one they replace; kinds stay together in the window
   (function () {
     var mp = L.core.modules.model_parts, extra = mp && Array.isArray(mp.items) ? mp.items.slice() : [];
-    // generated parts (wings, tails... with their animations)
+    // generated parts (horns, tails... with their animations)
     var gen = L.core.modules.model_presets;
     try { if (gen && typeof gen.items === 'function') extra = extra.concat(gen.items()); } catch (e) { L.warn('generated parts', e); }
     if (!extra.length) return;
@@ -130,7 +130,7 @@
     BUILTIN.length = 0;
     all.forEach(function (x) { BUILTIN.push(x); });
   })();
-  // lang: lib.cat.{head|face|body|tail|wings|other}
+  // lang: lib.cat.{head|face|body|tail|other}
   var ROOTS = ['head', 'body', 'right_arm', 'left_arm', 'right_leg', 'left_leg'];
   // lang: lib.root.{head|body|right_arm|left_arm|right_leg|left_leg|none}
   // where the body parts of a CPM model are (pivots) and their base boxes (the grey shape in the pictures)
@@ -138,7 +138,7 @@
   var GHOST = { head: [[-4, 24, -4], [4, 32, 4]], body: [[-4, 12, -2], [4, 24, 2]], right_arm: [[4, 12, -2], [8, 24, 2]], left_arm: [[-8, 12, -2], [-4, 24, 2]],
     right_leg: [[-0.1, 0, -2], [3.9, 12, 2]], left_leg: [[-3.9, 0, -2], [0.1, 12, 2]] };
 
-  // lang: lib.n.{base|mid|tip|inner|ear_r|ear_l|horn_r|horn_l|seg|halo|band|spike|gem|brim|top|lens_r|lens_l|frame|arm|bridge|bag|flap|pocket|buckle|strap_r|strap_l|strap|wing_r|wing_l|bone|claw|finger|skin|tail}
+  // lang: lib.n.{base|mid|tip|inner|ear_r|ear_l|horn_r|horn_l|seg|halo|band|spike|gem|brim|top|lens_r|lens_l|frame|arm|bridge|bag|flap|pocket|buckle|strap_r|strap_l|strap|tail}
   /** the name of a part: '@key' / '@key_2' = lang name (+ number); anything else as it is */
   function nameOf(s) {
     s = String(s === undefined || s === null ? '' : s);
@@ -580,8 +580,54 @@
     }
     return out;
   }
+  // ---- skin tone: parts painted in a reference skin tone (faces with 'tone': elf ears) take the model's own skin
+  // colour, read where a standard skin shows bare skin - the cheeks under the eyes, then the lower sides of the head
+  var TONE_REF = [240, 196, 164];
+  /** the model's skin colour [r, g, b] (null = no usable texture / no skin-like pixels there) */
+  function skinTone(tex) {
+    try {
+      var tx = X(), I = tx.uvInfo(tex), cv = tex.getActiveCanvas ? tex.getActiveCanvas().canvas : tex.canvas; if (!cv) return null;
+      var g = cv.getContext('2d'), px = [];
+      // [x0, y0, x1, y1] in skin units: the cheeks (left / right of the mouth), the head's right and left sides, the
+      // bottoms of the hands (right arm classic / slim, left arm) - all of them: a mask over the face must not decide it
+      [[9, 13, 11, 15], [13, 13, 15, 15], [1, 12, 7, 16], [17, 12, 23, 16], [48, 16, 52, 20], [47, 16, 50, 20], [40, 48, 44, 52]].forEach(function (a) {
+        var x0 = Math.round(a[0] * I.sx), y0 = Math.round(a[1] * I.sy), w = Math.max(1, Math.round((a[2] - a[0]) * I.sx)), h = Math.max(1, Math.round((a[3] - a[1]) * I.sy));
+        if (x0 + w > cv.width || y0 + h > cv.height) return;
+        var d = g.getImageData(x0, y0, w, h).data;
+        for (var i = 0; i < d.length; i += 4) if (d[i + 3] > 200) px.push([d[i], d[i + 1], d[i + 2]]);
+      });
+      if (px.length < 4) return null;
+      // skin-like pixels only when there are enough (hue 5-40, saturation 15-75 %: hair, eyes and mouth drop out)
+      var skin = px.filter(function (p) {
+        var mx = Math.max(p[0], p[1], p[2]), mn = Math.min(p[0], p[1], p[2]), sat = mx ? (mx - mn) / mx * 100 : 0, h = 0;
+        if (mx !== mn) { if (mx === p[0]) h = 60 * (((p[1] - p[2]) / (mx - mn)) % 6); else if (mx === p[1]) h = 60 * ((p[2] - p[0]) / (mx - mn) + 2); else h = 60 * ((p[0] - p[1]) / (mx - mn) + 4); }
+        if (h < 0) h += 360;
+        return h >= 5 && h <= 40 && sat >= 15 && sat <= 75;
+      });
+      // no skin-like pixel anywhere (a template, a robot...): leave the part's own colour
+      if (skin.length < 4) return null;
+      px = skin;
+      // the middle half by brightness (no eye, mouth or hair pixel decides it), averaged
+      px.sort(function (p, q) { return (p[0] + p[1] + p[2]) - (q[0] + q[1] + q[2]); });
+      var mid = px.slice(Math.floor(px.length * 0.25), Math.max(Math.floor(px.length * 0.25) + 1, Math.ceil(px.length * 0.75))), o = [0, 0, 0];
+      mid.forEach(function (p) { o[0] += p[0]; o[1] += p[1]; o[2] += p[2]; });
+      return o.map(function (v) { return Math.round(v / mid.length); });
+    } catch (e) { return null; }
+  }
+  /** a picture painted in TONE_REF moved to another skin colour, its shading kept (darker stays darker, lights stay) */
+  function toneImg(img, tone) {
+    var d = img.data;
+    for (var i = 0; i < d.length; i += 4) {
+      if (!d[i + 3]) continue;
+      for (var c = 0; c < 3; c++) {
+        var v = d[i + c], r = TONE_REF[c], t = tone[c];
+        d[i + c] = v <= r ? Math.round(t * v / r) : Math.round(t + (255 - t) * (v - r) / Math.max(1, 255 - r));
+      }
+    }
+    return img;
+  }
   /** points the new cubes at their areas and writes their pixels (inside the undo edit) -> {before, after} blocks */
-  function paint(list, plans, tex) {
+  function paint(list, plans, tex, tone) {
     var tx = X(), I = tx.uvInfo(tex), ops = [], written = {};
     list.forEach(function (e, i) {
       var c = e.cube, p = plans[i], t = p.perFace ? perFaceOf(e.tex) : e.tex;
@@ -612,6 +658,7 @@
     var blocks = ops.map(function (o) {
       var w = Math.max(1, Math.round((o.f.rel[2] - o.f.rel[0]) * I.sx)), h = Math.max(1, Math.round((o.f.rel[3] - o.f.rel[1]) * I.sy));
       var src = new ImageData(unb64(o.f.px), o.f.w, o.f.h);
+      if (tone && o.f.tone) toneImg(src, tone);
       // HD pictures (f.hd) going onto a skin with fewer pixels are averaged down; pixel art stays sharp (nearest)
       return { x: Math.round(o.u * I.sx), y: Math.round(o.v * I.sy), img: o.f.hd && (w < o.f.w || h < o.f.h) ? shrink(src, w, h) : fit(src, w, h) };
     });
@@ -682,6 +729,8 @@
       a.cpm_additive = A.additive !== false;
       // a slider (value layer): where it starts (0..1)
       if (typeof A.layerDefault === 'number') a.cpm_layerDefault = Math.max(0, Math.min(1, A.layerDefault));
+      // must finish: plays to its end even after the state is over (CPM ends 'jumping' 500 ms after the jump)
+      if (A.mustFinish) a.cpm_mustFinish = true;
       tracks.forEach(function (tr) { var ba = a.getBoneAnimator(tr.g); tr.keys.forEach(function (k) { addKey(ba, k); }); });
       made.push(a);
     });
@@ -700,6 +749,13 @@
     var k = hdOf(item); if (!k) return false;
     var tex = X().mainTexture();
     return !!tex && X().density(tex) < k - 1e-6;
+  }
+  /** the no-room question with the sizes: skin area now -> doubled, and the texture's pixels after it (with HD) */
+  function noRoomText(item, o) {
+    var tex = X().mainTexture(), uv = tex ? tex.uv_width || 64 : 64, dens = tex ? Math.max(1, tex.width / uv) : 1;
+    if (item && o && o.hd !== false && wantsHD(item)) dens = Math.max(dens, hdOf(item));
+    var px = Math.round(uv * 2 * dens);
+    return T('lib.noroom.ask', uv, uv * 2, px + '×' + px);
   }
   function insert(item, o) {
     o = o || {};
@@ -750,7 +806,7 @@
           if (out.groups[n0]) tops.push(out.groups[n0]);
         }
       });
-      if (out.tex.length) px = paint(out.tex, plans, tex);
+      if (out.tex.length) px = paint(out.tex, plans, tex, item.tone && o.tone !== false ? skinTone(tex) : null);
       if (withAnims) anims = makeAnims(item, out.byAid, !!o.mirror);
     }, function () { return aspects(out.cubes, out.groups, anims); });
     if (tex && px.before.length) tx.bindPixels(tex, px.before, px.after);
@@ -848,7 +904,7 @@
   function guessCat(item) {
     var name = String(item.name || '').toLowerCase(), roots = setsOf(item).map(function (s) { return s.root; });
     if (/tail|rabo|cauda/.test(name)) return 'tail';
-    if (/wing|asa/.test(name)) return 'wings';
+    if (/wing|asa/.test(name)) return 'body';
     if (/glass|oculos|óculos|mask|mascara|máscara|face|rosto/.test(name)) return 'face';
     if (roots[0] === 'head') return 'head';
     if (roots[0] === 'body') return 'body';
@@ -1518,7 +1574,8 @@
         // only for a part that comes with animations
         anims: { label: T('lib.f.anims'), type: 'checkbox', value: true, condition: function () { return !!(view.pick && animCount(view.pick)); } },
         // only for a part with HD pictures when the skin has fewer pixels
-        hd: { label: T('lib.f.hd'), description: T('lib.f.hd.desc'), type: 'checkbox', value: true, condition: function () { return !!(view.pick && wantsHD(view.pick)); } }
+        hd: { label: T('lib.f.hd'), description: T('lib.f.hd.desc'), type: 'checkbox', value: true, condition: function () { return !!(view.pick && wantsHD(view.pick)); } },
+        tone: { label: T('lib.f.tone'), description: T('lib.f.tone.desc'), type: 'checkbox', value: true, condition: function () { return !!(view.pick && view.pick.tone); } }
       },
       buttons: [T('lib.put'), 'dialog.cancel'],
       onFormChange: function (f) {
@@ -1535,7 +1592,7 @@
         if (!view.pick) { G.Blockbench.showQuickMessage(T('lib.pick'), 2200); return false; }
         var item = view.pick;
         M.clearPreview();
-        var opts = { where: f.where, mirror: !!f.mirror, anims: f.anims !== false, hd: f.hd !== false };
+        var opts = { where: f.where, mirror: !!f.mirror, anims: f.anims !== false, hd: f.hd !== false, tone: f.tone !== false };
         function put(o2) {
           var r = insert(item, o2);
           G.Blockbench.showQuickMessage(T('lib.done', itemName(item), cubesText(r.cubes.length)) + (r.anims.length ? ' + ' + animsText(r.anims.length) : ''), 2600);
@@ -1544,7 +1601,7 @@
         catch (e) {
           var full = (e && e.message) === T('lib.noroom');
           // no free skin space: offer more texture space (the area doubles, nothing moves) or the part as colour cubes
-          G.Blockbench.showMessageBox({ title: T('lib'), icon: full ? 'photo_size_select_large' : 'error', message: full ? T('lib.noroom.ask') : (e.message || String(e)),
+          G.Blockbench.showMessageBox({ title: T('lib'), icon: full ? 'photo_size_select_large' : 'error', message: full ? noRoomText(view.pick, opts) : (e.message || String(e)),
             buttons: full ? [T('lib.grow'), T('lib.colours'), 'dialog.cancel'] : ['dialog.ok'], confirm: 0, cancel: full ? 2 : 0 }, function (b) {
             if (!full || b === 2) { showPreview(f); return; }
             try { put(Object.assign({}, opts, b === 0 ? { grow: true } : { paint: 'colours' })); } catch (x) { G.Blockbench.showMessageBox({ title: T('lib'), message: x.message || String(x) }); return; }
@@ -1623,9 +1680,13 @@
   api.open = openLibrary; api.openSave = openSave; api.dialog = function () { return dlg; }; api.saveDialog = function () { return sdlg; };
   api.fromBBModel = fromBBModel; api.bbGroups = bbGroups; api.openBBPicker = openBBPicker; api.importBB = importBB; api.bbDialog = function () { return bdlg; };
   api.guessAnimType = guessAnimType; api.animCount = animCount;
-  api.hdOf = hdOf; api.wantsHD = wantsHD; api.shrink = shrink; api.sideName = sideName; api.planPaint = planPaint;
+  api.hdOf = hdOf; api.wantsHD = wantsHD; api.skinTone = skinTone; api.toneImg = toneImg; api.TONE_REF = TONE_REF; api.shrink = shrink; api.sideName = sideName; api.planPaint = planPaint;
   api.view = function () { return { tab: view.tab, pick: view.pick ? view.pick.id : null, user: view.user.length, where: view.where }; };
   api.pick = function (id) { pick(find(id)); return !!view.pick; };
   api.refreshUser = refreshUser;
+  // the insert steps, for tools that put a generated part in the model inside their own undo step (model_convert)
+  api.build = build; api.paint = paint; api.makeAnims = makeAnims;
+  // keyframes as plain data and body part names of other formats, for tools that read another model (model_combine)
+  api.keysOf = keysOf; api.rootFromName = rootFromName;
   return api;
 })

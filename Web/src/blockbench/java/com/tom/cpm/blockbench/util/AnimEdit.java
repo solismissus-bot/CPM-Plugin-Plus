@@ -587,7 +587,7 @@ public final class AnimEdit {
 		boolean stepFam = "step".equals(family);
 		if (!stepFam) {
 			double step = maxRotStep(s);
-			if (step > 180.001) {
+			if (step > com.tom.cpm.blockbench.convert.BlockbenchExport.ROT_SPLIT) {// same rule as the export
 				int nm = refineGrid(m, m * (int) Math.ceil(step / 170.0));
 				if (nm > m) {
 					m = nm;

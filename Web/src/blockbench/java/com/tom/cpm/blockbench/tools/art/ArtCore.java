@@ -40,11 +40,24 @@ public final class ArtCore {
 			{"model_build", "assets/cpmplus_model/js/model_build.js"},
 			{"model_text", "assets/cpmplus_model/js/model_text.js"},
 			{"model_vox", "assets/cpmplus_model/js/model_vox.js"},
+			{"model_gltf", "assets/cpmplus_model/js/model_gltf.js"},
+			{"model_convert", "assets/cpmplus_model/js/model_convert.js"},
+			// beta34 (tools C): Juntar outro modelo (after the library and the converter: their insert / texture steps)
+			{"model_combine", "assets/cpmplus_model/js/model_combine.js"},
+			{"model_mesh2cube", "assets/cpmplus_model/js/model_mesh2cube.js"},
 			{"model_joint", "assets/cpmplus_model/js/model_joint.js"},
 			{"model_pose", "assets/cpmplus_model/js/model_pose.js"},
 			{"model_flatten", "assets/cpmplus_model/js/model_flatten.js"},
 			{"model_symmetry", "assets/cpmplus_model/js/model_symmetry.js"},
 			{"model_firstperson", "assets/cpmplus_model/js/model_firstperson.js"},
+			// beta34 (tools B): Contorno, Juntar texturas, Recortar com um cubo, Destacar cubo sob o mouse
+			{"model_outline", "assets/cpmplus_model/js/model_outline.js"},
+			{"model_stitch", "assets/cpmplus_model/js/model_stitch.js"},
+			{"model_cut", "assets/cpmplus_model/js/model_cut.js"},
+			{"model_hover", "assets/cpmplus_model/js/model_hover.js"},
+			// beta34 (tools D): Arrumar UV automatico, Encaixe magnetico
+			{"model_uvpack", "assets/cpmplus_model/js/model_uvpack.js"},
+			{"model_magnet", "assets/cpmplus_model/js/model_magnet.js"},
 			{"model_panel", "assets/cpmplus_model/js/model_panel.js"}
 	};
 	private static Object core;

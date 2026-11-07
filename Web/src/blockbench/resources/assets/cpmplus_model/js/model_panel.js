@@ -19,6 +19,11 @@
 
   // =================================================================== model
   function condOk(it) { try { return !it.condition || typeof G.Condition !== 'function' || !!G.Condition(it.condition); } catch (e) { return false; } }
+  function moduleItems(s) {
+    var out = [], mods = (L.core && L.core.modules) || {};
+    Object.keys(mods).forEach(function (k) { var m = mods[k]; ((m && m.panelItems) || []).forEach(function (x) { if (x && x.sec === s && out.indexOf(x.id) < 0) out.push(x.id); }); });
+    return out;
+  }
   function sections() {
     var out = [];
     M.sections.forEach(function (s) {
@@ -31,6 +36,13 @@
         var it = G.BarItems && G.BarItems[id]; if (!it || !M.isCpm()) return;
         items.push({ id: id, icon: typeof it.icon === 'string' ? it.icon : 'build', name: it.name, desc: it.description || '', ready: condOk(it), native: true });
       });
+      // beta34: Blockbench items a modelling module lists for this section (api.panelItems = [{sec, id}]); a toggle shows its state
+      moduleItems(s).forEach(function (id) {
+        var it = G.BarItems && G.BarItems[id]; if (!it) return;
+        items.push({ id: id, icon: typeof it.icon === 'string' ? it.icon : 'build', name: it.name, desc: it.description || '', ready: condOk(it), native: true, on: !!(G.Toggle && it instanceof G.Toggle && it.value) });
+      });
+      // beta34: a Font Awesome icon ('fa-magnet') is drawn with its own font, not as a Material icon name
+      items.forEach(function (b) { b.fa = /^fa[-.]/.test(b.icon); });
       if (items.length) out.push({ id: s, name: T('panel.sec.' + s), items: items });
     });
     return out;
@@ -74,7 +86,7 @@
     '<p class="cmp_hint">{{hint}}</p>',
     '<template v-for="s in sections"><h3 class="cmp_h" :key="\'h\'+s.id" :data-section="s.id">{{s.name}}</h3>',
     '<div class="cmp_grid" :key="\'g\'+s.id">',
-    '<div v-for="b in s.items" :key="b.id" class="cmp_btn" :class="{off: !b.ready}" :data-id="b.id" :title="b.desc" @click="run(b)"><i class="material-icons">{{b.icon}}</i><span>{{b.name}}</span></div>',
+    '<div v-for="b in s.items" :key="b.id" class="cmp_btn" :class="{off: !b.ready, on: b.on}" :data-id="b.id" :title="b.desc" @click="run(b)"><i v-if="b.fa" :class="\'fa fa-fw \' + b.icon"></i><i v-else class="material-icons">{{b.icon}}</i><span>{{b.name}}</span></div>',
     '</div></template>',
     '<div class="cmp_info" data-section="info"><div v-for="(l, i) in info" :key="i">{{l}}</div><div class="cmp_weight" :class="weight" :title="weightTip">{{model}}</div></div>',
     '</div>'
@@ -111,6 +123,7 @@
       '.cmp_btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.cmp_btn:hover{border-color:var(--color-accent)}',
       '.cmp_btn.off{opacity:.5}',
+      '.cmp_btn.on{border-color:var(--color-accent);background:var(--color-selected)}',
       '.cmp_info{position:sticky;bottom:0;background:var(--color-ui);border-top:1px solid var(--color-border);padding:6px 8px 8px;margin:12px -8px 0;z-index:2;font-size:.92em}',
       // the model's weight is information, not a warning (many models are made for animations / videos)
       '.cmp_weight{margin-top:2px;font-weight:600;opacity:.85;cursor:help}',

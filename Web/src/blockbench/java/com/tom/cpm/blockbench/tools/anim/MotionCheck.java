@@ -135,6 +135,7 @@ public final class MotionCheck {
 		}
 		twins(a, out);
 		walkSync(a, tp, out);
+		FootSlip.check(a, out);// 'pé escorregando' (moving floor at Minecraft's speed)
 	}
 
 	/**
@@ -214,7 +215,8 @@ public final class MotionCheck {
 	}
 
 	static String fmt(double v, boolean rot) {
-		return PoseColumn.fmt(v) + (rot ? "°" : " px");
+		// a value, not a time: PoseColumn.fmt adds " s" ("60,00 s°" before)
+		return com.tom.cpm.blockbench.util.KeyMath.fmt(v, 2).replace('.', ',') + (rot ? "°" : " px");
 	}
 
 	static Issue issue(String code, Animation a, Group g, double time, int level, String text) {

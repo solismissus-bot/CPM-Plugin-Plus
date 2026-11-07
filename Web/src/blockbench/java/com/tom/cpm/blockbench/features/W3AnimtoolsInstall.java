@@ -191,11 +191,14 @@ public final class W3AnimtoolsInstall {
 				return o;
 			});
 		}
+		// beta34 tools for complex rigs / animations (moving floor + foot slip, split big animation, curl chain)
+		AnimProTools.install();
 	}
 
 	public static void uninstall() {
 		TipTrail.uninstall();
 		ViewAids.uninstall();
+		AnimProTools.uninstall();
 	}
 
 	private static native Menu protoMenu(String cls) /*-{
