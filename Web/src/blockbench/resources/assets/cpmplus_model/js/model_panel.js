@@ -98,7 +98,11 @@
     if (document.getElementById(STYLE)) return;
     var st = document.createElement('style'); st.id = STYLE;
     st.textContent = [
-      '#panel_' + PANEL_ID + ' .cmp{padding:2px 8px 0}',
+      // the content scrolls inside the panel (Blockbench's panel_vue_wrapper hides overflow)
+      '#panel_' + PANEL_ID + ' .cmp{padding:2px 8px 0;overflow-y:auto;overflow-x:hidden}',
+      // as a tab Blockbench gives it the other panel's last height (--main-panel-height, maybe measured in another
+      // mode with more room) and the tab could run below the window: it fills its tab group instead
+      '#panel_' + PANEL_ID + '.attached.grow{height:auto;min-height:0}',
       '.cmp_hint{font-size:.9em;opacity:.75;margin:2px 0 4px}',
       '.cmp_h{font-size:.92em;font-weight:600;margin:8px 0 4px;text-transform:uppercase;letter-spacing:.04em;opacity:.8}',
       '.cmp_grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px}',

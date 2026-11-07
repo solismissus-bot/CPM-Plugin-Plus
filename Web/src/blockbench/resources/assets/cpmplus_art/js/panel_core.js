@@ -176,7 +176,7 @@
     return {
       components: { 'cpp-ctrl': CtrlComp },
       data: function () { return model; },
-      mounted: function () { vm = this; refreshPreviews(); refresh(); },
+      mounted: function () { vm = this; watchHeight(this.$el); refreshPreviews(); refresh(); },
       methods: {
         toggleGroup: function (id) { this.openGroup = this.openGroup === id ? '' : id; refreshPreviews(); },
         pickBrush: function (id) { var B = brushes(); if (B) B.pick(id); refresh(); },
@@ -202,12 +202,26 @@
       template: TEMPLATE
     };
   }
+  /** keeps --cpp-h (the panel content's height) on the panel root: the pinned options box is at most 60% of it */
+  var heightObs = null;
+  function watchHeight(el) {
+    if (!el || typeof ResizeObserver !== 'function') return;
+    if (heightObs) { try { heightObs.disconnect(); } catch (e) { } }
+    var set = function () { if (el.clientHeight) el.style.setProperty('--cpp-h', el.clientHeight + 'px'); };
+    heightObs = new ResizeObserver(set); heightObs.observe(el); set();
+  }
+  L.onUninstall(function () { if (heightObs) { try { heightObs.disconnect(); } catch (e) { } heightObs = null; } });
   var STYLE = 'cpmplus_art_panel_style';
   function installStyle() {
     if (document.getElementById(STYLE)) return;
     var st = document.createElement('style'); st.id = STYLE;
     st.textContent = [
-      '#panel_' + PANEL_ID + ' .cpp{padding:2px 8px 0}',
+      // the content scrolls inside the panel (Blockbench's panel_vue_wrapper hides overflow: a long brush group was cut off)
+      '#panel_' + PANEL_ID + ' .cpp{padding:2px 8px 0;overflow-y:auto;overflow-x:hidden}',
+      // as a tab next to another panel Blockbench gives it that panel's last height (--main-panel-height), measured in
+      // whatever mode it was last shown (Edit mode has more room): in Paint mode the tab ran below the window and the
+      // options pinned at its bottom were out of sight. The tab fills its tab group instead.
+      '#panel_' + PANEL_ID + '.attached.grow{height:auto;min-height:0}',
       '.cpp_hint{font-size:.9em;opacity:.75;margin:2px 0 4px}',
       '.cpp_h{font-size:.92em;font-weight:600;margin:8px 0 4px;text-transform:uppercase;letter-spacing:.04em;opacity:.8}',
       '.cpp_ghead{display:flex;align-items:center;gap:4px;cursor:pointer;padding:3px 2px;border-radius:4px}',
@@ -223,7 +237,10 @@
       '.cpp_btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.cpp_bcard:hover,.cpp_btn:hover{border-color:var(--color-accent)}',
       '.cpp_bcard.sel,.cpp_btn.sel{border-color:var(--color-accent);background:var(--color-selected)}',
-      '.cpp_opts{position:sticky;bottom:0;background:var(--color-ui);border-top:1px solid var(--color-border);padding:6px 8px 8px;margin:12px -8px 0;z-index:2}',
+      // at most 60% of the panel (--cpp-h, kept by a ResizeObserver): a short panel still shows the brushes above
+      // the options, and long options scroll inside the box
+      '.cpp_opts{position:sticky;bottom:0;background:var(--color-ui);border-top:1px solid var(--color-border);padding:6px 8px 8px;margin:12px -8px 0;z-index:2;',
+      'flex-shrink:0;box-sizing:border-box;max-height:calc(var(--cpp-h, 100vh) * .6);overflow-y:auto;overflow-x:hidden}',
       '.cpp_otitle{font-weight:600}',
       '.cpp_otip{font-size:.9em;opacity:.75;margin:2px 0 4px}',
       '.cpp_ctrl{margin:4px 0;display:grid;grid-template-columns:40% 1fr;align-items:center;gap:6px}',
