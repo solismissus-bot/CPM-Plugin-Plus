@@ -354,12 +354,14 @@
    * beta31: the CPM+ art tools live in the CPM+ panel and inside Blockbench's own panels (Color, Palette, Textures),
    * never on the top bars (tools / tool options): those stay exactly like Blockbench's.
    */
-  var PANEL_BARS = { palette: 1, color_picker: 1, texturelist: 1 };
+  // beta33: also the Outliner's own toolbar (next to 'Add cube / group') and the position row of the Transform panel
+  var PANEL_BARS = { palette: 1, color_picker: 1, texturelist: 1, outliner: 1, element_position: 1 };
   /**
    * beta32: the two smudge tools also sit in Blockbench's own row of paint tools, right after the Eraser (where
    * everybody looks for a smudge) - only the tool icon, their options stay in the CPM+ panel
    */
-  var TOOL_ROW = { cpmplus_art_smudge: 'tools', cpmplus_art_smudge_px: 'tools' };
+  // beta33: the modelling tools that are real tools (Medir, Construir) sit in the same row, after 'Snap to vertex'
+  var TOOL_ROW = { cpmplus_art_smudge: 'tools', cpmplus_art_smudge_px: 'tools', cpmplus_model_measure: 'tools', cpmplus_model_build: 'tools' };
   function place(toolbarId, item, afterId) {
     if (item && created.indexOf(item) < 0) adoptStale(item);// items made by Java (actions) are not built by mk()
     var row = item && TOOL_ROW[item.id] === toolbarId;
@@ -1690,7 +1692,9 @@
       /** true once the first-time 'new art tools' toast was shown (it already lists every tool for new users) */
       artHintSeen: function () { return !!state.hint; },
       /** the art core API (dialogs, tool selection, other modules) */
-      core: api, clearTopBars: clearTopBars
+      core: api, clearTopBars: clearTopBars,
+      /** beta33: a node copied by a modelling tool forgets its CPM ids (Java IdUtil.resetIds; CPM projects only) */
+      resetIds: function (node) { if (typeof env.resetIds === 'function') env.resetIds(node); }
     };
   }
   /** evaluates a module source '(function (L) {... return api;})' with this core's helpers and installs it */

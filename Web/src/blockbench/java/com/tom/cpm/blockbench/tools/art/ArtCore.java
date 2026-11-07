@@ -18,6 +18,35 @@ public final class ArtCore {
 	public static final String BRUSHES = "assets/cpmplus_art/js/brush_core.js";
 	/** beta31: the "CPM+ Pintar" panel (every art tool with its name, the brushes, the options), a module of the core */
 	public static final String PANEL = "assets/cpmplus_art/js/panel_core.js";
+	/**
+	 * beta33 "CPM+ Modelar": the modelling tools, modules of the same core (name, file). The engine first (registry,
+	 * placement, undo / geometry helpers), the tool modules, the panel last (it lists what the others registered).
+	 */
+	public static final String[][] MODEL_MODULES = {
+			{"model", "assets/cpmplus_model/js/model_core.js"},
+			{"model_shapes", "assets/cpmplus_model/js/model_shapes.js"},
+			{"model_adjust", "assets/cpmplus_model/js/model_adjust.js"},
+			{"model_select", "assets/cpmplus_model/js/model_select.js"},
+			{"model_texture", "assets/cpmplus_model/js/model_texture.js"},
+			{"model_presets", "assets/cpmplus_model/js/model_presets.js"},
+			{"model_parts", "assets/cpmplus_model/js/model_parts.js"},
+			{"model_library", "assets/cpmplus_model/js/model_library.js"},
+			{"model_merge", "assets/cpmplus_model/js/model_merge.js"},
+			{"model_slice", "assets/cpmplus_model/js/model_slice.js"},
+			{"model_check", "assets/cpmplus_model/js/model_check.js"},
+			{"model_layer2", "assets/cpmplus_model/js/model_layer2.js"},
+			{"model_bases", "assets/cpmplus_model/js/model_bases.js"},
+			{"model_linked", "assets/cpmplus_model/js/model_linked.js"},
+			{"model_build", "assets/cpmplus_model/js/model_build.js"},
+			{"model_text", "assets/cpmplus_model/js/model_text.js"},
+			{"model_vox", "assets/cpmplus_model/js/model_vox.js"},
+			{"model_joint", "assets/cpmplus_model/js/model_joint.js"},
+			{"model_pose", "assets/cpmplus_model/js/model_pose.js"},
+			{"model_flatten", "assets/cpmplus_model/js/model_flatten.js"},
+			{"model_symmetry", "assets/cpmplus_model/js/model_symmetry.js"},
+			{"model_firstperson", "assets/cpmplus_model/js/model_firstperson.js"},
+			{"model_panel", "assets/cpmplus_model/js/model_panel.js"}
+	};
 	private static Object core;
 
 	private ArtCore() {
@@ -44,6 +73,11 @@ public final class ArtCore {
 		String panel = resource(PANEL);
 		if (panel == null)DomGlobal.console.warn("CPM+: " + PANEL + " is missing from the plugin");
 		else loadModule(c, "panel", panel);
+		for (String[] m : MODEL_MODULES) {
+			String src = resource(m[1]);
+			if (src == null)DomGlobal.console.warn("CPM+: " + m[1] + " is missing from the plugin");
+			else loadModule(c, m[0], src);
+		}
 		if (test)expose(c);
 	}
 
@@ -123,6 +157,10 @@ public final class ArtCore {
 			},
 			set: function (k, v) {
 				@com.tom.cpm.blockbench.util.PlusPrefs::set(Ljava/lang/String;Ljava/lang/Object;)(String(k), v);
+			},
+			// beta33: a node copied by a modelling tool forgets its CPM ids (IdUtil, inside the tool's undo entry)
+			resetIds: function (node) {
+				@com.tom.cpm.blockbench.util.IdUtil::resetIds(Ljava/lang/Object;)(node);
 			},
 			test: test,
 			actions: actions

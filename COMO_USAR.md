@@ -33,7 +33,7 @@
 | **Ctrl + Alt + Shift + R** | Espelhar pose |
 | **Ctrl + Alt + Shift + V** | Colar pose |
 
-🆕 = novidade recente (beta28: ferramentas de animação; beta29-30: arte e pincéis; beta31: tudo de pintura no painel CPM+ Pintar; beta32: pincéis HD e Esfumar ao lado da Borracha, seção 5). Pra trocar ou criar atalho pra qualquer outra ferramenta: **Arquivo > Configurações > Atalhos**, categoria **Ferramentas**, procure pelo nome. Se um atalho não funcionar, veja nessa mesma tela se outra ferramenta (de outro plugin, por exemplo) usa a mesma tecla e troque uma delas.
+🆕 = novidade recente (beta28: ferramentas de animação; beta29-30: arte e pincéis; beta31: tudo de pintura no painel CPM+ Pintar; beta32: pincéis HD e Esfumar ao lado da Borracha, seção 5; beta33: painel CPM+ Modelar com 30 ferramentas de modelagem e a Biblioteca de peças, seção 4). Pra trocar ou criar atalho pra qualquer outra ferramenta: **Arquivo > Configurações > Atalhos**, categoria **Ferramentas**, procure pelo nome. Se um atalho não funcionar, veja nessa mesma tela se outra ferramenta (de outro plugin, por exemplo) usa a mesma tecla e troque uma delas.
 
 Quase tudo fica no menu **CPM+** (barra de cima do Blockbench), dividido em: **Ajustes do modelo, Animação, Modelagem, Textura, Otimizar, Prévia, Ajuda**. Muita coisa também aparece no **clique direito** numa pasta, num cubo ou numa animação.
 
@@ -161,10 +161,80 @@ Regras gerais:
 
 **Propriedades da animação** (clique duplo na animação): ajustes avançados (precisa terminar, esconder da roda, slider) e **Qualidade (fps)** com a contagem exata de quadros.
 
-## 4. Modelagem (CPM+ > Modelagem, ou clique direito)
+## 4. 🆕 Modelagem: painel CPM+ Modelar
 
-| Item | Como usar |
+No modo **Editar**, o painel **CPM+ Modelar** (uma aba ao lado das Texturas) tem todas as ferramentas de modelagem, com o nome escrito em cada botão, em 6 partes: **Criar, Ajustar, Organizar, Textura, Conferir** e **Corpo e rig (CPM)**. Tudo também está em **CPM+ > Modelagem** e no lugar natural de cada coisa dentro do Blockbench:
+- **Organizador** (barra de cima da lista de peças): **Formas prontas** e **Biblioteca de peças**, logo depois de "Adicionar grupo".
+- **Fileira de ferramentas**: **Medir** e **Construir com blocos**.
+- **Painel de Transformação** (linha da posição): **Alinhar**. Menu **Transformar**: Alinhar e distribuir, Repetir, Copiar atributos.
+- Menu **Editar**: Selecionar parecidos ▸, Renomear em lote. Menu **Exibir**: Prévia em 1ª pessoa. Menu **Animação**: Aplicar pose como repouso. **Arquivo > Importar**: Importar .vox.
+- **Clique direito** num cubo ou num grupo: a parte "CPM+" com o que serve pra ele (Fatiar, Furar, Achatar, 2ª camada, Cópia ligada, Testar junta, Salvar na biblioteca...).
+
+Regras: **cada ação é um Ctrl+Z**; cópias ganham ids novos do CPM (não brigam no jogo); peças de cor (cubos de cor do CPM) **não gastam espaço da skin**. O peso do modelo aparece só como informação: não existe "limite de 256" travando nada.
+
+### Criar
+
+| Ferramenta | Como usar |
 |---|---|
+| **Formas prontas...** | Esfera, meia-esfera, cilindro, cone, tubo, anel, arco, cápsula, caixa arredondada e pirâmide feitas de cubos, com prévia ao vivo. No CPM saem como cubos de cor. |
+| **Repetir...** | Cópias da peça selecionada em fila, em círculo ou em espiral, com prévia: dentes, espinhos, pétalas, correntes, cercas. |
+| **Biblioteca de peças** | Peças prontas, com prévia 3D: clique pra ver, **Colocar** (ou clique duplo). Cada peça vai sozinha pra parte certa do corpo; **Onde** escolhe outra; braço/perna do outro lado sai espelhado. Veja a lista abaixo. |
+| **Salvar na biblioteca** | Guarda a peça selecionada (cubos, grupos, cores, brilho, pintura e as animações dela) em **Minhas peças**, pra colocar em qualquer modelo. Dá pra exportar/importar um arquivo de peças pra trocar com os amigos. |
+| **Texto em blocos** | Escreve um texto feito de cubos (duas fontes de pixel, com acentos). Tamanho, grossura, espaço, cor, onde fica e pra que lado olha; prévia enquanto você digita. *Mais opções:* linhas, alinhamento, negrito. |
+| **Importar .vox (MagicaVoxel)** | Abre um modelo do MagicaVoxel e transforma em cubos de cor (cada cor vira poucos cubos), num grupo novo na parte do corpo que você escolher. Arquivos quebrados são recusados sem mexer no modelo. |
+| **2ª camada para peças** | Cria uma casca um pouco maior em volta de cada cubo (como o chapéu e a jaqueta da skin), com um pedaço livre da textura só dela: **com a pintura do cubo** ou **transparente**. |
+| **Criar cópia ligada / Desligar cópia** | (clique direito no grupo) A cópia acompanha tudo o que você muda dentro do original: tamanhos, giros, cores, pintura, cubos novos. A cópia só escolhe onde fica e pra onde gira. O vínculo é salvo no .cpmproject e não muda nada no jogo. |
+
+**Biblioteca de peças: o que vem pronto**
+- **Cabeça:** Orelhas de gato e de coelho (mexem sozinhas e abaixam quando agacha ou dorme), Auréola (brilha e gira), Coroa, Cartola, Chapéu de bruxa, Cocar de crânio de dragão (com penas que balançam) e **12 chifres**: demônio, diabinho, oni, dragão, unicórnio, carneiro, íbex (sátiro), espiral (kudu), touro (minotauro), órix, galhada de cervo e cristal (brilha).
+- **Rabos (6):** raposa, nove caudas (kitsune), gato, lobo, dragão e demônio (brilha). Cada um tem **uma animação pra cada estado do jogador**: parado, andando, correndo, agachado, agachado andando, nadando, caindo, pulando, sentado, dormindo e voando.
+- **Asas da comunidade** (com crédito no card): **Asas infernais** (*Hell Wings*, de inly_, CC BY 4.0) com animações novas de parado, voando, planando e andando; **Asas de mariposa** (*Lord of Moths*, de Meleagors, CC BY 4.0): a malha original de 69 mil triângulos virou 98 planos pintados (costas e frente com a arte de cada lado) com **a animação original dela**, emendando sem pulo no loop.
+- As peças pintadas usam **pintura feita à mão em pixel art** (luz por face, contorno, sombra de contato) e várias vêm em **HD**: a textura ganha resolução sozinha quando a peça entra.
+- **Sem espaço na textura?** A janela oferece **Mais espaço na textura**: a área da textura dobra (64 → 128) sem mexer em nada do que já estava pintado. Fica como um passo próprio do Ctrl+Z.
+
+### Ajustar
+
+| Ferramenta | Como usar |
+|---|---|
+| **Alinhar e distribuir...** | Alinha as peças selecionadas (por um lado ou pelo meio), espalha com espaço igual ou encosta uma na outra. Funciona com peças giradas. |
+| **Copiar atributos...** | Copia tamanho, rotação, pivô, UV, cor e outros ajustes de uma peça pras outras selecionadas, de uma vez. |
+| **Medir** | Régua: clique num ponto e depois em outro; mostra a distância em pixels (e em blocos). O ponto gruda no canto mais próximo. O tamanho da seleção aparece no painel. Esc apaga. |
+| **Construir com blocos** | Ferramenta da fileira: **clique numa face** pra pôr um bloco de 1 px encostado nela; **arraste uma face** pra puxar ou empurrar (o cubo cresce ou diminui; Ctrl = de ¼ em ¼ px); **Shift + arrastar** = um bloco novo do tamanho que você arrastar. Esc no meio cancela. |
+| **Fatiar cubo** | Corta o cubo em X, Y ou Z, num ponto ou em partes iguais. Cada pedaço continua mostrando exatamente a mesma pintura. |
+| **Furar cubo** | Abre um furo retangular que atravessa o cubo; o resto vira até 4 peças com a mesma pintura (as paredes do furo usam as laterais do cubo). |
+
+### Organizar
+
+| Ferramenta | Como usar |
+|---|---|
+| **Juntar cubos** | Junta cubos de cor iguais que se encostam (mesma cor, giro, inflar e brilho, no mesmo grupo) no menor número de cubos possível. O modelo fica igualzinho, mais leve. O **medidor de peso** mostra cubos e tamanho do modelo. |
+| **Selecionar parecidos ▸** | Mesmo tamanho, mesma cor, mesmo grupo, a gêmea do outro lado ou o mesmo nome sem o número. **Clicar de novo no mesmo lugar** seleciona a peça de trás; o nome da peça aparece embaixo do mouse. |
+| **Renomear em lote...** | Nome + número, antes/depois, trocar texto, trocar esquerda ↔ direita, limpar acentos e espaços. Mostra o antes → depois. |
+
+### Textura
+
+| Ferramenta | Como usar |
+|---|---|
+| **Mapa da textura** | Mostra quanto da textura está livre (verde), usado (cinza) e usado por mais de uma peça (vermelho). |
+| **Textura em HD** | Aumenta a resolução sem mudar o UV: cada pixel vira 2×2, 4×4, 8×8... A skin fica igual e sobra resolução pra detalhes (pincéis HD, penas). |
+| **Duplicar com textura própria** | Duplica a peça e dá pra cópia um pedaço livre da textura com a mesma pintura: pintar a cópia não muda a original. |
+| **Achatar detalhes na textura** | Cubinhos finos deitados em cima de uma face pintada (olhos, botões, adesivos) viram pintura nessa face e são apagados: menos cubos, mesmo visual. A prévia mostra em verde o que vai e em laranja o que fica (com o motivo). |
+
+### Conferir
+
+| Ferramenta | Como usar |
+|---|---|
+| **Conferir modelo** | Procura problemas comuns: faces que piscam (z-fighting), frestas finíssimas, pinturas misturadas sem querer, pastas vazias, cubos de tamanho zero, repetidos ou escondidos dentro de outro. Cada linha tem **Mostrar** e **Corrigir**; **Corrigir tudo** de uma vez. Nunca mexe no corpo do jogador. |
+| **Conferir simetria do modelo** | Compara esquerda e direita (pelos nomes ou pelo lugar espelhado): par faltando, tamanho, posição, giro, pivô, cor, pintura copiada sem espelhar. **Espelhar deste lado** em cada linha; **Criar o par espelhado** quando falta. |
+| **Testar junta** | (clique direito no grupo) Balança o grupo em volta do pivô por alguns segundos, só na tela: uma bolinha amarela marca o pivô e manchas vermelhas aparecem onde abre fresta. Diz se o pivô está certo ou sugere o meio da junta. Não muda nada no modelo. |
+| **Prévia em 1ª pessoa** | (menu Exibir) A câmera vai pros olhos do jogador, com o campo de visão do Minecraft, e o braço aparece no canto como no jogo. Dá pra ver os dois braços. Esc ou o botão Sair volta tudo como estava. |
+
+### Corpo e rig (CPM)
+
+| Ferramenta | Como usar |
+|---|---|
+| **Bases prontas** | Coloca um corpo pronto: **taur** (corpo de cavalo com 4 patas que andam junto com o jogador), **naga** (cauda de cobra com 11 ossos), **pernas digitígradas**, **pernas altas** ou **baixas** (com joelho, pintadas com a própria skin). As pernas normais são desligadas. Prévia com cartões. |
+| **Aplicar pose como repouso** | (modo Animar, menu Animação) A pose que a animação mostra no ponto do tempo vira a pose de repouso dos ossos selecionados, e as keys de todas as animações são compensadas pra continuarem iguais. |
 | **Espelhar pro outro lado (CPM)…** | Selecione a peça de um lado (ex.: asa no braço esquerdo): cria a cópia espelhada do outro lado, com nomes, "seguir peça" e slot de item trocados. Pode espelhar as animações junto ou só mover. |
 | **Grudar na parte do corpo...** | A peça passa a acompanhar outra parte do corpo no jogo (cabeça, braço...) sem sair do lugar, mesmo com pastas giradas. |
 | **Copiar movimento de...** | Editor de Copy Transform: a pasta copia posição, rotação, tamanho, cor ou visibilidade de outra peça. Avisa se a escolha não vai funcionar no jogo. |
