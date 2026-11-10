@@ -14,6 +14,8 @@ public final class W6SaveInstall {
 
 	public static void install() {
 		ExportHooks.register(FormatLimitsCheck::check);
+		// pivot more than 48 px from the folder above: one click moves it, nothing changes place
+		com.tom.cpm.blockbench.tools.export.FarPivotFix.install();
 		// G2: a body part the game shows although the project has no exported root group for it
 		ExportHooks.register(com.tom.cpm.blockbench.tools.model.GhostParts::check);
 		com.tom.cpm.blockbench.tools.model.GhostParts.install();

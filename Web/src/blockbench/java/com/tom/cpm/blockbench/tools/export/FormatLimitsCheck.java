@@ -1,8 +1,10 @@
 package com.tom.cpm.blockbench.tools.export;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.tom.cpl.math.Vec3f;
 import com.tom.cpm.blockbench.convert.ExportHooks.ExportContext;
@@ -51,6 +53,76 @@ public final class FormatLimitsCheck {
 		return Math.abs(gamePos(v) - v) > 0.01f;
 	}
 
+	/** the CPM editor's own input limit for size and mesh scale (FormatLimits.getSizeLimit()) */
+	private static final int EDITOR_LIMIT = 25;
+
+	/**
+	 * A cube longer than {@link #MAX_SIZE} on an axis goes to the game as size x mesh scale (the CPM editor's
+	 * 'Scale'): size n/10 <= 25 and scale m/DIV, values the game stores without cutting, with size * scale within
+	 * 0.002 px of the real length. BoxRender draws offset .. offset + size * meshScale and per-face UVs do not depend
+	 * on the size, so the cube looks the same in game; its pivot, offset and animations do not change. Box UV,
+	 * single texture and extruded cubes take their UV from the size: the caller exports them per face / skips them.
+	 * @return true when the size / mesh scale of me changed
+	 */
+	public static boolean fitSize(ModelElement me) {
+		float[] s = {me.size.x, me.size.y, me.size.z};
+		float[] c = {me.meshScale.x, me.meshScale.y, me.meshScale.z};
+		boolean any = false;
+		for (int i = 0; i < 3; i++) {
+			if (s[i] <= MAX_SIZE)continue;
+			double[] f = fit(s[i] * (double) c[i]);
+			if (f == null)continue;
+			s[i] = (float) f[0];
+			c[i] = (float) f[1];
+			any = true;
+		}
+		if (any) {
+			me.size = new Vec3f(s[0], s[1], s[2]);
+			me.meshScale = new Vec3f(c[0], c[1], c[2]);
+		}
+		return any;
+	}
+
+	/** close enough for size * scale: 50 times under the 0.1 px CPM rounds every cube size to */
+	private static final double FIT_TOLERANCE = 0.002;
+
+	/**
+	 * {size, scale} for a length (see {@link #fitSize}): the biggest size within {@link #FIT_TOLERANCE} (values that
+	 * still read naturally in the CPM editor, scale about 1.1 - 2.2), else the closest; null when longer than 25 x 25 px
+	 */
+	static double[] fit(double len) {
+		double[] best = null;
+		double bestErr = Double.MAX_VALUE;
+		for (int n = EDITOR_LIMIT * 10; n >= 10; n--) {
+			if (!exact(n, 10))continue;
+			int m0 = (int) (len * 10 * DIV / n);
+			for (int m = m0; m <= m0 + 1; m++) {
+				if (m <= DIV || m > EDITOR_LIMIT * DIV || !exact(m, DIV))continue;
+				double s = n / 10.0, c = m / (double) DIV, err = Math.abs(s * c - len);
+				if (err < bestErr) {
+					best = new double[] {s, c};
+					bestErr = err;
+				}
+			}
+			if (bestErr < FIT_TOLERANCE)break;
+		}
+		return best;
+	}
+
+	/**
+	 * k / div is read back as k by the game's (int) (v * div): in float on the JVM (CPM editor exporting the
+	 * .cpmproject) and in double here (GWT exporting the .cpmmodel). About half of all m / 682 fail one of them.
+	 */
+	private static boolean exact(int k, int div) {
+		double v = k / (double) div, f = f32(v);
+		return (int) (v * div) == k && (int) f32(f * div) == k && (int) (f * div) == k;
+	}
+
+	/** a JVM float (GWT keeps floats as doubles) */
+	private static native double f32(double v) /*-{
+		return Math.fround(v);
+	}-*/;
+
 	static String fmt(double v) {
 		double r = Math.round(v * 100) / 100.0;
 		String s = String.valueOf(r);
@@ -73,6 +145,9 @@ public final class FormatLimitsCheck {
 		} catch (Throwable e) {
 		}
 		int[] rows = {0, 0};
+		// folders the 'Consertar' button can fix go into ONE row with that button, the rest keep a row each
+		Set<String> fixable = FarPivotFix.fixable();
+		List<String> fixU = new ArrayList<>(), fixN = new ArrayList<>();
 		ExportHelper.walkElements(ed.elements, me -> {
 			if (me.templateElement)return;
 			String name = me.name != null ? me.name : "?";
@@ -87,7 +162,11 @@ public final class FormatLimitsCheck {
 				for (int i = 0; i < 3; i++) {
 					float p = axis(me.pos, i);
 					if (posCut(p)) {
-						add(ctx, rows, uuidOf.get(me), name, "limitPos", "cpmplus.w6save.limits.pos", name, fmt(p), AXES[i], fmt(gamePos(p)));
+						String u = uuidOf.get(me);
+						if (u != null && fixable.contains(u)) {
+							fixU.add(u);
+							fixN.add(name);
+						} else add(ctx, rows, u, name, "limitPos", "cpmplus.w6save.limits.pos", name, fmt(p), AXES[i], fmt(gamePos(p)));
 						break;
 					}
 				}
@@ -117,6 +196,8 @@ public final class FormatLimitsCheck {
 				}
 			}
 		}
+		if (!fixU.isEmpty())// first in the list: the one-click fix must not hide under the other rows
+			ctx.add(WarnFactory.of(Severity.DIFFERS, FarPivotFix.KEY, "cpmplus.w6save.limits.posFix", fixU.size()).setNodes(fixU, fixN).setPriority(1));
 		checkAnimSizes(ctx);
 		if (rows[1] > 0)ctx.add(WarnFactory.of(Severity.DIFFERS, "limitMore", "cpmplus.w6save.limits.more", rows[1]));
 	}

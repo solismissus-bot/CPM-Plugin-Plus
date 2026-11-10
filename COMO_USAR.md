@@ -341,7 +341,7 @@ O plugin confere o modelo antes de exportar e mostra uma lista. Cada linha tem *
 
 | Aviso | O que significa | Conserto |
 |---|---|---|
-| **Limites do jogo** | Cubo maior que 25,5 px ou posição mais longe que 48 px (inclusive em animação). O jogo corta sem avisar; a linha mostra o valor que ele vai usar. | Divida o cubo / aproxime o pivô. |
+| **Limites do jogo** | Posição mais longe que 48 px (inclusive em animação). O jogo corta sem avisar; a linha mostra o valor que ele vai usar. Cubo maior que 25,5 px não precisa mais de nada: o export grava tamanho × escala e ele fica igual no jogo (cubo com extrusão ainda avisa). | 🆕 **Consertar** (uma linha só para todas as pastas que dá): move o pivô das pastas sem rotação para o pivô da pasta de cima. Nada muda de lugar, nem nas animações; Ctrl+Z desfaz. Nos outros casos: aproxime o pivô / divida o cubo. |
 | **Animação grande demais** | Mais de 255 quadros, 32,7 s ou 255 peças: toca só o começo, quebra ou mexe a peça errada. | **Ajustar** (baixa o fps ou abre o Otimizar). |
 | **Parte do corpo fantasma** | Apagou/desligou a pasta de uma parte do corpo e o jogo mostra a parte normal do Minecraft. | **Esconder a parte normal**, **Quero a parte normal** ou **Ligar a exportação**. |
 | **Peças soltas** | Cubos fora de qualquer pasta vão pro Corpo no jogo. | **Resolver…**: Grudar onde estão / Mover para o Corpo. |
