@@ -31,8 +31,8 @@ import elemental2.dom.DomGlobal;
 import elemental2.promise.Promise;
 
 /**
- * CPM+ : 'Consertar sem mudar o visual' on the export rows 'limitPos' (a folder's pivot more than 48 px from the
- * pivot of the folder above: the game cuts it, FormatLimitsCheck). A folder that holds only folders (and cubes that
+ * CPM+ : 'Consertar' on the export row 'limitPosFix' (FormatLimitsCheck: every folder whose pivot is more than 48 px
+ * from the pivot of the folder above, which the game cuts, and that this fix covers; the others keep a 'limitPos' row). A folder that holds only folders (and cubes that
  * draw nothing) and has no rotation, no rotation / scale keys, no render scale, no item slot and no Copy Transform
  * gets its pivot moved onto its parent's pivot. Without rotation T(a) * T(b) = T(a + b): every child keeps its place and its own pivot (where
  * its keys turn), position keys only translate, and the export adds the new rest position to non-additive keys, so
@@ -45,11 +45,21 @@ public final class FarPivotFix {
 	private FarPivotFix() {
 	}
 
+	/** the one export row (FormatLimitsCheck) that lists every folder this fix covers */
+	public static final String KEY = "limitPosFix";
+
 	public static void install() {
-		WarnFixes.register("limitPos", "cpmplus.w6save.limits.fixPivot", "cpmplus.w6save.limits.fixPivot.preview", 0, w -> {
-			List<String> u = w.getUuids();
-			return !u.isEmpty() && plan().fixed.contains(u.get(0)) ? FarPivotFix::run : null;
-		});
+		WarnFixes.register(KEY, "cpmplus.w6save.limits.fixPivot", "cpmplus.w6save.limits.fixPivot.preview", 0, w -> FarPivotFix::run);
+	}
+
+	/** uuids of the folders whose pivot distance the fix brings within the limit (empty when unsure) */
+	static Set<String> fixable() {
+		try {
+			return plan().fixed;
+		} catch (Throwable e) {
+			DomGlobal.console.warn("CPM+: far pivot check failed", e);
+			return new HashSet<>();
+		}
 	}
 
 	private static final class Plan {
@@ -117,7 +127,7 @@ public final class FarPivotFix {
 		} catch (Throwable e) {
 			DomGlobal.console.warn("CPM+: refresh failed", e);
 		}
-		PlusDialogs.quick(PlusDialogs.trf("cpmplus.w6save.limits.pivotDone", gs.length), 6000);
+		PlusDialogs.quick(PlusDialogs.tr("cpmplus.w6save.limits.pivotDone"), 6000);
 		return Promise.resolve(true);
 	}
 

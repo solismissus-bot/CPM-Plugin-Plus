@@ -1,8 +1,10 @@
 package com.tom.cpm.blockbench.tools.export;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.tom.cpl.math.Vec3f;
 import com.tom.cpm.blockbench.convert.ExportHooks.ExportContext;
@@ -143,6 +145,9 @@ public final class FormatLimitsCheck {
 		} catch (Throwable e) {
 		}
 		int[] rows = {0, 0};
+		// folders the 'Consertar' button can fix go into ONE row with that button, the rest keep a row each
+		Set<String> fixable = FarPivotFix.fixable();
+		List<String> fixU = new ArrayList<>(), fixN = new ArrayList<>();
 		ExportHelper.walkElements(ed.elements, me -> {
 			if (me.templateElement)return;
 			String name = me.name != null ? me.name : "?";
@@ -157,7 +162,11 @@ public final class FormatLimitsCheck {
 				for (int i = 0; i < 3; i++) {
 					float p = axis(me.pos, i);
 					if (posCut(p)) {
-						add(ctx, rows, uuidOf.get(me), name, "limitPos", "cpmplus.w6save.limits.pos", name, fmt(p), AXES[i], fmt(gamePos(p)));
+						String u = uuidOf.get(me);
+						if (u != null && fixable.contains(u)) {
+							fixU.add(u);
+							fixN.add(name);
+						} else add(ctx, rows, u, name, "limitPos", "cpmplus.w6save.limits.pos", name, fmt(p), AXES[i], fmt(gamePos(p)));
 						break;
 					}
 				}
@@ -187,6 +196,8 @@ public final class FormatLimitsCheck {
 				}
 			}
 		}
+		if (!fixU.isEmpty())// first in the list: the one-click fix must not hide under the other rows
+			ctx.add(WarnFactory.of(Severity.DIFFERS, FarPivotFix.KEY, "cpmplus.w6save.limits.posFix", fixU.size()).setNodes(fixU, fixN).setPriority(1));
 		checkAnimSizes(ctx);
 		if (rows[1] > 0)ctx.add(WarnFactory.of(Severity.DIFFERS, "limitMore", "cpmplus.w6save.limits.more", rows[1]));
 	}

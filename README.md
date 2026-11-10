@@ -24,7 +24,7 @@ Guia do que testar em cada versão: [COMO_TESTAR.md](https://gist.github.com/sol
 - Modelos pesados abrem, salvam e exportam bem mais rápido.
 - Ctrl+Z que funciona em "Adicionar partes / slots", no conserto de raiz desconhecida e em todas as ferramentas novas.
 - Avisos no export (nunca bloqueiam), com o valor que o jogo vai receber e conserto de 1 clique quando dá:
-  - limites do jogo: cubo maior que 25,5 px já sai certo sozinho (o export grava tamanho × escala, igual no jogo, beta35); pivô a mais de 48 px da pasta de cima tem **Consertar sem mudar o visual** (1 clique conserta todos, nem as animações mudam); posição > 48 px nos outros casos;
+  - limites do jogo: cubo maior que 25,5 px já sai certo sozinho (o export grava tamanho × escala, igual no jogo, beta35); pivô a mais de 48 px da pasta de cima tem o botão **Consertar** (1 clique conserta todos, nada muda de lugar, nem nas animações); posição > 48 px nos outros casos;
   - animação grande demais (255 quadros, 32,7 s, 255 peças);
   - parte do corpo "fantasma" (apagou no Blockbench, aparece no jogo);
   - peças soltas fora de qualquer parte do corpo;
