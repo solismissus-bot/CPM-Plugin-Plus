@@ -54,6 +54,7 @@ import com.tom.cpm.blockbench.proxy.Texture;
 import com.tom.cpm.blockbench.proxy.Undo;
 import com.tom.cpm.blockbench.proxy.Undo.UndoData;
 import com.tom.cpm.blockbench.proxy.Vectors.JsVec3;
+import com.tom.cpm.blockbench.tools.export.FormatLimitsCheck;
 import com.tom.cpm.blockbench.util.JsonUtil;
 import com.tom.cpm.blockbench.util.PopupDialogs;
 import com.tom.cpm.blockbench.util.PopupDialogs.UserException;
@@ -1965,7 +1966,10 @@ public class BlockbenchExport {
 			if(m != null)m.elems.add(new DecimalFixOp(cube, null, 1, 4, m, a -> elem.textureSize = ts * a));
 			return;
 		}
-		convertUV(elem, cube);
+		// CPM+ : longer than the game's 25.5 px: size x mesh scale, same mesh (FormatLimitsCheck.fitSize). CPM lays a
+		// box UV out from the size, so a fitted cube takes the per-face UVs Blockbench shows for it.
+		boolean fitted = !elem.extrude && FormatLimitsCheck.fitSize(elem);
+		convertUV(elem, cube, fitted);
 	}
 
 	private TextureSheetType sheetOf(ModelElement elem) {
@@ -2025,7 +2029,7 @@ public class BlockbenchExport {
 		return Math.abs(v - Math.round(v)) > 0.01f;
 	}
 
-	private void convertUV(ModelElement elem, Cube cube) {
+	private void convertUV(ModelElement elem, Cube cube, boolean perFace) {
 		// CPM+ : colour cube (box UV, no texture on any face): no UV at all. The recolor flag is not
 		// set on colour elements by the CPM editor (texture=false already means 'use the colour').
 		if (cube.isColorCube() && cube.getRecolor() != -1) {
@@ -2051,7 +2055,7 @@ public class BlockbenchExport {
 		boolean fracOffset = cube.box_uv && cube.uv_offset != null && (isDecimal(cube.uv_offset.x) || isDecimal(cube.uv_offset.y));
 		if(fracOffset && !anyDisabled)fracBoxUV.add(cube.name);
 
-		if(cube.box_uv && !anyDisabled && !fracOffset && !isDecimal(elem.size.x) && !isDecimal(elem.size.y) && !isDecimal(elem.size.z)) {
+		if(cube.box_uv && !perFace && !anyDisabled && !fracOffset && !isDecimal(elem.size.x) && !isDecimal(elem.size.y) && !isDecimal(elem.size.z)) {
 			m.elems.add(new DecimalFixOp(cube, null, cube.uv_offset.x, 0, m, a -> elem.u = a));
 			m.elems.add(new DecimalFixOp(cube, null, cube.uv_offset.y, 1, m, a -> elem.v = a));
 			m.elems.add(new DecimalFixOp(cube, null, 1, 4, m, a -> elem.textureSize = a));
