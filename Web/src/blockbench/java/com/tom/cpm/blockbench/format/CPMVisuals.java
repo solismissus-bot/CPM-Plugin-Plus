@@ -72,6 +72,9 @@ public class CPMVisuals {
 	}
 
 	private static void updateCubeMaterial(Cube c) {
+		// CPM+ : a cube with no material yet (every face textureless, or its texture still loading in some Blockbench
+		// versions) used to crash the import with "cannot read properties of undefined (reading 'cpm_materialGroup')"
+		if (c.mesh == null || c.mesh.material == null) return;
 		MaterialGroup group = c.mesh.material.getMaterialGroup();
 		if (c.getRecolor() != -1) {
 			if (group.isColor()) {
@@ -87,6 +90,7 @@ public class CPMVisuals {
 	}
 
 	private static void setCubeColor(Cube c, ThreeColor color) {
+		if (c.mesh == null || c.mesh.material == null) return;
 		MaterialGroup group = c.mesh.material.getMaterialGroup();
 		if (group.isColor())
 			group.setColor(color);
