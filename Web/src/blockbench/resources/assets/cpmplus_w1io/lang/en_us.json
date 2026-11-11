@@ -5,5 +5,12 @@
   "cpmplus.w1io.progress.textures": "CPM: preparing the textures for Blockbench...",
   "cpmplus.w1io.progress.build": "CPM: building the model in Blockbench...",
   "cpmplus.w1io.error.pngUnsupported": "The texture %s uses a PNG format that can't be read (palette/grayscale/16-bit). Open it in an image editor and save it again as PNG RGBA 8-bit.",
-  "cpmplus.w1io.error.pngDamaged": "The texture %s is damaged or is not a real PNG. Open it in an image editor and save it again as PNG RGBA 8-bit."
+  "cpmplus.w1io.error.pngDamaged": "The texture %s is damaged or is not a real PNG. Open it in an image editor and save it again as PNG RGBA 8-bit.",
+  "cpmplus.w1io.viewer.open": "Open .cpmmodel (view only)",
+  "cpmplus.w1io.viewer.title": "%s (read-only)",
+  "cpmplus.w1io.viewer.cube": "cube %s",
+  "cpmplus.w1io.viewer.readOnly": "This model came from a .cpmmodel and is open to view only: the edit was undone.",
+  "cpmplus.w1io.viewer.noExport": "This model was opened from a .cpmmodel to view only and can't become a project (.cpmproject).",
+  "cpmplus.w1io.viewer.link": "Part of this model is stored at a link (%s) the viewer can't download. Open its .cpmproject instead.",
+  "cpmplus.w1io.viewer.download": "Couldn't download a part of this model that lives online (%s). Check the connection and try again."
 }

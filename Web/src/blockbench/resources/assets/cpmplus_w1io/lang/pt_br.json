@@ -5,5 +5,12 @@
   "cpmplus.w1io.progress.textures": "CPM: preparando as texturas para o Blockbench...",
   "cpmplus.w1io.progress.build": "CPM: montando o modelo no Blockbench...",
   "cpmplus.w1io.error.pngUnsupported": "A textura %s usa um formato de PNG que não dá para ler (paleta/tons de cinza/16 bits). Abra num editor de imagem e salve de novo como PNG RGBA 8 bits.",
-  "cpmplus.w1io.error.pngDamaged": "A textura %s está corrompida ou não é um PNG de verdade. Abra num editor de imagem e salve de novo como PNG RGBA 8 bits."
+  "cpmplus.w1io.error.pngDamaged": "A textura %s está corrompida ou não é um PNG de verdade. Abra num editor de imagem e salve de novo como PNG RGBA 8 bits.",
+  "cpmplus.w1io.viewer.open": "Abrir .cpmmodel (só visualizar)",
+  "cpmplus.w1io.viewer.title": "%s (somente leitura)",
+  "cpmplus.w1io.viewer.cube": "cubo %s",
+  "cpmplus.w1io.viewer.readOnly": "Este modelo veio de um .cpmmodel e está aberto só para ver: a edição foi desfeita.",
+  "cpmplus.w1io.viewer.noExport": "Este modelo foi aberto de um .cpmmodel só para visualizar e não pode virar projeto (.cpmproject).",
+  "cpmplus.w1io.viewer.link": "Uma parte deste modelo está guardada num link (%s) que o visualizador não sabe baixar. Abra o .cpmproject dele.",
+  "cpmplus.w1io.viewer.download": "Não deu para baixar uma parte deste modelo que fica na internet (%s). Confira a conexão e tente de novo."
 }

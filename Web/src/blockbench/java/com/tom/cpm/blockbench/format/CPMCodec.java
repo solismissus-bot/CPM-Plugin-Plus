@@ -55,7 +55,7 @@ public class CPMCodec {
 		prop.remember = true;
 		prop.load_filter = new Codec.LoadFilter();
 		prop.load_filter.type = "text";
-		prop.load_filter.extensions = new String[] {"cpmproject"};
+		prop.load_filter.extensions = new String[] {"cpmproject", "cpmmodel"};// CPM+ : .cpmmodel opens view-only
 		prop.export = ProjectConvert::export;
 		// CPM+ : .cpmproject is a zip. Blockbench's generic loader reads codec files as text and the
 		// codec had no load/parse callback, so Open / drag & drop / Recent did nothing. load() re-reads
@@ -98,6 +98,7 @@ public class CPMCodec {
 		cm.setMethod("create", ProjectGenerator::newProject);
 		cm.setMethod("openembed", EmbeddedEditorHandler::open);
 		cm.setMethod("open", ProjectConvert::open);
+		cm.setMethod("openmodel", ProjectConvert::openModel);// CPM+
 		cm.data.set("platform", WebMC.platform);
 		ctr.format_page.component = cm;
 

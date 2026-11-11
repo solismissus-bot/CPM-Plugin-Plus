@@ -70,6 +70,8 @@ public class ProjectConvert {
 	}
 
 	private static Promise<Blob> convertToCPM(Editor[] out) {
+		// CPM+ : a .cpmmodel opened to look at never becomes an editable .cpmproject
+		if(CpmModelView.isViewOnly())return Promise.reject(new PopupDialogs.UserException(I18n.get("cpmplus.w1io.viewer.noExport")));
 		Editor editor = newEditor();
 		out[0] = editor;
 		return exportWithWarnings(editor).then(__ -> {
@@ -257,7 +259,7 @@ public class ProjectConvert {
 		String n = fileName;
 		int i = Math.max(n.lastIndexOf('/'), n.lastIndexOf('\\'));
 		if(i != -1)n = n.substring(i + 1);
-		return n.replace(".cpmproject", "").replaceAll("\\s+", "_").toLowerCase();
+		return n.replace(".cpmproject", "").replace(".cpmmodel", "").replaceAll("\\s+", "_").toLowerCase();
 	}
 
 	public static void open() {
@@ -279,6 +281,21 @@ public class ProjectConvert {
 		});
 	}
 
+	/** CPM+ : picks a .cpmmodel and opens it to look at (CpmModelView) */
+	public static void openModel() {
+		ImportProperties pr = new ImportProperties();
+		pr.extensions = new String[] {"cpmmodel"};
+		pr.type = "Customizable Player Models Model";
+		pr.readtype = "binary";
+		pr.resource_id = "cpmproject_files";
+		Blockbench.import_(pr, files -> parseNamed(files[0].binaryContent, projectName(files[0].name), true));
+	}
+
+	private static boolean isModelFile(BBFile file) {
+		String n = file == null ? null : file.name != null ? file.name : file.path;
+		return n != null && n.toLowerCase().endsWith(".cpmmodel");
+	}
+
 	/**
 	 * CPM+ : Codec.load, used by File > Open, drag & drop and Recent models.
 	 * Blockbench reads codec files as text, which corrupts the zip, so on desktop the file is
@@ -289,8 +306,9 @@ public class ProjectConvert {
 		if(model instanceof ArrayBuffer)ab = (ArrayBuffer) model;
 		if(ab == null && file != null)ab = toArrayBuffer(Js.asPropertyMap(file).get("content"));
 		String csname = projectName(file != null ? (file.name != null ? file.name : file.path) : null);
+		boolean viewOnly = isModelFile(file);// CPM+ : .cpmmodel opens view-only
 		if(ab != null) {
-			parseNamed(ab, csname);
+			parseNamed(ab, csname, viewOnly);
 			return;
 		}
 		// CPM+ : desktop: re-read the file as binary through Blockbench's own reader. (Blockbench 5
@@ -305,7 +323,8 @@ public class ProjectConvert {
 					if(done[0])return;
 					done[0] = true;
 					ArrayBuffer b = files != null && files.length > 0 ? toArrayBuffer(Js.asPropertyMap(files[0]).get("content")) : null;
-					if(b != null)parseNamed(b, csname);
+					if(b != null)parseNamed(b, csname, viewOnly);
+					else if(viewOnly)openModel();
 					else open();
 				});
 				return;
@@ -314,7 +333,8 @@ public class ProjectConvert {
 			}
 		}
 		// web: the file was read as text, the zip is lost. Use the binary importer instead.
-		open();
+		if(viewOnly)openModel();
+		else open();
 	}
 
 	/** CPM+ : ArrayBuffer, or a typed array / Node Buffer view converted to one; null otherwise */
@@ -326,9 +346,9 @@ public class ProjectConvert {
 		return null;
 	}-*/;
 
-	private static void parseNamed(ArrayBuffer ab, String csname) {
-		parse(ab).then(__ -> {
-			Project.name = csname;
+	private static void parseNamed(ArrayBuffer ab, String csname, boolean model) {
+		(model ? CpmModelView.open(ab) : parse(ab)).then(__ -> {
+			Project.name = model ? I18n.format("cpmplus.w1io.viewer.title", csname) : csname;
 			Project.geometry_name = csname;
 			return null;
 		}).catch_(e -> {
