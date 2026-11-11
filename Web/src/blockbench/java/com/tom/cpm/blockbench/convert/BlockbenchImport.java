@@ -100,6 +100,15 @@ public class BlockbenchImport {
 		return importAnims;
 	}
 
+	private boolean importAnimsAsked = true;
+
+	/** CPM+ : the animations become Blockbench animations without the 'Import / Keep' question (.cpmmodel viewer) */
+	public BlockbenchImport importAnimationsWithoutAsking() {
+		importAnims = true;
+		importAnimsAsked = false;
+		return this;
+	}
+
 	public Promise<Void> doImport() {
 		for (ModelElement me : editor.elements) {
 			// CPM+ : visible vanilla parts are no longer converted into custom cubes on export: the cube
@@ -112,7 +121,7 @@ public class BlockbenchImport {
 
 		Promise<Void> warns = !warnings.isEmpty() ? openWarn.apply(warnings) : Promise.resolve((Void) null);
 
-		if(!editor.animations.isEmpty()) {
+		if(!editor.animations.isEmpty() && importAnimsAsked) {
 			warns = warns.then(__ -> new Promise<>((res, rej) -> {
 				editor.ui.displayConfirm("Import Animations", "Convert CPM animations into Blockbench animations or keep CPM animations\\The animation importer is in Beta and may not import every animation correctly.\\Using the keep option will store the animations separately in the CPM format inside the bbmodel.", () -> {
 					importAnims = true;

@@ -264,6 +264,11 @@ public class AnimatorChannel {
 			this.cubeId = cubeId;
 		}
 
+		/** CPM+ : the cube this channel shows / hides */
+		public int getCubeId() {
+			return cubeId;
+		}
+
 		@Override
 		public void set(float value) {
 			cube.setVisible(value > 0.5f);

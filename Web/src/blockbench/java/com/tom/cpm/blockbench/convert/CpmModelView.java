@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.IntFunction;
 
 import com.tom.cpl.math.Rotation;
 import com.tom.cpl.math.Vec2i;
@@ -45,7 +46,9 @@ import com.tom.cpm.shared.model.TextureSheetType;
 import com.tom.cpm.shared.model.render.ItemRenderer;
 import com.tom.cpm.shared.model.render.PerFaceUV;
 import com.tom.cpm.shared.model.render.VanillaModelPart;
+import com.tom.cpm.shared.parts.ModelPartAnimation;
 import com.tom.cpm.shared.parts.ModelPartType;
+import com.tom.cpm.shared.parts.anim.ModelPartAnimationNew;
 import com.tom.cpm.shared.skin.TextureProvider;
 import com.tom.cpm.web.client.render.RenderSystem;
 import com.tom.cpm.web.client.util.I18n;
@@ -60,8 +63,9 @@ import jsinterop.base.Js;
  * <p>
  * The file is read the way the game reads it (ModelDefinitionLoader + resolveAll; the overflow comes from the file
  * itself; a gist link the file doesn't carry, like a skin uploaded on its own, is downloaded like the game does),
- * turned into a CPM editor and imported like a .cpmproject. A .cpmmodel keeps no
- * names and only compiled animations: cubes are called "cubo N" and the animations are not shown.
+ * turned into a CPM editor and imported like a .cpmproject. The animations (poses, gestures, toggles, values, setup /
+ * finish) are rebuilt from the compiled data (both CPM formats) and imported as Blockbench animations. A .cpmmodel
+ * keeps no part names: cubes are called "cubo N".
  * <p>
  * View only: every group and cube is locked, any edit is undone at once (showing/hiding parts is allowed) and the
  * project can't become a .cpmproject (ProjectConvert.convertToCPM). The mark lives in the project's cpm_data, so a
@@ -107,7 +111,7 @@ public final class CpmModelView {
 			} catch (Throwable e) {
 				return Promise.<Void>reject(e);
 			}
-			return PopupDialogs.runTaskWithWarning(w -> RenderSystem.withContext(() -> new BlockbenchImport(editor, w).doImport()));
+			return PopupDialogs.runTaskWithWarning(w -> RenderSystem.withContext(() -> new BlockbenchImport(editor, w).importAnimationsWithoutAsking().doImport()));
 		});
 	}
 
@@ -155,11 +159,22 @@ public final class CpmModelView {
 				throw new MissingLink(l);
 			}
 		};
-		// the user's own player: no size limits (PlayerSpecificConfigKey skips the checks for the client player)
-		ModelDefinition def = loader.loadModel(data, MinecraftClientAccess.get().getClientPlayer());
-		if(def == null)throw new IOException("Not a CPM model");
-		if(def.getError() != null)throw new IOException(def.getError());
-		def.resolveAll();
+		// the animation parts read from the file (both formats), for the editor animations at the end
+		List<ModelPartAnimation> oldAnims = new ArrayList<>();
+		List<ModelPartAnimationNew> newAnims = new ArrayList<>();
+		ModelDefinition def;
+		ModelPartAnimation.readHook = oldAnims::add;
+		ModelPartAnimationNew.readHook = newAnims::add;
+		try {
+			// the user's own player: no size limits (PlayerSpecificConfigKey skips the checks for the client player)
+			def = loader.loadModel(data, MinecraftClientAccess.get().getClientPlayer());
+			if(def == null)throw new IOException("Not a CPM model");
+			if(def.getError() != null)throw new IOException(def.getError());
+			def.resolveAll();
+		} finally {
+			ModelPartAnimation.readHook = null;
+			ModelPartAnimationNew.readHook = null;
+		}
 
 		editor.skinType = skinType(data);
 		for(TextureSheetType t : TextureSheetType.VALUES) {
@@ -183,6 +198,7 @@ public final class CpmModelView {
 		List<VanillaModelPart> types = new ArrayList<>(Arrays.asList(PlayerModelParts.VALUES));
 		types.addAll(Arrays.asList(RootModelType.VALUES));
 		Set<RootGroups> groups = new HashSet<>();
+		Map<Object, ModelElement> made = new HashMap<>();// model part (root / cube) -> its editor element
 		int[] n = {0};
 		for(VanillaModelPart t : types) {
 			// ponytail: CUSTOM_PART only holds the placeholders of the extra roots (moved out by resolveAll)
@@ -202,19 +218,26 @@ public final class CpmModelView {
 				re.rotation = r.rotN.asVec3f(true);
 				re.hidden = r.isHidden();
 				re.disableVanillaAnim = r.disableVanilla;
-				addCubes(editor, re, r.children, n);
+				made.put(r, re);
+				addCubes(editor, re, r.children, n, made);
 			});
 		}
 		groups.forEach(g -> Generators.loadTextures(editor, g, editor.textures::put));// sheets the file didn't carry
+
+		// animations: the ids of their parts are the model's (roots included)
+		IntFunction<ModelElement> byId = id -> made.get(def.getElementById(id));
+		oldAnims.forEach(p -> p.toEditor(editor, byId));
+		newAnims.forEach(p -> CpmModelAnims.toEditor(editor, p.getState(), byId));
 	}
 
-	private static void addCubes(Editor editor, ModelElement parent, List<RenderedCube> list, int[] n) {
+	private static void addCubes(Editor editor, ModelElement parent, List<RenderedCube> list, int[] n, Map<Object, ModelElement> made) {
 		if(list == null)return;
 		for(RenderedCube rc : list) {
 			Cube c = rc.getCube();// effects (colour, scale, UV, item) are already applied to it by resolveAll
 			ModelElement e = new ModelElement(editor);
 			e.parent = parent;
 			parent.children.add(e);
+			made.put(rc, e);
 			e.name = I18n.format("cpmplus.w1io.viewer.cube", ++n[0]);
 			e.pos = new Vec3f(c.pos);
 			e.offset = new Vec3f(c.offset);
@@ -230,14 +253,15 @@ public final class CpmModelView {
 			e.textureSize = Math.max(1, Math.abs(c.texSize));
 			e.rgb = c.rgb & 0xffffff;
 			e.hidden = c.hidden;
-			e.showInEditor = !c.hidden;// looks like in game: parts an animation reveals start invisible
+			// shown in the editor like in a .cpmproject: the Animate preview hides what the game hides (cpm hidden), and an
+			// eye-hidden part would stay hidden even where an animation shows it
 			e.glow = rc.glow;
 			e.recolor = rc.recolor;
 			e.singleTex = rc.singleTex;
 			e.extrude = rc.extrude;
 			if(rc.faceUVs != null)e.faceUV = new PerFaceUV(rc.faceUVs);
 			if(rc.itemRenderer != null)e.itemRenderer = new ItemRenderer(rc.itemRenderer);
-			addCubes(editor, e, rc.children, n);
+			addCubes(editor, e, rc.children, n, made);
 		}
 	}
 

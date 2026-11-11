@@ -23,6 +23,16 @@ public class ConstantTimeFloat implements AnimationFrameData {
 		this.frames = frames;
 	}
 
+	/** CPM+ : the interpolation of these frames */
+	public InterpolatorType getIntType() {
+		return intType;
+	}
+
+	/** CPM+ : one value per animation frame */
+	public float[] getFrames() {
+		return frames;
+	}
+
 	public static void parse(IOHelper block, AnimLoaderState state) throws IOException {
 		SerializedAnimation cA = state.getAnim();
 		InterpolatorType intType = block.readEnum(InterpolatorType.VALUES);

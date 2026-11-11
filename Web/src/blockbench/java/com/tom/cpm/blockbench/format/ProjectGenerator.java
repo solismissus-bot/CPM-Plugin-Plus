@@ -2,6 +2,7 @@ package com.tom.cpm.blockbench.format;
 
 import com.tom.cpl.math.MathHelper;
 import com.tom.cpl.math.Vec3f;
+import com.tom.cpm.blockbench.proxy.Animator;
 import com.tom.cpm.blockbench.proxy.Canvas;
 import com.tom.cpm.blockbench.proxy.Cube;
 import com.tom.cpm.blockbench.proxy.Dialog;
@@ -155,6 +156,12 @@ public class ProjectGenerator {
 	public static void updateAll() {
 		Canvas.updateAllBones();
 		Canvas.updateVisibility();
+		// CPM+ : both put every part back to its rest pose / editor visibility. In Animate mode show the animation again,
+		// as Blockbench does after its own updateAllBones (else e.g. Ctrl+Z of a tool showed the model at rest)
+		if (CPMVisuals.isAnimateMode()) {
+			CPMVisuals.invalidate();
+			Animator.preview();
+		}
 		Global.setProjectTitle();
 		Global.updateSelection();
 	}

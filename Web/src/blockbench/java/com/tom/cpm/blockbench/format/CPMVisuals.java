@@ -112,6 +112,11 @@ public class CPMVisuals {
 
 	/** CPM+ : the next Animate frame rebuilds the visibility of every part (see displayAnimation) */
 	private static boolean visDirty = true;
+
+	/** CPM+ : something reset the shown visibility of the parts: the next Animate frame rebuilds all of it */
+	public static void invalidate() {
+		visDirty = true;
+	}
 	/** CPM+ : project + the animations acting (playing, in priority order) at the last full rebuild */
 	private static String visSig;
 	/** CPM+ : the project groups by uuid, from the last full rebuild */

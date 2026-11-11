@@ -9,9 +9,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import com.tom.cpl.math.Vec3f;
 import com.tom.cpl.text.FormatText;
@@ -29,6 +32,8 @@ import com.tom.cpm.shared.definition.ModelDefinition;
 import com.tom.cpm.shared.editor.Editor;
 import com.tom.cpm.shared.editor.ExportException;
 import com.tom.cpm.shared.editor.anim.AnimFrame;
+import com.tom.cpm.shared.editor.anim.AnimFrame.FrameData;
+import com.tom.cpm.shared.editor.anim.EditorAnim;
 import com.tom.cpm.shared.editor.anim.IElem;
 import com.tom.cpm.shared.editor.elements.ModelElement;
 import com.tom.cpm.shared.editor.project.loaders.AnimationsLoaderV1;
@@ -43,6 +48,8 @@ public class ModelPartAnimation implements IModelPart, IResolvedModelPart {
 	private Map<Integer, ResolvedData> parsedData = new HashMap<>();
 	private int blankId, resetId;
 	private String modelProfilesId;
+	/** CPM+ : called with every animation part read from a file while set (the .cpmmodel viewer collects them) */
+	public static Consumer<ModelPartAnimation> readHook;
 
 	public ModelPartAnimation(IOHelper din, ModelDefinition def) throws IOException {
 		while(true) {
@@ -284,6 +291,65 @@ public class ModelPartAnimation implements IModelPart, IResolvedModelPart {
 				break;
 			}
 		}
+		if(readHook != null)readHook.accept(this);
+	}
+
+	/**
+	 * CPM+ : the editor animations these were exported from (the reverse of the Editor constructor below): one per
+	 * animation, its frames with the stored values (rotation back to degrees). byId: the editor element of a
+	 * component id (null skips it).
+	 */
+	public void toEditor(Editor e, IntFunction<ModelElement> byId) {
+		parsedData.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(en -> {
+			ResolvedData rd = en.getValue();
+			AnimationType type;
+			String name;
+			if(rd.pose instanceof VanillaPose) {
+				type = AnimationType.POSE;
+				name = ((VanillaPose) rd.pose).name().toLowerCase(Locale.ROOT);
+			} else if(rd.pose instanceof CustomPose) {
+				type = AnimationType.CUSTOM_POSE;
+				name = ((CustomPose) rd.pose).getName();
+			} else if(rd.name != null) {
+				type = AnimationsLoaderV1.getType(rd.name);
+				name = AnimationsLoaderV1.cleanName(rd.name);
+			} else return;
+			EditorAnim a = new EditorAnim(e, AnimationsLoaderV1.getFileName(rd.pose, name), type, false);
+			a.displayName = name;
+			a.pose = rd.pose;
+			a.add = rd.add;
+			a.loop = rd.loop;
+			a.duration = rd.duration == VanillaPose.DYNAMIC_DURATION_DIV ? 1000 : rd.duration;
+			a.priority = rd.priority;
+			a.intType = rd.it;
+			a.layerDefault = Byte.toUnsignedInt(rd.defaultValue) / 255f;
+			a.order = rd.order;
+			a.isProperty = rd.isProperty;
+			a.group = rd.group;
+			a.command = rd.command;
+			a.layerControlled = rd.layerCtrl;
+			a.maxValue = rd.maxValue == 0 ? 100 : Byte.toUnsignedInt(rd.maxValue);
+			a.interpolateValue = rd.interpolateVal;
+			a.mustFinish = rd.finish;
+			a.hidden = rd.buttonHidden;
+			int n = Math.max(rd.frames, 1);
+			for(int f = 0;f<n;f++) {
+				AnimFrame frm = new AnimFrame(a);
+				for(int i = 0;rd.components != null && i<rd.components.length && f<rd.frames;i++) {
+					ModelElement me = byId.apply(rd.components[i]);
+					if(me == null)continue;
+					FrameData d = frm.makeData(me);
+					if(rd.pos[i] != null)d.setPos(new Vec3f(rd.pos[i][f]));
+					if(rd.rot[i] != null)d.setRot(new Vec3f((float) Math.toDegrees(rd.rot[i][f].x), (float) Math.toDegrees(rd.rot[i][f].y), (float) Math.toDegrees(rd.rot[i][f].z)));
+					if(rd.color[i] != null)d.setColor(new Vec3f(rd.color[i][f]));
+					if(rd.scale[i] != null)d.setScale(new Vec3f(rd.scale[i][f]));
+					if(rd.show[i] != null && rd.show[i][f] != null)d.setShow(rd.show[i][f]);
+				}
+				a.getFrames().add(frm);
+			}
+			a.setSelectedFrame(a.getFrames().get(0));
+			e.animations.add(a);
+		});
 	}
 
 	public ModelPartAnimation(Editor e, List<IModelPart> otherParts) {

@@ -19,6 +19,11 @@ public class ConstantTimeBool implements AnimationFrameData {
 		this.frames = frames;
 	}
 
+	/** CPM+ : one value per animation frame */
+	public boolean[] getFrames() {
+		return frames;
+	}
+
 	public static void parse(IOHelper block, AnimLoaderState state) throws IOException {
 		SerializedAnimation cA = state.getAnim();
 		int frames = block.readVarInt();

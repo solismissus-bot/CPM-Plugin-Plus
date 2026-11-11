@@ -21,11 +21,19 @@ import com.tom.cpm.shared.parts.anim.menu.AbstractGestureButtonData;
 
 public class ModelPartAnimationNew implements IModelPart, IResolvedModelPart {
 	private AnimLoaderState state;
+	/** CPM+ : called with every animation part read from a file while set (the .cpmmodel viewer collects them) */
+	public static java.util.function.Consumer<ModelPartAnimationNew> readHook;
 
 	public ModelPartAnimationNew(IOHelper din, ModelDefinition def) throws IOException {
 		state = new AnimLoaderState(def);
 		while (din.readObjectBlock(TagType.VALUES, TagType.read(state)) != TagType.END);
 		state.processTriggers();
+		if (readHook != null)readHook.accept(this);
+	}
+
+	/** CPM+ : the triggers, animations, buttons and parameters read from the file */
+	public AnimLoaderState getState() {
+		return state;
 	}
 
 	public ModelPartAnimationNew(Editor e) {
