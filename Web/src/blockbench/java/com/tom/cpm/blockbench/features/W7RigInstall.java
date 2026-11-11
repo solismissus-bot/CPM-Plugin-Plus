@@ -134,8 +134,9 @@ public final class W7RigInstall {
 	private static Cube cubeByUuidOrName(String s) {
 		if (s == null)return null;
 		Cube c = null;
-		for (int i = 0; i < Cube.all.length; i++)if (s.equals(Cube.all.getAt(i).uuid))return Cube.all.getAt(i);
-		for (int i = 0; i < Cube.all.length; i++)if (c == null && s.equals(Cube.all.getAt(i).name))c = Cube.all.getAt(i);
+		var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+		for (int i = 0; i < cubesAll.length; i++)if (s.equals(cubesAll.getAt(i).uuid))return cubesAll.getAt(i);
+		for (int i = 0; i < cubesAll.length; i++)if (c == null && s.equals(cubesAll.getAt(i).name))c = cubesAll.getAt(i);
 		return c;
 	}
 

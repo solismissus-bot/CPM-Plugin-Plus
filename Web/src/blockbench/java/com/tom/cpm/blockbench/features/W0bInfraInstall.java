@@ -92,7 +92,8 @@ public final class W0bInfraInstall {
 	}
 
 	private static Cube cube(String name) {
-		for (int i = 0; i < Cube.all.length; i++)if (name.equals(Cube.all.getAt(i).name))return Cube.all.getAt(i);
+		var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+		for (int i = 0; i < cubesAll.length; i++)if (name.equals(cubesAll.getAt(i).name))return cubesAll.getAt(i);
 		return null;
 	}
 

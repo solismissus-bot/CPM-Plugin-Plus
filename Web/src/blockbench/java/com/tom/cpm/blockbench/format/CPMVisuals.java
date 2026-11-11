@@ -1,9 +1,10 @@
 package com.tom.cpm.blockbench.format;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -63,11 +64,24 @@ public class CPMVisuals {
 
 		PluginStart.addEventListener("display_animation_frame", __ -> displayAnimation());
 		// CPM+ : restore editor visibility/colours when leaving Animate mode
-		PluginStart.addEventListener("select_mode", __ -> displayAnimation());
+		PluginStart.addEventListener("select_mode", __ -> {
+			visDirty = true;
+			displayAnimation();
+		});
+		// CPM+ : what can change the Animate preview visibility of any part: rebuild it all on the next frame
+		for (String ev : new String[] {"finished_edit", "undo", "redo", "load_undo_save"}) {
+			PluginStart.addEventListener(ev, __ -> visDirty = true);
+		}
 		// CPM+ (NEW-VIS-ANIMATE): a project left in Animate mode (tab switch / close) and the open project when the plugin
 		// unloads never keep the Animate preview visibility; a project selected in Animate mode gets the preview again
-		PluginStart.addEventListener("unselect_project", CPMVisuals::onUnselectProject);
-		PluginStart.addEventListener("select_project", __ -> onSelectProject());
+		PluginStart.addEventListener("unselect_project", e -> {
+			visDirty = true;
+			onUnselectProject(e);
+		});
+		PluginStart.addEventListener("select_project", __ -> {
+			visDirty = true;
+			onSelectProject();
+		});
 		PluginStart.cleanup.add(CPMVisuals::restoreForUnload);
 	}
 
@@ -96,16 +110,45 @@ public class CPMVisuals {
 			group.setColor(color);
 	}
 
+	/** CPM+ : the next Animate frame rebuilds the visibility of every part (see displayAnimation) */
+	private static boolean visDirty = true;
+	/** CPM+ : project + the animations acting (playing, in priority order) at the last full rebuild */
+	private static String visSig;
+	/** CPM+ : the project groups by uuid, from the last full rebuild */
+	private static final Map<String, Group> visGroups = new HashMap<>();
+	/** CPM+ : the visibility / colour animators of the acting animations, from the last full rebuild */
+	private static Map<String, BoneAnimator> visAnimsV = new HashMap<>(), visAnimsC = new HashMap<>();
+
+	/**
+	 * Animate preview of the CPM visibility and colour keys, on every frame Blockbench draws.
+	 * <p>
+	 * CPM+ : a full rebuild reads every group and cube (each read goes through a Vue getter) and redraws the
+	 * visibility of every element, which took most of the frame on big models. Between edits only the groups with a
+	 * visibility key in the acting animations can change, so a frame recomputes just those and redraws only the parts
+	 * under a group that changed. A full rebuild runs after an edit, undo, project or mode change, and when the acting
+	 * animations change (another animation playing, a 'once' animation ending).
+	 */
 	private static void displayAnimation() {
 		if (Project.format == CPMCodec.format) {
 			// CPM+ : was 'Modes.animate != null' (always true), so the restore branch never ran
 			// CPM+ (NEW-VIS-ANIMATE): v0.7's 'Modes.animate.selected' was never true (Modes.animate is a boolean flag)
 			if (isAnimateMode()) {
+				// CPM+ : the acting animations in priority order (only the project's animations are read per frame)
+				List<Animation> acting = new ArrayList<>();
+				for (Animation a : Animation.all) {
+					if (a.playing && !(a.loop.equals("once") && Timeline.time > a.length && a.length > 0))acting.add(a);
+				}
+				acting.sort(Comparator.comparingInt(Animation::getPriority));
+				StringBuilder sb = new StringBuilder(String.valueOf(Project.getUuid()));
+				for (Animation a : acting)sb.append('|').append(a.uuid);
+				String sig = sb.toString();
+				if (!visDirty && sig.equals(visSig)) {
+					animateFrame(visAnimsV, visAnimsC);
+					return;
+				}
 				Map<String, BoneAnimator> animsV = new HashMap<>();
 				Map<String, BoneAnimator> animsC = new HashMap<>();
-				Arrays.stream(Animation.all).
-				filter(a -> a.playing && !(a.loop.equals("once") && Timeline.time > a.length && a.length > 0)).
-				sorted(Comparator.comparingInt(Animation::getPriority)).forEach(a -> {
+				for (Animation a : acting) {
 					a.animators.forEach(k -> {
 						GeneralAnimator ga = a.animators.get(k);
 						if(ga instanceof BoneAnimator) {
@@ -114,27 +157,22 @@ public class CPMVisuals {
 							if(ba.hasColor())animsC.put(k, ba);
 						}
 					});
-				});
-
-				for (int i = 0; i < Group.all.length; i++) {
-					Group g = Group.all[i];
+				}
+				visAnimsV = animsV;
+				visAnimsC = animsC;
+				visDirty = false;
+				visSig = sig;
+				visGroups.clear();
+				Group[] groupsAll = Group.all;
+				for (int i = 0; i < groupsAll.length; i++) {
+					Group g = groupsAll[i];
+					visGroups.put(g.uuid, g);
 					if (g.parent == Group.ROOT)
 						g.currentVisible = true;
 					else
 						g.currentVisible = Animation.interpolateVisible(animsV.get(g.uuid), Timeline.time, !g.hidden);
 
-					BoneAnimator cAn = animsC.get(g.uuid);
-					JsVec3 color = cAn != null && !cAn.isMuted(CPMCodec.COLOR) ? Animation.interpolate(cAn.color, Timeline.time) : null;
-					if (color != null) {
-						for (OutlinerNode e : g.children.array()) {
-							if (e instanceof Cube) {
-								Cube c = (Cube) e;
-								if (c.canRecolor()) {
-									setCubeColor(c, ThreeColor.make(color.x / 255f, color.y / 255f, color.z / 255f));
-								}
-							}
-						}
-					}
+					applyColor(g, animsC.get(g.uuid));
 
 					/*if (g.copyTransform != null && !g.copyTransform.isEmpty()) {//TODO
 						JsonMap s = JsonUtil.fromJson(g.copyTransform);
@@ -162,49 +200,115 @@ public class CPMVisuals {
 					}*/
 				}
 
-				for (int i = 0; i < Cube.all.length; i++) {
-					Cube c = Cube.all.getAt(i);
+				var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+				for (int i = 0; i < cubesAll.length; i++) {
+					Cube c = cubesAll.getAt(i);
 					if(!c.animatorInit) {
 						c.animatorInit = true;
 						c.defaultVisible = c.visibility;
 					}
 				}
 				// CPM+ : groups' visibility is overwritten by applyVisible too, remember it for restore
-				for (int i = 0; i < Group.all.length; i++) {
-					Group g = Group.all[i];
+				for (int i = 0; i < groupsAll.length; i++) {
+					Group g = groupsAll[i];
 					if(!g.animatorInit) {
 						g.animatorInit = true;
 						g.defaultVisible = g.visibility;
 					}
 				}
 
-				for (int i = 0; i < Group.all.length; i++) {
-					Group g = Group.all[i];
+				for (int i = 0; i < groupsAll.length; i++) {
+					Group g = groupsAll[i];
 					if(g.parent != Group.ROOT)continue;
 					g.applyVisible(true);
 				}
 			} else {
-				for (int i = 0; i < Group.all.length; i++) {
-					Group g = Group.all[i];
+				visDirty = true;
+				boolean any = false;
+				Group[] groupsAll = Group.all;
+				for (int i = 0; i < groupsAll.length; i++) {
+					Group g = groupsAll[i];
 					if(g.animatorInit) {
 						g.animatorInit = false;
 						g.visibility = g.defaultVisible;
+						any = true;
 					}
 				}
 
-				for (int i = 0; i < Cube.all.length; i++) {
-					Cube c = Cube.all.getAt(i);
+				var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+				for (int i = 0; i < cubesAll.length; i++) {
+					Cube c = cubesAll.getAt(i);
 					if(c.animatorInit) {
 						c.animatorInit = false;
 						c.visibility = c.defaultVisible;
+						any = true;
 
 						if (c.canRecolor()) {
 							setCubeColor(c, ThreeColor.make(c.getRecolor()));
 						}
 					}
 				}
+				if (!any)return;// CPM+ : nothing was in the Animate preview state: nothing to redraw
 			}
 			Canvas.updateVisibility();
+		}
+	}
+
+	/**
+	 * CPM+ : one Animate frame after a full rebuild: only the groups with a visibility key are recomputed; their parts
+	 * are redrawn when one of them changed. The colour keys are applied as before.
+	 */
+	private static void animateFrame(Map<String, BoneAnimator> animsV, Map<String, BoneAnimator> animsC) {
+		List<Group> changed = null;
+		for (Map.Entry<String, BoneAnimator> e : animsV.entrySet()) {
+			Group g = visGroups.get(e.getKey());
+			if (g == null || g.parent == Group.ROOT)continue;
+			boolean v = Animation.interpolateVisible(e.getValue(), Timeline.time, !g.hidden);
+			if (v != g.currentVisible) {
+				g.currentVisible = v;
+				if (changed == null)changed = new ArrayList<>();
+				changed.add(g);
+			}
+		}
+		for (Map.Entry<String, BoneAnimator> e : animsC.entrySet()) {
+			Group g = visGroups.get(e.getKey());
+			if (g != null)applyColor(g, e.getValue());
+		}
+		if (changed == null)return;
+		JsArray<Object> els = new JsArray<>(), groups = new JsArray<>();
+		for (Group g : changed) {
+			g.applyVisible(g.parent == Group.ROOT || g.parent.visibility);
+			collect(g, els, groups);
+		}
+		updateVisibility(els, groups);
+	}
+
+	/** CPM+ : the group, the groups and the elements inside it */
+	private static void collect(Group g, JsArray<Object> els, JsArray<Object> groups) {
+		groups.push(g);
+		for (int i = 0; i < g.children.length; i++) {
+			OutlinerNode n = g.children.getAt(i);
+			if (n instanceof Group)collect((Group) n, els, groups);
+			else els.push(n);
+		}
+	}
+
+	/** CPM+ : Canvas.updateVisibility for these nodes only (the same calls: updateView of the elements, then the groups) */
+	private static native void updateVisibility(JsArray<Object> els, JsArray<Object> groups)/*-{
+		$wnd.Canvas.updateView({elements: els, element_aspects: {visibility: true}});
+		for (var i = 0; i < groups.length; i++) groups[i].preview_controller.updateVisibility(groups[i]);
+	}-*/;
+
+	private static void applyColor(Group g, BoneAnimator cAn) {
+		JsVec3 color = cAn != null && !cAn.isMuted(CPMCodec.COLOR) ? Animation.interpolate(cAn.color, Timeline.time) : null;
+		if (color == null)return;
+		for (OutlinerNode e : g.children.array()) {
+			if (e instanceof Cube) {
+				Cube c = (Cube) e;
+				if (c.canRecolor()) {
+					setCubeColor(c, ThreeColor.make(color.x / 255f, color.y / 255f, color.z / 255f));
+				}
+			}
 		}
 	}
 
@@ -273,7 +377,8 @@ public class CPMVisuals {
 		displayAnimation();
 		try {
 			if (Js.isTruthy(Project.getProject()) && Project.format == CPMCodec.format && !isAnimateMode() && colorRefresh.remove(Project.getUuid())) {
-				for (int i = 0; i < Cube.all.length; i++)restoreOwnColor(Cube.all.getAt(i));
+				var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+				for (int i = 0; i < cubesAll.length; i++)restoreOwnColor(cubesAll.getAt(i));
 			}
 		} catch (Throwable e) {
 			DomGlobal.console.warn("CPM+: could not restore the cube colours", e);

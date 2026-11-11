@@ -132,8 +132,9 @@ public final class FootSlip {
 			out.add(new Chain(g, false));
 			tops.add(g);
 		}
-		for (int i = 0; Cube.all != null && i < Cube.all.length; i++) {
-			Cube c = Cube.all.getAt(i);
+		var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+		for (int i = 0; cubesAll != null && i < cubesAll.length; i++) {
+			Cube c = cubesAll.getAt(i);
 			if (c == null || !c.visibility || c.mesh == null)continue;
 			for (Chain ch : out) {
 				Group p = c.parent instanceof Group ? c.parent : null;

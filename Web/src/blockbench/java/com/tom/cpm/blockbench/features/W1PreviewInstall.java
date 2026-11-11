@@ -7,6 +7,7 @@ import com.tom.cpm.blockbench.PlusTestHooks;
 import com.tom.cpm.blockbench.format.CPMVisuals;
 import com.tom.cpm.blockbench.format.GimbalRotate;
 import com.tom.cpm.blockbench.proxy.Action.Toggle;
+import com.tom.cpm.blockbench.tools.view.FastAnimPreview;
 import com.tom.cpm.blockbench.util.PlusDialogs;
 import com.tom.cpm.blockbench.util.PlusPrefs;
 import com.tom.cpm.web.client.util.I18n;
@@ -34,6 +35,10 @@ public final class W1PreviewInstall {
 	}
 
 	public static void install() {
+		// CPM+ : Animate preview only for the nodes an animation moves (big models play at full speed)
+		FastAnimPreview.install();
+		PlusMenus.add(PlusMenus.SUB_ANIM, PlusMenus.toggle("cpmplus_w1preview_fast_anim", "cpmplus.w1preview.fastAnim", "speed", Cond.CPM_ONLY,
+				FastAnimPreview.isEnabled(), FastAnimPreview::setEnabled));
 		GimbalRotate.install();
 		if (GimbalRotate.isAvailable()) {
 			Toggle t = PlusMenus.toggle(TOGGLE_ID, "cpmplus.w1preview.gimbal", "360", Cond.CPM_ONLY, GimbalRotate.isEnabled(), W1PreviewInstall::onGimbalToggle);

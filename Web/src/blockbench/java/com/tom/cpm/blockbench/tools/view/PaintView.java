@@ -322,8 +322,9 @@ public final class PaintView {
 		if (Cube.all == null)return s;
 		SkinType st = skinType();
 		Map<Object, List<Cube>> byParent = new HashMap<>();
-		for (int i = 0; i < Cube.all.length; i++) {
-			Cube c = Cube.all.getAt(i);
+		var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+		for (int i = 0; i < cubesAll.length; i++) {
+			Cube c = cubesAll.getAt(i);
 			byParent.computeIfAbsent(c.parent, k -> new ArrayList<>()).add(c);
 		}
 		for (Map.Entry<Object, List<Cube>> e : byParent.entrySet()) {

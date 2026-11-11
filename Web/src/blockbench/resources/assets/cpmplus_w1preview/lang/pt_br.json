@@ -5,5 +5,6 @@
   "cpmplus.w1preview.gimbal.on": "Girar um eixo por vez: LIGADO. Deixe o gizmo em 'Local' para os anéis acompanharem a peça. O anel branco (livre) continua normal. Dica: depois de Ctrl+Z, clique na peça de novo antes de girar.",
   "cpmplus.w1preview.gimbal.off": "Girar um eixo por vez: DESLIGADO. O gizmo voltou ao jeito normal do Blockbench.",
   "cpmplus.w1preview.gimbal.notStored": "Não deu para salvar essa escolha (o armazenamento do navegador está bloqueado): ela vale até fechar o Blockbench.",
-  "cpmplus.w1preview.gimbal.animTip": "Animar com 'Girar um eixo por vez' ligado: os anéis X, Y e Z mudam só aquele número do keyframe, em qualquer espaço (Global, Parent ou Local). O anel branco (livre) continua normal."
+  "cpmplus.w1preview.gimbal.animTip": "Animar com 'Girar um eixo por vez' ligado: os anéis X, Y e Z mudam só aquele número do keyframe, em qualquer espaço (Global, Parent ou Local). O anel branco (livre) continua normal.",
+  "cpmplus.w1preview.fastAnim": "Modo rápido (modelos pesados animam e giram sem travar, sem limite de FPS no Animar)"
 }

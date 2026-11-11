@@ -884,9 +884,10 @@ public final class BendLimb {
 	}
 
 	private static boolean storeIdUsed(long id) {
-		for (int i = 0; i < Cube.all.length; i++) {
+		var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+		for (int i = 0; i < cubesAll.length; i++) {
 			try {
-				if (Cube.all.getAt(i).getData().getStoreID() == id)return true;
+				if (cubesAll.getAt(i).getData().getStoreID() == id)return true;
 			} catch (Throwable e) {
 			}
 		}
@@ -908,8 +909,9 @@ public final class BendLimb {
 
 	static Cube cubeByUuid(String uuid) {
 		if (uuid == null)return null;
-		for (int i = 0; i < Cube.all.length; i++) {
-			Cube c = Cube.all.getAt(i);
+		var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+		for (int i = 0; i < cubesAll.length; i++) {
+			Cube c = cubesAll.getAt(i);
 			if (uuid.equals(c.uuid))return c;
 		}
 		return null;

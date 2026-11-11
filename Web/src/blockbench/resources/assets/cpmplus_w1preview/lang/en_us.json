@@ -5,5 +5,6 @@
   "cpmplus.w1preview.gimbal.on": "Rotate one axis at a time: ON. Keep the gizmo on 'Local' so the rings follow the part. The white (free) ring works as usual. Tip: after Ctrl+Z, click the part again before rotating.",
   "cpmplus.w1preview.gimbal.off": "Rotate one axis at a time: OFF. The gizmo works the normal Blockbench way again.",
   "cpmplus.w1preview.gimbal.notStored": "This choice could not be saved (browser storage is blocked): it lasts until Blockbench is closed.",
-  "cpmplus.w1preview.gimbal.animTip": "Animate with 'Rotate one axis at a time' ON: the X, Y and Z rings change only that number of the keyframe, in any space (Global, Parent or Local). The white (free) ring works as usual."
+  "cpmplus.w1preview.gimbal.animTip": "Animate with 'Rotate one axis at a time' ON: the X, Y and Z rings change only that number of the keyframe, in any space (Global, Parent or Local). The white (free) ring works as usual.",
+  "cpmplus.w1preview.fastAnim": "Fast mode (heavy models animate and turn smoothly, no FPS cap in Animate)"
 }

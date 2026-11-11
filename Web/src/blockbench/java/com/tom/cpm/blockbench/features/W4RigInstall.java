@@ -102,7 +102,8 @@ public final class W4RigInstall {
 
 	private static Object node(String name) {
 		for (Group g : Group.all)if (g != null && name.equals(g.name))return g;
-		for (int i = 0; i < Cube.all.length; i++)if (name.equals(Cube.all.getAt(i).name))return Cube.all.getAt(i);
+		var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+		for (int i = 0; i < cubesAll.length; i++)if (name.equals(cubesAll.getAt(i).name))return cubesAll.getAt(i);
 		return null;
 	}
 
@@ -261,8 +262,9 @@ public final class W4RigInstall {
 		PlusTestHooks.register("w4rig.corners", o -> {
 			JsPropertyMap<Object> r = ok();
 			JsPropertyMap<Object> m = JsPropertyMap.of();
-			for (int i = 0; i < Cube.all.length; i++) {
-				Cube c = Cube.all.getAt(i);
+			var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+			for (int i = 0; i < cubesAll.length; i++) {
+				Cube c = cubesAll.getAt(i);
 				List<Object> cs = new ArrayList<>();
 				for (double[] p : RigGeom.shownCorners(c, false, null))cs.add(vec(p));
 				m.set(c.uuid, arr(cs));

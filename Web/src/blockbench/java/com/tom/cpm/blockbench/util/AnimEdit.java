@@ -640,7 +640,8 @@ public final class AnimEdit {
 			Object g = Group.uuids.get(uuid);
 			if (g != null)return g;
 		}
-		if (Cube.all != null)for (int i = 0; i < Cube.all.length; i++)if (uuid.equals(Cube.all.getAt(i).uuid))return Cube.all.getAt(i);
+		var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+		if (cubesAll != null)for (int i = 0; i < cubesAll.length; i++)if (uuid.equals(cubesAll.getAt(i).uuid))return cubesAll.getAt(i);
 		return null;
 	}
 

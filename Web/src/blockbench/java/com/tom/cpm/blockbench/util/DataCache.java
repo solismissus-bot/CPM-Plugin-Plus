@@ -58,7 +58,8 @@ public final class DataCache {
 	public static void invalidateNodes() {
 		try {
 			if (Group.all != null)for (Group g : Group.all)invalidate(g);
-			if (Cube.all != null)for (int i = 0; i < Cube.all.length; i++)invalidate(Cube.all.getAt(i));
+			var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+			if (cubesAll != null)for (int i = 0; i < cubesAll.length; i++)invalidate(cubesAll.getAt(i));
 		} catch (Throwable e) {
 		}
 	}
@@ -75,8 +76,9 @@ public final class DataCache {
 			}
 		}
 		if (Cube.all != null) {
-			for (int i = 0; i < Cube.all.length; i++) {
-				Object c = cached(Cube.all.getAt(i));
+			var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+			for (int i = 0; i < cubesAll.length; i++) {
+				Object c = cached(cubesAll.getAt(i));
 				if (c instanceof CubeData)((CubeData) c).flush();
 			}
 		}

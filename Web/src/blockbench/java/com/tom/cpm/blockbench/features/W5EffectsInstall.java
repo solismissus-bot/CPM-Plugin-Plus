@@ -103,8 +103,9 @@ public final class W5EffectsInstall {
 			if ("dominant".equals(op)) {
 				JsPropertyMap<Object> m = JsPropertyMap.of();
 				String uuid = str(o, "uuid", "");
-				for (int i = 0; i < Cube.all.length; i++) {
-					Cube cb = Cube.all.getAt(i);
+				var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+				for (int i = 0; i < cubesAll.length; i++) {
+					Cube cb = cubesAll.getAt(i);
 					if (uuid.equals(cb.uuid))m.set("rgb", (double) SolidColor.dominantColorOr(cb, SolidColor.FALLBACK));
 				}
 				m.set("ok", true);

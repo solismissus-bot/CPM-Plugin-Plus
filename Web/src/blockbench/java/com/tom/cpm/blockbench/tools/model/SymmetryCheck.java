@@ -89,8 +89,9 @@ public final class SymmetryCheck {
 
 	static Cube find(String nameOrUuid) {
 		if (Cube.all == null || nameOrUuid == null)return null;
-		for (int i = 0; i < Cube.all.length; i++) {
-			Cube c = Cube.all.getAt(i);
+		var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+		for (int i = 0; i < cubesAll.length; i++) {
+			Cube c = cubesAll.getAt(i);
 			if (nameOrUuid.equals(c.uuid) || nameOrUuid.equals(c.name))return c;
 		}
 		return null;
@@ -141,8 +142,9 @@ public final class SymmetryCheck {
 	public static List<Issue> report() {
 		List<Cube> unpaired = new ArrayList<>();
 		if (Cube.all == null || !Painter.available())return new ArrayList<>();
-		for (int i = 0; i < Cube.all.length; i++) {
-			Cube c = Cube.all.getAt(i);
+		var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+		for (int i = 0; i < cubesAll.length; i++) {
+			Cube c = cubesAll.getAt(i);
 			if (!counts(c))continue;
 			if (mirrorOf(c) == null)unpaired.add(c);
 		}
@@ -196,8 +198,9 @@ public final class SymmetryCheck {
 	public static int unpairedCount() {
 		if (Cube.all == null || !Painter.available())return 0;
 		int n = 0;
-		for (int i = 0; i < Cube.all.length; i++) {
-			Cube c = Cube.all.getAt(i);
+		var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+		for (int i = 0; i < cubesAll.length; i++) {
+			Cube c = cubesAll.getAt(i);
 			if (counts(c) && mirrorOf(c) == null)n++;
 		}
 		return n;

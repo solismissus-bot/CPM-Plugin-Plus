@@ -152,8 +152,9 @@ public final class W0cExportcoreInstall {
 		List<Object> out = new ArrayList<>();
 		if(ids.isEmpty())return out;
 		if(Group.all != null)for (Group g : Group.all)if(ids.contains(g.getData().getStoreID()))out.add(g);
-		if(Cube.all != null)for (int i = 0; i < Cube.all.length; i++) {
-			Cube c = Cube.all.getAt(i);
+		var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+		if(cubesAll != null)for (int i = 0; i < cubesAll.length; i++) {
+			Cube c = cubesAll.getAt(i);
 			if(ids.contains(c.getData().getStoreID()))out.add(c);
 		}
 		return out;

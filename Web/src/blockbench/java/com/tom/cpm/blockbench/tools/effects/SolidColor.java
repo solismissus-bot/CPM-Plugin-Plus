@@ -141,7 +141,8 @@ public final class SolidColor {
 
 	private static List<Cube> allCubes() {
 		List<Cube> out = new ArrayList<>();
-		if (Cube.all != null)for (int i = 0; i < Cube.all.length; i++)out.add(Cube.all.getAt(i));
+		var cubesAll = Cube.all;// CPM+ : read once (Blockbench 5 filters every element on each read)
+		if (cubesAll != null)for (int i = 0; i < cubesAll.length; i++)out.add(cubesAll.getAt(i));
 		return out;
 	}
 

@@ -68,6 +68,8 @@ Regras gerais:
 
 ## 3. Animação (CPM+ > Animação)
 
+> 🆕 **Modo rápido** (CPM+ > Animação > Modo rápido, ligado por padrão): modelo pesado toca e anima sem travar. No Animar só a parte que a animação mexe é recalculada e não tem o limite de 144 FPS do Blockbench (a sua configuração continua salva igual); no Editar/Pintar as peças paradas não são recalculadas a cada quadro. A imagem é a mesma do Blockbench. Se algo parecer diferente, desligue ali e me avise.
+
 > **Aditiva ou não aditiva?** (Propriedades da animação > Aditiva) **Aditiva** = soma com o Minecraft: braços e pernas continuam balançando e a cabeça segue o mouse. **Não aditiva** = sua animação manda nas partes do corpo que ela mexe: o Minecraft para de balançá-las, e se você animar a cabeça ela para de seguir o mouse. Na dúvida, abra o **Raio-X** (seção "Conferir e arrumar"): ele mostra parte por parte o que acontece no jogo. O plugin também avisa na hora quando uma edição faz a cabeça parar de olhar pro mouse ou deixa um braço/perna balançando sem querer (clique no aviso pra abrir o Raio-X).
 
 **🆕 Começar fácil**
