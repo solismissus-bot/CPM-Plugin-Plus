@@ -308,8 +308,13 @@ public class AnimationWizard {
 				a.name = uniqueName(r.name, null);
 				a = a.add(false);
 			}
-			// CPM+ : unique animation names ('#' grouping still works, only exact duplicates are renamed)
-			a.name = uniqueName(r.name == null || r.name.trim().isEmpty() ? "animation" : r.name.trim(), a);
+			// CPM+ : unique animation names ('#' grouping still works, only exact duplicates are renamed).
+			// An edit that keeps the name keeps it exactly ('', 'AFK ' with its space, a repeated pose name); SETUP /
+			// FINISH never get a number (start and end of one gesture share the link 'g:halo'; 'g:halo2' links nothing).
+			String nm = r.name == null || r.name.trim().isEmpty() ? "animation" : r.name.trim();
+			if(edit && r.name != null && r.name.equals(a.name))nm = a.name;
+			else if(!isStaged(r.type))nm = uniqueName(nm, a);
+			a.name = nm;
 			a.loop = r.loop;
 			a.type = r.type;
 			a.additive = r.add;
@@ -421,10 +426,61 @@ public class AnimationWizard {
 			if(proto == null)return;
 			Object orig = hookPropertiesDialog(proto);
 			if(orig != null)PluginStart.cleanup.add(() -> unhookPropertiesDialog(proto, orig));
+			// CPM+ : Blockbench renames exact duplicates in Animation.add() (opening a .bbmodel, every undo / redo),
+			// paste, drag and rename: 'g:halo' (end) became 'g:halo2' and lost its gesture, five 'asas combate' became
+			// 'asas combate2..5', unnamed poses became '2', '3'... In a CPM project names are kept; only a new copy made
+			// by 'Duplicate' (not in the project yet) still gets a number, unless it is SETUP / FINISH.
+			Object origName = hookUniqueName(proto);
+			if(origName != null)PluginStart.cleanup.add(() -> unhookUniqueName(proto, origName));
+			// CPM+ : Animation.extend (opening a .bbmodel, undo / redo) clamps snapping to 10..500; the import keeps
+			// CPM's frame grid there (1..9), which the 'Qualidade' of the dialog shows. Put the saved value back.
+			Object origExtend = hookExtend(proto);
+			if(origExtend != null)PluginStart.cleanup.add(() -> unhookExtend(proto, origExtend));
 		} catch (Throwable e) {
 			// never break plugin loading over this
 		}
 	}
+
+	/** CPM+ : SETUP / FINISH animation type: its name is the link to the main animation, shared by both stages */
+	static boolean isStaged(String cpmType) {
+		return cpmType != null && Animation.parseType(cpmType).getKey().isStaged();
+	}
+
+	public static boolean keepName(String cpmType, boolean inProject) {
+		return CPMCodec.isCPM() && (inProject || isStaged(cpmType));
+	}
+
+	private static native Object hookUniqueName(Object proto)/*-{
+		var orig = proto.createUniqueName;
+		if (typeof orig !== 'function') return null;
+		proto.createUniqueName = function() {
+			var list = $wnd.Animator && $wnd.Animator.animations;
+			var inProject = !!(list && list.indexOf(this) >= 0);
+			if (@com.tom.cpm.blockbench.format.AnimationWizard::keepName(Ljava/lang/String;Z)(typeof this.cpm_type === 'string' ? this.cpm_type : null, inProject)) return this.name;
+			return orig.apply(this, arguments);
+		};
+		return orig;
+	}-*/;
+
+	private static native void unhookUniqueName(Object proto, Object orig)/*-{
+		proto.createUniqueName = orig;
+	}-*/;
+
+	private static native Object hookExtend(Object proto)/*-{
+		var orig = proto.extend;
+		if (typeof orig !== 'function') return null;
+		proto.extend = function(data) {
+			var r = orig.apply(this, arguments);
+			if (data && typeof data.snapping === 'number' && data.snapping >= 1 && data.snapping < 10
+					&& @com.tom.cpm.blockbench.format.CPMCodec::isCPM()()) this.snapping = data.snapping;
+			return r;
+		};
+		return orig;
+	}-*/;
+
+	private static native void unhookExtend(Object proto, Object orig)/*-{
+		proto.extend = orig;
+	}-*/;
 
 	public static boolean handlePropertiesDialog(Animation a) {
 		if(!CPMCodec.isCPM())return false;// CPM+ : null/false-safe format check

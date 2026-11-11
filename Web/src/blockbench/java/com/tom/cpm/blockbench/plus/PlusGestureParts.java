@@ -302,6 +302,10 @@ public final class PlusGestureParts {
 	private static boolean wizConfirm(Object rIn, Animation self) {
 		JsPropertyMap<Object> r = Js.uncheckedCast(rIn);
 		if(r == null || !isGroupedType(str(r, "type")))return true;
+		if(self != null && str(r, F_GAME).equals(gameId(self.name)) && str(r, F_PART).equals(partLabel(self.name))) {
+			r.set("name", self.name);// CPM+ : fields untouched: the exact name ('AFK ' keeps its space and its 'g:AFK ' link)
+			return true;
+		}
 		String game = str(r, F_GAME).trim(), part = str(r, F_PART).trim();
 		String full = compose(game, part);
 		if(self != null && full.equals(self.name)) {

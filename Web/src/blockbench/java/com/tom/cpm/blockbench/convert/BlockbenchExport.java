@@ -1342,6 +1342,17 @@ public class BlockbenchExport {
 		}
 	}
 
+	/**
+	 * CPM+ : loop seam check (end sample vs frame 0). Visibility is per bucket (frame k shows from k*D/N) and goes
+	 * back to frame 0 by itself when the loop wraps, so it is not compared at the end: a looping layer that shows a
+	 * part in its last frame was exported as POLY_SINGLE with an extra frame and a longer duration (4000 -> 5333 ms).
+	 */
+	private static boolean sameSeam(double[] end, double[] start, boolean modRot) {
+		double[] e = java.util.Arrays.copyOf(end, end.length);
+		for (int i = SIG_STRIDE - 1; i < e.length; i += SIG_STRIDE)e[i] = start[i];
+		return same(e, start, modRot);
+	}
+
 	private static boolean same(double[] a, double[] b) {
 		return same(a, b, true);
 	}
@@ -1469,7 +1480,7 @@ public class BlockbenchExport {
 					if(onGrid(times, h0, len)) {
 						boolean ok;
 						if(sN == 1)ok = same(sig(anims, 0), sig(anims, len));
-						else if(isLoopType(stored))ok = same(sig(anims, 0), sig(anims, len));
+						else if(isLoopType(stored))ok = sameSeam(sig(anims, len), sig(anims, 0), true);
 						else if(stored == InterpolatorType.POLY_SINGLE)ok = same(sig(anims, (m0 - 1) * h0), sig(anims, len));
 						else if(stored == InterpolatorType.NO_INTERPOLATE)ok = runtimeLoop || same(sig(anims, (m0 - 1) * h0), sig(anims, len));
 						else ok = true;
@@ -1594,7 +1605,7 @@ public class BlockbenchExport {
 		// for the interpolation, treating them as equal turned spins into loops that run backwards
 		boolean allEq = true;
 		for (int k = 1; k <= m && allEq; k++)allEq = same(s.get(0), s.get(k), false);
-		boolean seamless = same(s.get(m), s.get(0), false);
+		boolean seamless = sameSeam(s.get(m), s.get(0), false);
 		boolean endHold = same(s.get(m), s.get(m - 1), false);
 		double durS = len;
 		int n;

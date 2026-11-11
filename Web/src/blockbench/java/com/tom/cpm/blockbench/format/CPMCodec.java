@@ -84,7 +84,9 @@ public class CPMCodec {
 		ctr.rotate_cubes = true;
 		ctr.uv_rotation = true;
 		ctr.animation_mode = true;
-		ctr.animation_files = true;
+		// CPM+ : animations live inside the .cpmproject / .bbmodel. animation_files=true made Ctrl+S and the save icon
+		// of each animation write a Bedrock .animation.json (no CPM settings) that Blockbench re-imported later.
+		ctr.animation_files = false;
 		ctr.per_texture_uv_size = true;
 		ctr.render_sides = "double";
 		if(MinecraftObjectHolder.DEBUGGING) {
@@ -240,7 +242,29 @@ public class CPMCodec {
 		// CPM+ (W0B): properties registered with exported=false are never saved into the .bbmodel (Blockbench
 		// itself honours 'export: false' only for project properties; element/group/animation copies keep them)
 		PluginStart.addEventListener(Codecs.project, "compile", CPMCodec::stripNotExported);
+		// CPM+ : Blockbench's Merge.molang (undo / redo, paste) writes numbers as roundTo(v, 9).toString(), so a float
+		// leftover like -2.38e-8 becomes "-2.4e-8", which its Molang reads as -8: Ctrl+Z / Ctrl+Y moved parts 8 px.
+		// In CPM projects a number in exponent form is written out (below 1e-6 it is 0).
+		Object origMolang = hookMolangMerge();
+		if(origMolang != null)PluginStart.cleanup.add(() -> unhookMolangMerge(origMolang));
 	}
+
+	private static native Object hookMolangMerge() /*-{
+		var M = $wnd.Merge, orig = M && M.molang;
+		if (typeof orig !== 'function') return null;
+		M.molang = function(obj, src, key) {
+			var r = orig.apply(this, arguments);
+			var v = obj && obj[key];
+			if (typeof v === 'string' && /\d[eE][-+]?\d/.test(v) && @com.tom.cpm.blockbench.format.CPMCodec::isCPM()())
+				obj[key] = v.replace(/-?\d+(?:\.\d+)?[eE][-+]?\d+/g, function(t) { var n = Number(t); return Math.abs(n) < 1e-6 ? '0' : String(n); });
+			return r;
+		};
+		return orig;
+	}-*/;
+
+	private static native void unhookMolangMerge(Object orig) /*-{
+		if ($wnd.Merge) $wnd.Merge.molang = orig;
+	}-*/;
 
 	private static void stripNotExported(Object evt) {
 		if (notExported.isEmpty() || evt == null)return;
